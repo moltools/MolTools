@@ -1,0 +1,64 @@
+:root {
+    --tile_margin: 10px;
+    --header-background-color: #3e3e42;
+    --app-background-color: #2d2d30;
+    --tile-size: 200px;
+}
+
+body {
+    padding: 0;
+    margin: 0;
+    background-color: var(--app-background-color);
+}
+
+.navbar {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    height: 50px;
+    width: 100%;
+    background-color: var(--header-background-color);
+} 
+
+.navbar .navbar-item {
+    padding: 20px;
+    text-decoration: none;
+    color: white;
+    font-family: "Geneva";
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.apptiles {
+    overflow: auto;
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.apptile {
+    width: var(--tile-size);
+    height: var(--tile-size);
+    transition: all ease-in-out 0.2s;
+    margin: var(--tile_margin);
+}
+
+.apptile:hover {
+    transform: translate(-0.2rem, -0.2rem);
+    box-shadow: 0 0 11px rgba(33,33,33,.2);
+    cursor: pointer;
+    transition: all ease-in-out 0.2s;
+    background-color: rgba(33,33,33,.1);
+}
+
+.apptile .img-fluid {
+    max-width: 100%;
+}
+
+.no-page {
+    padding: 20px;
+    text-decoration: none;
+    color: white;
+    font-family: "Geneva";
+    font-size: 12px;
+    font-weight: bold;
+}
