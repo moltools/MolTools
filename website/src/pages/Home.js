@@ -10,7 +10,7 @@ function Home() {
     return (
         <div>
             <div className="apptiles">
-                <AppTile name="retromol" logo={retromol_logo} url="/retromol"/>
+                <AppTile name="retromol" logo={retromol_logo} url="https://retromol.bioinformatics.nl/"/>
                 <AppTile name="cinemol" logo={cinemol_logo} url="/cinemol"/>
                 <AppTile name="smilescorrector" logo={undecided_logo} url="/smilescorrector"/>
                 <AppTile name="activitymol" logo={undecided_logo} url="/activitymol"/>
