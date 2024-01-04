@@ -4,7 +4,7 @@ import Tile from "../components/Tile";
 const Home = ({ tilesData }) => {
     return (
         <div>
-            <h1>Home</h1>
+            <h2>Home</h2>
             <div className="tile-container">
                 {tilesData.length === 0 ? (
                     <p>No app tiles are available.</p>

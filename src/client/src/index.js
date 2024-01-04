@@ -64,7 +64,7 @@ function AppRoutes () {
             <Routes location={displayLocation}>
                 <Route path="/" element={<Home tilesData={tilesData}/>} />
                 <Route path="/about" element={<About />} />
-                <Route path="/changelog" element={<Changelog />} />
+                <Route path="/changelog" element={<Changelog url={"https://raw.githubusercontent.com/moltools/MolTools/master/CHANGELOG.md"} />} />
                 <Route path="/retromol" element={<RetroMol />} />
                 <Route path="/cinemol" element={<CineMol />} />
                 <Route path="/biosynfoni" element={<Biosynfoni />} />
@@ -105,7 +105,7 @@ function App () {
                 <Header navbarLinks={[
                     { name: "Home", path: "/" },
                     { name: "About", path: "/about" },
-                    { name: "Change log", path: "/changelog" }
+                    { name: "Changelog", path: "/changelog" }
                 ]}/>
                 <AppRoutes />
                 <Footer link={"https://github.com/moltools/MolTools"} />  

@@ -3,14 +3,14 @@ import ReactMarkdown from "react-markdown";
 import { FiRefreshCw } from "react-icons/fi";
 import { toast } from "react-toastify";
 
-const Changelog = () => {
+const Changelog = ({url}) => {
     const [changelogContent, setChangelogContent] = useState("");
     const [isFetching, setIsFetching] = useState(true);
 
     const fetchChangelog = () => {
         setIsFetching(true);
-
-        fetch("https://raw.githubusercontent.com/moltools/RetroMol.GUI/main/CHANGELOG.md")
+        
+        fetch(url)
             .then((response) => {
                 if (!response.ok) {
                     throw new Error("Network response was not ok");
@@ -21,8 +21,8 @@ const Changelog = () => {
                 setChangelogContent(data);
             })
             .catch((error) => {
-                console.error("Error fetching CHANGELOG.md:", error);
-                toast.error("Error fetching CHANGELOG.md");
+                console.error("Error fetching changelog:", error);
+                toast.error("Error fetching changelog!");
             })
             .finally(() => {
                 setIsFetching(false);
@@ -35,7 +35,7 @@ const Changelog = () => {
 
     return (
         <div>
-            <h1>
+            <h2>
                 Changelog
                 <FiRefreshCw 
                     style={{
@@ -47,7 +47,7 @@ const Changelog = () => {
                     size={15}
                     className={isFetching ? "spin" : ""}
                 />  
-            </h1>
+            </h2>
             {changelogContent.length ? (
                 <ReactMarkdown>{changelogContent}</ReactMarkdown>
             ) : (
