@@ -40,4 +40,4 @@ cd src/client
 npm start
 ```
 
-Visit `http://localhost:4000/` to view the app.
+Visit `http://localhost:3000/` to view the app.

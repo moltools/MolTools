@@ -1,2 +1,4 @@
 flask
 gunicorn
+rdkit
+git+https://github.com/moltools/cinemol.git

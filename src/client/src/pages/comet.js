@@ -1,10 +1,10 @@
 import React from "react";
 
-const CineMol = () => {
+const Comet = () => {
     return (
         <div>
         </div>
     );
 };
 
-export default CineMol;
+export default Comet;

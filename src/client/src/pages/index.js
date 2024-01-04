@@ -4,7 +4,6 @@ import Tile from "../components/Tile";
 const Home = ({ tilesData }) => {
     return (
         <div>
-            <h2>Home</h2>
             <div className="tile-container">
                 {tilesData.length === 0 ? (
                     <p>No app tiles are available.</p>
@@ -14,10 +13,11 @@ const Home = ({ tilesData }) => {
                                 key={index}
                                 name={tile.name}
                                 icon={tile.icon}
+                                color={tile.color}
                                 description={tile.description}
                                 path={tile.path}
                             />
-                        )   )
+                        ))
                 )}
             </div>
         </div>

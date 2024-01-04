@@ -10,7 +10,6 @@ import "./style/main.css";
 // Import widgets.
 import Header from "./components/Header";
 import Toast from "./components/Toast";
-import Footer from "./components/Footer";
 
 // Import pages.
 import Home from "./pages";
@@ -19,28 +18,58 @@ import Changelog from "./pages/changelog";
 import RetroMol from "./pages/retromol";
 import CineMol from "./pages/cinemol";
 import Biosynfoni from "./pages/biosynfoni";
+import MechaMol from "./pages/mechamol";
+import Comet from "./pages/comet";
 
 // Define widgets which will be displayed as tiles on the home page.
 const tilesData = [
     {
         name: "RetroMol",
-        icon: <FiHexagon />,
-        description: "",
+        icon: "widgets/icon_retromol.svg",
+        color: "#F5C900",
+        description: "Under construction",
         path: "/retromol"
     },
     {
         name: "CineMol",
-        icon: <FiHexagon />,
-        description: "",
+        icon: "widgets/icon_cinemol.svg",
+        color: "#2f6eb5",
+        description: "Under construction",
         path: "/cinemol"
     },
     {
         name: "Biosynfoni",
-        icon: <FiHexagon />,
-        description: "",
+        icon: "widgets/icon_biosynfoni.svg",
+        color: "#7B9204",
+        description: "Under construction",
         path: "/biosynfoni"
+    },
+    {
+        name: "MechaMol",
+        icon: <FiHexagon />,
+        color: "#ccc",
+        description: "Under construction",
+        path: "/mechamol"
+    },
+    {
+        name: "Comet",
+        icon: <FiHexagon />,
+        color: "#ccc",
+        description: "Under construction",
+        path: "/comet"
     }
 ];
+
+const routeDisplayNames = {
+    "/": "Home",
+    "/about": "About",
+    "/changelog": "Changelog",
+    "/retromol": "RetroMol",
+    "/cinemol": "CineMol",
+    "/biosynfoni": "Biosynfoni",
+    "/mechamol": "MechaMol",
+    "/comet": "Comet",
+};
 
 function AppRoutes () {
     const location = useLocation();
@@ -68,6 +97,8 @@ function AppRoutes () {
                 <Route path="/retromol" element={<RetroMol />} />
                 <Route path="/cinemol" element={<CineMol />} />
                 <Route path="/biosynfoni" element={<Biosynfoni />} />
+                <Route path="/mechamol" element={<MechaMol />} />
+                <Route path="/comet" element={<Comet />} />
                 <Route path="/*" element={<div>404</div>} />
             </Routes>
         </div>
@@ -75,12 +106,6 @@ function AppRoutes () {
 };
 
 function App () {
-
-    // Display toast message on first load.
-    useEffect (() => {
-        toast.info("Select an app tile to get started!");
-    }, []);
-
     // Ping API to see if it is available.
     useEffect(() => {
         fetch("/api/ping_server")
@@ -102,13 +127,15 @@ function App () {
     return (
         <div className="app">
             <BrowserRouter>
-                <Header navbarLinks={[
-                    { name: "Home", path: "/" },
-                    { name: "About", path: "/about" },
-                    { name: "Changelog", path: "/changelog" }
-                ]}/>
+                <Header 
+                    routeDisplayNames={routeDisplayNames}
+                    navbarLinks={[
+                        { name: "Home", path: "/" },
+                        { name: "About", path: "/about" },
+                        { name: "Changelog", path: "/changelog" }
+                    ]}
+                />
                 <AppRoutes />
-                <Footer link={"https://github.com/moltools/MolTools"} />  
                 <Toast />
             </BrowserRouter>    
         </div>

@@ -1,10 +1,10 @@
 import React from "react";
 
-const CineMol = () => {
+const MechaMol = () => {
     return (
         <div>
         </div>
     );
 };
 
-export default CineMol;
+export default MechaMol;

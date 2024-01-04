@@ -5,9 +5,9 @@ class Status(Enum):
     """
     The status of a response.
 
-    :cvar SUCCESS: The response was successful.
-    :cvar WARNING: The response was successful, but with warnings.
-    :cvar FAILURE: The response was not successful.
+    :cvar Success: The response was successful.
+    :cvar Warning: The response was successful, but with warnings.
+    :cvar Failure: The response was not successful.
     """
     Success = auto()
     Warning = auto()

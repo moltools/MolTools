@@ -1,5 +1,3 @@
-@import "variables.css";
-
 .header {
     padding: var(--default-padding);
     height: calc(var(--header-height));

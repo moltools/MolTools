@@ -1,6 +1,5 @@
-@import "variables.css";
-
 .tile-container {
+    padding: var(--default-padding);
     display: grid;
     grid-template-columns: repeat(
         auto-fill, 

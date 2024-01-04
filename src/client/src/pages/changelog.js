@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
-import { FiRefreshCw } from "react-icons/fi";
 import { toast } from "react-toastify";
 
 const Changelog = ({url}) => {
     const [changelogContent, setChangelogContent] = useState("");
-    const [isFetching, setIsFetching] = useState(true);
 
     const fetchChangelog = () => {
-        setIsFetching(true);
-        
         fetch(url)
             .then((response) => {
                 if (!response.ok) {
@@ -24,9 +20,7 @@ const Changelog = ({url}) => {
                 console.error("Error fetching changelog:", error);
                 toast.error("Error fetching changelog!");
             })
-            .finally(() => {
-                setIsFetching(false);
-            });
+            .finally(() => {});
     };
 
     useEffect(() => {
@@ -34,20 +28,7 @@ const Changelog = ({url}) => {
     }, []);
 
     return (
-        <div>
-            <h2>
-                Changelog
-                <FiRefreshCw 
-                    style={{
-                        marginLeft: "0.5rem",
-                        cursor: isFetching ? "not-allowed" : "pointer",
-                    }}
-                    onClick={isFetching ? null : fetchChangelog}
-                    disabled={isFetching}
-                    size={15}
-                    className={isFetching ? "spin" : ""}
-                />  
-            </h2>
+        <div className="changelog-container">
             {changelogContent.length ? (
                 <ReactMarkdown>{changelogContent}</ReactMarkdown>
             ) : (

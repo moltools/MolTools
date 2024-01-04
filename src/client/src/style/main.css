@@ -1,8 +1,19 @@
+:root {
+    --default-padding: 20px;
+    --header-height: 50px;
+    --footer-height: 50px;
+    --tile-size: 250px;
+    --tile-padding: 5px;
+}
+
 @import "home/home.css";
+@import "about/about.css";
+@import "changelog/changelog.css";
+@import "biosynfoni/biosynfoni.css";
 
 * {
-    font-family: var(--main-font);
-    color: var(--color2);
+    font-family: "Arial", sans-serif;
+    color: black;
 }
 
 html, body {
@@ -15,11 +26,11 @@ html, body {
 }
 
 .widget {
-    padding: var(--default-padding);
     opacity: 1;
     transition: opacity 0.5s ease-in-out;
-    height: calc(100% - var(--header-height) - var(--footer-height) - 4 * var(--default-padding));
+    height: calc(100% - var(--header-height));
     overflow: auto;
+    background-color: transparent;
 }
 
 .fade-in {

@@ -14,6 +14,7 @@ const Toast = () =>  {
             pauseOnHover={true}
             icon={({ type }) => {
                 if (type === "success") return "🎉";
+                if (type === "warning") return "⚠️";
                 if (type === "error") return "🚨";
                 else return "ℹ️";
             }}
