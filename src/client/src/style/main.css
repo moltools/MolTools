@@ -1,0 +1,46 @@
+@import "home/home.css";
+
+* {
+    font-family: var(--main-font);
+    color: var(--color2);
+}
+
+html, body {
+    margin: 0;
+} 
+
+.app {
+    height: 100vh;
+    overflow: hidden;
+}
+
+.widget {
+    padding: var(--default-padding);
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+    height: calc(100% - var(--header-height) - var(--footer-height) - 4 * var(--default-padding));
+    overflow: auto;
+}
+
+.fade-in {
+    opacity: 1;
+}
+
+.fade-out {
+    opacity: 0;
+}
+
+.widget-content {
+    display: flex;
+    min-height: 100%;
+}
+
+/* Spin class to make icons spin during fetching/loading events */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.spin {
+    animation: spin 0.5s linear infinite; /* Decreased duration for rapid spinning */
+}

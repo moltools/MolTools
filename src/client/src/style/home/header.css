@@ -1,0 +1,32 @@
+@import "variables.css";
+
+.header {
+    padding: var(--default-padding);
+    height: calc(var(--header-height));
+    background-color: var(--color1);
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
+
+    /* Header should always be on top of app content. */
+    position: relative;
+    z-index: 9999;
+
+    /* Make sure logo is to the left and Navbar is to the right. */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-logo img {
+    height: calc(var(--header-height));
+    width: auto;
+}
+
+.header-title {
+    display: flex;
+    font-size: 25px;
+    margin-left: 10px;
+}
+
+.header-navbar {
+    margin-left: auto;
+}

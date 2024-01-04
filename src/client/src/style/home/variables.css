@@ -1,0 +1,17 @@
+:root {
+    --main-font: "Arial", sans-serif;
+    --default-padding: 20px;
+    
+    /* Color palette for the app. */
+    --color1: #FFFFFF;
+    --color2: #000000;
+    --color3: #CCCCCC;
+    --color4: #F5C900;
+
+    --header-height: 50px;
+
+    --footer-height: 50px;
+
+    --tile-size: 250px;
+    --tile-padding: 5px;
+}

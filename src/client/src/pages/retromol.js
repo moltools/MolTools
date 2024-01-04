@@ -1,9 +1,9 @@
 import React from "react";
 
-function CineMol() {
+const RetroMol = () => {
     return (
         <div></div>
     );
 };
 
-export default CineMol;
+export default RetroMol;
