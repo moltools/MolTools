@@ -6,12 +6,12 @@
 }
 
 .navbar .link {
-    text-decoration: none;
+    text-decoration: none; /* Remove default underline */
     transition: color 0.2s ease;
     font-size: 1.1rem;
 }
 
 .navbar .link:hover {
-    text-decoration: underline;
-    text-decoration-skip-ink: none;
+    text-decoration: underline; /* Add underline on hover */
+    text-decoration-skip-ink: none; /* Prevent double underline */
 }

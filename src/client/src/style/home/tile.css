@@ -11,10 +11,12 @@
 }
 
 .tile {
+    /* Make sure tiles are always square. */
     min-width: calc(var(--tile-size) - var(--tile-padding));
     min-height: calc(var(--tile-size) - var(--tile-padding));
     max-width: calc(var(--tile-size) - var(--tile-padding));
     max-height: calc(var(--tile-size) - var(--tile-padding));
+    
     text-decoration: none;
     background-color: var(--color4);
     display: flex;

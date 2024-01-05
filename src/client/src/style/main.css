@@ -1,36 +1,34 @@
+/* Define CSS custom properties (variables) in :root */
 :root {
-    --default-padding: 20px;
-    --header-height: 50px;
-    --footer-height: 50px;
+    --default-padding: 20px; 
+    --header-height: 50px; 
     --tile-size: 250px;
-    --tile-padding: 5px;
+    --tile-padding: 5px; 
 }
 
-@import "home/home.css";
-@import "about/about.css";
-@import "changelog/changelog.css";
-@import "retromol/retromol.css";
-@import "cinemol/cinemol.css";
-@import "biosynfoni/biosynfoni.css";
-@import "mechamol/mechamol.css";
-@import "comet/comet.css";
+/* Import external CSS files */
+@import "home/index.css"; 
+@import "cinemol/index.css";   
+@import "biosynfoni/index.css";
 
+/* Apply styles to all elements in the HTML document */
 * {
     font-family: "Arial", sans-serif;
-    color: black;
+    color: black;                 
 }
 
+/* Reset margin for the html and body elements */
 html, body {
     margin: 0;
-} 
+}
 
 .app {
-    height: 100vh;
+    height: 100vh; 
     overflow: hidden;
 }
 
 .widget {
-    opacity: 1;
+    opacity: 1;                     
     transition: opacity 0.5s ease-in-out;
     height: calc(100% - var(--header-height));
     overflow: auto;
@@ -38,24 +36,24 @@ html, body {
 }
 
 .fade-in {
-    opacity: 1;
+    opacity: 1; /* Set opacity to 1 (completely visible) for fading in */
 }
 
 .fade-out {
-    opacity: 0;
+    opacity: 0; /* Set opacity to 0 (completely invisible) for fading out */
 }
 
 .widget-content {
-    display: flex;
-    min-height: 100%;
+    padding: var(--default-padding);
 }
 
-/* Spin class to make icons spin during fetching/loading events */
+/* Define a keyframe animation named 'spin' for rotating elements */
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% { transform: rotate(0deg); }     /* Starting point of the rotation */
+    100% { transform: rotate(360deg); } /* Ending point of the rotation (full circle) */
 }
 
+/* Apply the 'spin' animation to elements with the 'spin' class */
 .spin {
-    animation: spin 0.5s linear infinite; /* Decreased duration for rapid spinning */
+    animation: spin 0.5s linear infinite; /* Apply the 'spin' animation with infinite looping */
 }

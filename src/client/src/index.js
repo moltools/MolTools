@@ -21,45 +21,33 @@ import Biosynfoni from "./pages/biosynfoni";
 import MechaMol from "./pages/mechamol";
 import Comet from "./pages/comet";
 
-// Define widgets which will be displayed as tiles on the home page.
+/**
+ * Define widgets which will be displayed as tiles on the home page.
+ * 
+ * @param {string} name - Name of the widget.
+ * @param {string} icon - Icon of the widget.
+ * @param {string} color - Color of the widget.
+ * @param {string} description - Description of the widget.
+ * @param {string} path - Path to the widget.
+ * 
+ * @returns {object} - Object containing the widget data.
+ */
 const tilesData = [
-    {
-        name: "CineMol",
-        icon: "widgets/icon_cinemol.svg",
-        color: "#2f6eb5",
-        description: "Alpha version",
-        path: "/cinemol"
-    },
-    {
-        name: "Biosynfoni",
-        icon: "widgets/icon_biosynfoni.svg",
-        color: "#7B9204",
-        description: "Demo version",
-        path: "/biosynfoni"
-    },
-    {
-        name: "RetroMol",
-        icon: "widgets/icon_retromol.svg",
-        color: "#F5C900",
-        description: "Under construction",
-        path: "/retromol"
-    },
-    {
-        name: "MechaMol",
-        icon: <FiHexagon />,
-        color: "#ccc",
-        description: "Under construction",
-        path: "/mechamol"
-    },
-    {
-        name: "Comet",
-        icon: <FiHexagon />,
-        color: "#ccc",
-        description: "Under construction",
-        path: "/comet"
-    }
+    { name: "CineMol", icon: "widgets/icon_cinemol.svg", color: "#2f6eb5", description: "Alpha version", path: "/cinemol" },
+    { name: "Biosynfoni", icon: "widgets/icon_biosynfoni.svg", color: "#7B9204", description: "Demo version", path: "/biosynfoni" },
+    { name: "RetroMol", icon: "widgets/icon_retromol.svg", color: "#F5C900", description: "Under construction", path: "/retromol" },
+    { name: "MechaMol", icon: <FiHexagon />, color: "#ccc", description: "Under construction", path: "/mechamol" },
+    { name: "Comet", icon: <FiHexagon />, color: "#ccc", description: "Under construction", path: "/comet" }
 ];
 
+/**
+ * Define the display names of the routes.
+ * 
+ * @param {string} path - Path to the route.
+ * @param {string} name - Display name of the route.
+ * 
+ * @returns {object} - Object containing the route display names.
+ */
 const routeDisplayNames = {
     "/": "Home",
     "/about": "About",
@@ -71,6 +59,9 @@ const routeDisplayNames = {
     "/comet": "Comet",
 };
 
+/**
+ * Define the routes of the app.
+ */
 function AppRoutes () {
     const location = useLocation();
     const [displayLocation, setDisplayLocation] = useState(location);
@@ -106,7 +97,9 @@ function AppRoutes () {
 };
 
 function App () {
-    // Ping API to see if it is available.
+    /**
+     * Check if the API is available.
+     */
     useEffect(() => {
         fetch("/api/ping_server")
             .then(response => response.json())
@@ -124,6 +117,9 @@ function App () {
             });
     }, []);
 
+    /**
+     * Render the app.
+     */
     return (
         <div className="app">
             <BrowserRouter>

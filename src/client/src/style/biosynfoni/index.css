@@ -1,4 +1,3 @@
-
 :root {
     --biosynfoni-primary-color: #7B9204;
     --biosynfoni-secondary-color: #B9C311;
@@ -6,9 +5,8 @@
     --biosynfoni-font-family: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, 'Lucida Grande', sans-serif;
 }
 
-
 /* =====================================================================================================================
-   Workspace
+   Main container
 ===================================================================================================================== */
 
 .biosynfoni {

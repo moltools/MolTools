@@ -1,13 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { 
-    BsChevronDoubleLeft, BsChevronDoubleRight, 
-    BsFillCloudUploadFill, BsFillCloudDownloadFill,
-    BsCircleHalf, BsFillDatabaseFill,
-    BsBrushFill, BsEyeFill, BsDropletFill, 
-    BsGithub, BsFillLightningFill, BsGlobe2
+    BsBrushFill, 
+    BsChevronDoubleLeft, 
+    BsChevronDoubleRight, 
+    BsCircleHalf, 
+    BsDropletFill, 
+    BsEyeFill, 
+    BsFillCloudDownloadFill,
+    BsFillCloudUploadFill, 
+    BsFillDatabaseFill,
+    BsFillLightningFill, 
+    BsGithub, 
+    BsGlobe2
 } from "react-icons/bs";
 
+// =====================================================================================================================
+// Example SDF string.
+// =====================================================================================================================
+
+/**
+ * Example SDF string for Penicillin G.
+ * @type {string}
+ */
 const exampleSdfString = `5904
   -OEChem-12182318453D
 
@@ -99,399 +114,171 @@ const exampleSdfString = `5904
 M  END
 $$$$`;
 
-
 // =====================================================================================================================
 // Sidebar buttons.
 // =====================================================================================================================
 
-class UploadButton extends React.Component {
-    handleUploadSdfFile = () => {
-        const fileInput = document.createElement("input");
-        fileInput.type = "file";
-        fileInput.accept = ".sdf";
-        fileInput.onchange = event => {
-            const file = event.target.files[0];
+/**
+ * SidebarButton Component
+ *
+ * This component represents a button element typically used within the sidebar of the MolTools application. It provides
+ * options for user interaction and displays an icon along with a title.
+ *
+ * @param {Object} props - The props for the SidebarButton component.
+ * @param {boolean} props.disabled - Indicates whether the button is disabled.
+ * @param {JSX.Element} props.icon - The JSX element representing an icon to display within the button.
+ * @param {string} props.title - The title or label to display alongside the icon.
+ * @param {function} props.onClick - A function to be called when the button is clicked.
+ * @returns {JSX.Element} The rendered SidebarButton component with icon, title, and click functionality.
+ */
+const SidebarButton = (props) => {
+    // Destructure props into individual variables.
+    const { disabled, icon, title, onClick } = props;
 
-            // Check if the file size is greater than 1 MB (1,000,000 bytes)
-            if (file.size > 1000000) {
-                toast.error("File size exceeds 1 MB limit!", { autoClose: true });
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = event => {
-                const sdfString = event.target.result;
-                toast.success("SDF file uploaded!", { autoClose: true });
-                this.props.setSdfString(sdfString);
-            };
-            reader.readAsText(file);
-        };
-        fileInput.click();
-    };
-
-    render() {
-        return (
-            <button className="square-button" onClick={this.handleUploadSdfFile} disabled={this.props.isLoading}>
-                <BsFillCloudUploadFill />
-                <span>Upload SDF file</span>
-            </button>
-        );
-    };
-}
-
-class LoadExampleButton extends React.Component {
-    handleLoadExample = () => {
-        this.props.setSdfString(exampleSdfString);
-    };
-
-    render() {
-        return (
-            <button className="square-button" onClick={this.handleLoadExample} disabled={this.props.isLoading}>
-                <BsFillDatabaseFill />
-                <span>Load Penicillin G example</span>
-            </button>
-        );
-    };
-};
-
-const DownloadSvgButton = (props) => {
     return (
-        <button className="square-button" onClick={props.downloadSvgString} disabled={props.isLoading}>
-            <BsFillCloudDownloadFill />
-            <span>Download model as SVG</span>
+        <button className="cinemol-sidebar-button" onClick={onClick} disabled={disabled}>
+            {icon}
+            <span>{title}</span>
         </button>
     );
 };
 
-class ToggleStyleButton extends React.Component {
-    toggleStyle = () => {
-        if (this.props.style === "Space-filling") {
-            this.props.setStyle("Ball-and-stick");
-        } else if (this.props.style === "Ball-and-stick") {
-            this.props.setStyle("Tube");
-        } else if (this.props.style === "Tube") {
-            this.props.setStyle("Wireframe");
-        } else if (this.props.style === "Wireframe") {
-            this.props.setStyle("Space-filling");
-        } else {
-            toast.error("Unknown style!", { autoClose: true });
-            this.props.setStyle("Ball-and-stick");
-        }
-    };
-
-    render() {
-        return (
-            <button className="square-button" onClick={this.toggleStyle} disabled={this.props.isLoading}>
-                <BsBrushFill />
-                <span>Toggle style: {this.props.style}</span>
-            </button>
-        );
-    };
-};
-
-class ToggleLookButton extends React.Component {
-    toggleLook = () => {
-        if (this.props.look === "Cartoon") {
-            this.props.setLook("Glossy");
-        } else if (this.props.look === "Glossy") {
-            this.props.setLook("Cartoon");
-        } else {
-            toast.error("Unknown look!", { autoClose: true });
-            this.props.setLook("Cartoon");
-        }
-    };
-
-    render() {
-        return (
-            <button className="square-button" onClick={this.toggleLook} disabled={this.props.isLoading}>
-                <BsEyeFill />
-                <span>Toggle look: {this.props.look}</span>
-            </button>
-        );
-    };
-};
-
-class IncludeHydrogensButton extends React.Component {
-    toggleIncludeHydrogens = () => {
-        this.props.setIncludeHydrogens(!this.props.includeHydrogens);
-    };
-
-    render() {
-        return (
-            <button className="square-button" onClick={this.toggleIncludeHydrogens} disabled={this.props.isLoading}>
-                <BsDropletFill />
-                <span>Toggle include hydrogens: {this.props.includeHydrogens ? "True" : "False"}</span>
-            </button>
-        );
-    };
-};
-
-class ToggleBackGroundButton extends React.Component {
-    toggleBackground = () => {
-        if (this.props.mode === "light") {
-            this.props.setMode("dark");
-        }  else {
-            this.props.setMode("light");
-        }
-    };
-
-    render() {
-        return (
-            <button className="square-button" onClick={this.toggleBackground} disabled={this.props.isLoading}>
-                <BsCircleHalf />
-                <span>Toggle background: {this.props.mode.charAt(0).toUpperCase() + this.props.mode.slice(1)}</span>
-            </button>
-        );
-    };
-};
-
-
-class OpgenGithubIssuesButton extends React.Component {
-    openNewTab = () => { window.open("https://github.com/moltools/CineMol/issues", "_blank"); };
-  
-    render() {
-        return (
-            <button className="square-button" onClick={this.openNewTab} disabled={this.props.isLoading}>
-                <BsGithub />
-                <span>Open GitHub issues</span>
-            </button>
-        );
-    };
-};
-
-class CounterButton extends React.Component {  
-    handleIncrement = () => {
-        if (this.props.resolution < 100) {
-            this.props.setResolution(this.props.resolution + 5);
-        }
-    };
-  
-    handleDecrement = () => {
-        if (this.props.resolution >= 30) {
-            this.props.setResolution(this.props.resolution - 5);
-        }
-    };
-  
-    render() {
-        return (
-            <div className="increment-container">
-                <div className="increment-container-part-left">
-                    <BsFillLightningFill />
-                    <span className="increment-title">Resolution: {this.props.resolution}</span>
-                </div>
-                <div className="increment-container-part-right">
-                    <button className="increment-button left" onClick={this.handleDecrement} disabled={this.props.isLoading}>{"<"}</button>
-                    <button className="increment-button right" onClick={this.handleIncrement} disabled={this.props.isLoading}>{">"}</button>
-                </div>
-            </div>
-        );
-    };
-};
-
-class RotateXButton extends React.Component {
-    handleIncrement = () => {
-        if (this.props.rotationX < (2 * Math.PI - Math.PI / 12)) {
-            this.props.setRotationX(Math.round((this.props.rotationX + Math.PI / 12) * 10) / 10);
-        }
-    };
-
-    handleDecrement = () => {
-        if (this.props.rotationX >= (0 + Math.PI / 12)) {
-            this.props.setRotationX(Math.round((this.props.rotationX - Math.PI / 12) * 10) / 10);
-        }
-    };
-
-    render() {
-        return (
-            <div className="increment-container">
-                <div className="increment-container-part-left">
-                    <BsGlobe2 />
-                    <span className="increment-title">Rotation X: {this.props.rotationX} rad.</span>
-                </div>
-                <div className="increment-container-part-right">
-                    <button className="increment-button left" onClick={this.handleDecrement} disabled={this.props.isLoading}>{"<"}</button>
-                    <button className="increment-button right" onClick={this.handleIncrement} disabled={this.props.isLoading}>{">"}</button>
-                </div>
-            </div>
-        );
-    };
-};
-
-class RotateYButton extends React.Component {
-    handleIncrement = () => {
-        if (this.props.rotationY < (2 * Math.PI - Math.PI / 12)) {
-            this.props.setRotationY(Math.round((this.props.rotationY + Math.PI / 12) * 10) / 10);
-        }
-    };
-
-    handleDecrement = () => {
-        if (this.props.rotationY >= (0 + Math.PI / 12)) {
-            this.props.setRotationY(Math.round((this.props.rotationY - Math.PI / 12) * 10) / 10);
-        }
-    };
-
-    render() {
-        return (
-            <div className="increment-container">
-                <div className="increment-container-part-left">
-                    <BsGlobe2 />
-                    <span className="increment-title">Rotation Y: {this.props.rotationY} rad.</span>
-                </div>
-                <div className="increment-container-part-right">
-                    <button className="increment-button left" onClick={this.handleDecrement} disabled={this.props.isLoading}>{"<"}</button>
-                    <button className="increment-button right" onClick={this.handleIncrement} disabled={this.props.isLoading}>{">"}</button>
-                </div>
-            </div>
-        );
-    };
-};
-
-class RotateZButton extends React.Component {
-    handleIncrement = () => {
-        if (this.props.rotationZ < (2 * Math.PI - Math.PI / 12)) {
-            this.props.setRotationZ(Math.round((this.props.rotationZ + Math.PI / 12) * 10) / 10);
-        }
-    };
-
-    handleDecrement = () => {
-        if (this.props.rotationZ >= (0 + Math.PI / 12)) {
-            this.props.setRotationZ(Math.round((this.props.rotationZ - Math.PI / 12) * 10) / 10);
-        }
-    };
-
-    render() {
-        return (
-            <div className="increment-container">
-                <div className="increment-container-part-left">
-                    <BsGlobe2 />
-                    <span className="increment-title">Rotation X: {this.props.rotationZ} rad.</span>
-                </div>
-                <div className="increment-container-part-right">
-                    <button className="increment-button left" onClick={this.handleDecrement} disabled={this.props.isLoading} >{"<"}</button>
-                    <button className="increment-button right" onClick={this.handleIncrement} disabled={this.props.isLoading}>{">"}</button>
-                </div>
-            </div>
-        );
-    };
-};
-
-
-// =====================================================================================================================
-// Component for Sidebar.
-// =====================================================================================================================
-
-const Sidebar = props => {    
-    const [sdfString, setSdfString] = useState("");
-    const [style, setStyle] = useState("Space-filling");
-    const [look, setLook] = useState("Glossy");
-    const [initialRender, setInitialRender] = useState(true);
-    const [includeHydrogens, setIncludeHydrogens] = useState(false);
-    const [resolution, setResolution] = useState(50);
-    const [rotationX, setRotationX] = useState(0); // in radians
-    const [rotationY, setRotationY] = useState(0); // in radians
-    const [rotationZ, setRotationZ] = useState(0); // in radians
-    const [viewBox, setViewBox] = useState(undefined);
-
-    const sidebarOpen = <BsChevronDoubleLeft className="cinemol-sidebar-toggle-icon" />;
-    const sidebarClosed = <BsChevronDoubleRight className="cinemol-sidebar-toggle-icon" />;
-    
-    // Send SDF to API and retrieve SVG.
-    const drawModel = () => {
-        
-        // set is loading to true
-        props.setIsLoading(true);
-
-        return new Promise((resolve, reject) => {
-            fetch("/api/draw_model", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    "sdf_string": sdfString,
-                    "style": style,
-                    "look": look,
-                    "include_hydrogens": includeHydrogens,
-                    "resolution": resolution,
-                    "rotation_x": rotationX,
-                    "rotation_y": rotationY,
-                    "rotation_z": rotationZ,
-                    "view_box": viewBox,    
-                })
-            })
-                .then(response => response.json())
-                .then(json => {
-                    resolve(json);
-                    if (json.status === "success") {
-                        props.setSvgString(json.payload.svg_string);
-                        setViewBox(json.payload.view_box);
-                    } else if (json.status === "warning") {
-                        toast.warn(json.message, { autoClose: true });
-                    } else if (json.status === "failure") {
-                        toast.error(json.message, { autoClose: true });
-                    } else {
-                        toast.error("Unknown error!", { autoClose: true });
-                    }
-                    // set is loading to false
-                    props.setIsLoading(false);
-            })
-            .catch(error => {
-                const msg = "Could not parse SDF string!"
-                toast.error(msg, { autoClose: true });
-                console.log(msg)
-                console.log(error);
-                reject(error);
-                // set is loading to false
-                props.setIsLoading(false);
-            });
-        });
-    };
-
-    // useEffect to redraw the model when look or style changes, but skip the initial render.
-    useEffect(() => {
-        if (initialRender) {
-            setInitialRender(false);
-        } else {
-            drawModel();
-        }
-    }, [look, style, includeHydrogens, resolution, rotationX, rotationY, rotationZ, sdfString]);
+/**
+ * SidebarCounter Component
+ *
+ * This component represents a counter with increment and decrement buttons, typically used within the sidebar of the
+ * MolTools application. It provides options for user interaction, displays an icon, title, current value, and allows
+ * users to increment or decrement the value.
+ *
+ * @param {Object} props - The props for the SidebarCounter component.
+ * @param {boolean} props.disabled - Indicates whether the counter buttons are disabled.
+ * @param {JSX.Element} props.icon - The JSX element representing an icon to display.
+ * @param {string} props.title - The title or label to display alongside the icon.
+ * @param {number} props.value - The current value of the counter.
+ * @param {function} props.onIncrement - A function to be called when the increment button is clicked.
+ * @param {function} props.onDecrement - A function to be called when the decrement button is clicked.
+ * @returns {JSX.Element} The rendered SidebarCounter component with icon, title, value, and increment/decrement buttons.
+ */
+const SidebarCounter = (props) => {
+    // Destructure props into individual variables.
+    const { disabled, icon, title, value, onIncrement, onDecrement } = props;
 
     return (
-        <div className={"cinemol-sidebar" + (props.isOpen ? " open" : "")}>
-            <button onClick={props.toggleSidebar} className="cinemol-sidebar-toggle">
-                {props.isOpen ? sidebarOpen : sidebarClosed }
-            </button>
-            <div className="cinemol-sidebar-content">
-                <div className="cinemol-sidebar-version">Version 0.1.0</div>
-                <UploadButton isLoading={props.isLoading} setSdfString={setSdfString} />
-                <DownloadSvgButton isLoading={props.isLoading} downloadSvgString={props.downloadSvgString} />
-                <LoadExampleButton isLoading={props.isLoading} setSdfString={setSdfString} />
-                <ToggleStyleButton isLoading={props.isLoading} style={style} setStyle={setStyle} />
-                <ToggleLookButton isLoading={props.isLoading} look={look} setLook={setLook} />
-                <IncludeHydrogensButton isLoading={props.isLoading} includeHydrogens={includeHydrogens} setIncludeHydrogens={setIncludeHydrogens} />
-                <ToggleBackGroundButton isLoading={props.isLoading} mode={props.mode} setMode={props.setMode} />
-                <OpgenGithubIssuesButton isLoading={props.isLoading} />
-                <CounterButton isLoading={props.isLoading} resolution={resolution} setResolution={setResolution} />
-                <RotateXButton isLoading={props.isLoading} rotationX={rotationX} setRotationX={setRotationX} />
-                <RotateYButton isLoading={props.isLoading} rotationY={rotationY} setRotationY={setRotationY} />
-                <RotateZButton isLoading={props.isLoading} rotationZ={rotationZ} setRotationZ={setRotationZ} />
+        <div className="cinemol-sidebar-counter-container">
+            <div className="cinemol-sidebar-counter-container-part-left">
+                {icon}
+                <span className="cinemol-sidebar-counter-title">{title}: {value}</span>
+            </div>
+            <div className="cinemol-sidebar-counter-container-part-right">
+                <button className="cinemol-sidebar-counter-button left" onClick={onDecrement} disabled={disabled}>{"<"}</button>
+                <button className="cinemol-sidebar-counter-button right" onClick={onIncrement} disabled={disabled}>{">"}</button>
             </div>
         </div>
     );
 };
 
 // =====================================================================================================================
-// Render page.
+// Component for Sidebar.
 // =====================================================================================================================
 
+/**
+ * Sidebar Component
+ *
+ * This component represents the sidebar in the "CineMol" section of the MolTools application. It provides options to
+ * toggle the sidebar, display version information, and render buttons for user interaction.
+ *
+ * @param {Object} props - The props for the Sidebar component.
+ * @param {boolean} props.isOpen - Indicates whether the sidebar is open or closed.
+ * @param {function} props.toggleSidebar - A function to toggle the visibility of the sidebar.
+ * @param {string} props.version - The version information to display.
+ * @param {JSX.Element} props.buttons - Buttons or components for user interaction within the sidebar.
+ * @returns {JSX.Element} The rendered Sidebar component with toggle, version, and buttons.
+ */
+const Sidebar = (props) => {
+    // Destructure props into individual variables.
+    const { isOpen, toggleSidebar, version, buttons } = props;
+
+    return (
+        <div className={"cinemol-sidebar" + (isOpen ? " open" : "")}>
+            {/* Button to toggle the sidebar */}
+            <button onClick={toggleSidebar} className="cinemol-sidebar-toggle">
+                {isOpen ? 
+                    <BsChevronDoubleLeft className="cinemol-sidebar-toggle-icon" />  
+                    : 
+                    <BsChevronDoubleRight className="cinemol-sidebar-toggle-icon" /> 
+                }
+            </button>
+            <div className="cinemol-sidebar-content">
+                {/* Display the version information */}
+                <div className="cinemol-sidebar-version">Version {version}</div>
+                {/* Render buttons or components for user interaction */}
+                {buttons}
+            </div>
+        </div>
+    );
+};
+
+// =====================================================================================================================
+// CineMol component.
+// =====================================================================================================================
+
+/**
+ * CineMol component widget
+ * 
+ * This component represents the "CineMol" section of the MolTools application. It provides options for user interaction
+ * and displays a 3D molecular model.
+ * 
+ * State Variables:
+ * - version: The version of the CineMol component.
+ * - mode: Dark or light background of the molecular model.
+ * - svgString: SVG representation of the molecular model.
+ * - sidebarOpen: Determines if the sidebar is collapsed or not.
+ * - isLoading: App grays out when loading.
+ * - initialRender: Initial render of the molecular model.
+ * - sdfString: SDF string of the molecular model.
+ * - style: Style of the molecular model.
+ * - look: Look of the molecular model.
+ * - includeHydrogens: Include hydrogens in the molecular model.
+ * - resolution: Resolution of the molecular model.
+ * - rotationX: Rotation over the x-axis of the molecular model in radians.
+ * - rotationY: Rotation over the y-axis of the molecular model in radians.
+ * - rotationZ: Rotation over the z-axis of the molecular model in radians.
+ * - viewBox: View box of the molecular model.
+ * 
+ * Side Effects:
+ * - When the component is rendered, the molecular model is drawn.
+ * - When the component is rendered, the version of the CineMol component is retrieved.
+ * - When the component is rendered, the sidebar is collapsed.
+ * 
+ * Usage:
+ * - Include this component in your React application to create a molecule drawing widget.
+ * - Requires the Sidebar, SidebarButton, and SidebarCounter components.
+ * 
+ * @returns {JSX.Element} The rendered CineMol component.
+ */
 const CineMol = () => {
-    const [svgString, setSvgString] = useState("");
-    const [sidebarOpen, setSideBarOpen] = useState(true);
-    const [mode, setMode] = useState("dark");
-    const [isLoading, setIsLoading] = useState(false);
+    // General state variables.
+    const [version, setVersion] = useState("0.0.0");                    // Version of the CineMol component.
+    const [mode, setMode] = useState("dark");                           // Dark or light background of the molecular model.
+    const [svgString, setSvgString] = useState("");                     // SVG representation of the molecular model.
+    const [sidebarOpen, setSideBarOpen] = useState(true);               // Determines if the sidebar is collapsed or not.
+    const [isLoading, setIsLoading] = useState(false);                  // App grays out when loading.
+    const [initialRender, setInitialRender] = useState(true);           // Initial render of the molecular model.
 
-    const handleViewSidebar = () => { 
-        setSideBarOpen(!sidebarOpen); 
-    };
+    // Button state variables.
+    const [sdfString, setSdfString] = useState("");                     // SDF string of the molecular model.
+    const [style, setStyle] = useState("space-filling");                // Style of the molecular model.
+    const [look, setLook] = useState("glossy");                         // Look of the molecular model.
+    const [includeHydrogens, setIncludeHydrogens] = useState(false);    // Include hydrogens in the molecular model.
+    const [resolution, setResolution] = useState(50);                   // Resolution of the molecular model.
+    const [rotationX, setRotationX] = useState(0.0);                    // Rotation over the x-axis of the molecular model in radians.
+    const [rotationY, setRotationY] = useState(0.0);                    // Rotation over the y-axis of the molecular model in radians.
+    const [rotationZ, setRotationZ] = useState(0.0);                    // Rotation over the z-axis of the molecular model in radians.
+    const [viewBox, setViewBox] = useState(undefined);                  // View box of the molecular model.
 
+    /**
+     * Downloads the SVG representation of the molecular model.
+     */
     const handleDownloadSvgString = () => {
         if (svgString.length > 0) {
             const blob = new Blob([svgString], { type: "image/svg+xml" });
@@ -508,27 +295,202 @@ const CineMol = () => {
         }
     };
 
+    /**
+     * Uploads an SDF file and sets the SDF string.
+     */
+    const handleUploadSdfFile = () => {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = ".sdf";
+        fileInput.onchange = event => {
+            const file = event.target.files[0];
+
+            // Check if the file size is greater than 1 MB (1,000,000 bytes).
+            if (file.size > 1000000) {
+                toast.error("File size exceeds 1 MB limit!", { autoClose: true });
+                return;
+            };
+
+            const reader = new FileReader();
+            reader.onload = event => {
+                const sdfString = event.target.result;
+                toast.success("SDF file uploaded!", { autoClose: true });
+                setSdfString(sdfString);
+            };
+            reader.readAsText(file);
+        };
+        fileInput.click();
+    };
+
+    /**
+     * Get the version of the CineMol component.
+     */
+    const handleGetVersion = async () => {
+        try {
+            const response = await fetch("/api/fetch_cinemol_version");
+            
+            if (!response.ok) {
+                throw new Error("Network response was not ok!");
+            };
+
+            const json = await response.json();
+
+            // Unpack response.
+            if (json.status === "success") {
+                setVersion(json.payload.version);
+            } else if (json.status === "warning") {
+                toast.warn(json.message);
+            } else if (json.status === "failure") {
+                toast.error(json.message);
+            };
+
+        } catch (error) {
+            const msg = "Could not retrieve version!";
+            toast.error(msg, { autoClose: true });
+            console.error(error);
+        };
+    };
+
+    /**
+     *  Draw the molecular model. 
+     */
+    const handleDrawModel = async () => {
+        // Set is loading to true, which grays out model and deactivates buttons.
+        setIsLoading(true);
+
+        if (sdfString.length === 0) {
+            // Set is loading to false again.
+            setIsLoading(false);
+            return;
+        };
+    
+        try {
+            const response = await fetch("/api/draw_model", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    "sdf_string": sdfString,
+                    "style": style,
+                    "look": look,
+                    "include_hydrogens": includeHydrogens,
+                    "resolution": resolution,
+                    "rotation_x": rotationX,
+                    "rotation_y": rotationY,
+                    "rotation_z": rotationZ,
+                    "view_box": viewBox,
+                }),
+            });
+    
+            if (!response.ok) {
+                throw new Error("Network response was not ok!");
+            };
+    
+            const json = await response.json();
+            
+            // Unpack response.
+            if (json.status === "success") {
+                setSvgString(json.payload.svg_string);
+                setViewBox(json.payload.view_box);
+            } else if (json.status === "warning") {
+                toast.warn(json.message);
+            } else if (json.status === "failure") {
+                toast.error(json.message);
+            };
+    
+            // Set is loading to false again.
+            setIsLoading(false);
+
+        } catch (error) {
+            const msg = "Could not parse SDF string!";
+            toast.error(msg, { autoClose: true });
+            console.error(error);
+    
+            // Set is loading to false again.
+            setIsLoading(false);
+        };
+    };
+
+    /**
+     * Toggle style.
+     */
+    const handleToggleStyle = () => {
+        if        (style === "space-filling")   { setStyle("ball-and-stick");
+        } else if (style === "ball-and-stick")  { setStyle("tube");
+        } else if (style === "tube")            { setStyle("wireframe");
+        } else if (style === "wireframe")       { setStyle("space-filling");
+        } else                                  { setStyle("ball-and-stick"); }
+    };
+
+    /**
+     * Toggle look.
+     */
+    const handleToggleLook = () => {
+        if        (look === "glossy")   { setLook("cartoon");
+        } else if (look === "cartoon")  { setLook("glossy");
+        } else                          { setLook("cartoon"); }
+    };
+    
+    /**
+     * Toggle background style.
+     */
+    const handleToggleMode = () => {
+        if (mode === "dark") { setMode("light"); } else { setMode("dark"); };
+    };
+
+    /**
+     * Get the version of the CineMol component and skip the first render. When any of the following state variables 
+     * change, the component will re-render and the useEffect hook will run again.
+     */ 
+    useEffect(() => {
+        if (initialRender) {
+            handleGetVersion();
+            setInitialRender(false);
+        } else {
+            handleDrawModel();
+        }
+    }, [sdfString, style, look, includeHydrogens, resolution, rotationX, rotationY, rotationZ]);
+
+    /**
+     * Sidebar buttons.
+     */
+    const buttons = [
+        <SidebarButton disabled={isLoading} icon={<BsFillCloudUploadFill />} title="Upload SDF file" onClick={handleUploadSdfFile} />,
+        <SidebarButton disabled={isLoading} icon={<BsFillCloudDownloadFill />} title="Download model as SVG" onClick={handleDownloadSvgString} />,
+        <SidebarButton disabled={isLoading} icon={<BsFillDatabaseFill />} title="Load example: penicillin G" onClick={ () => setSdfString(exampleSdfString) } />,
+        <SidebarButton disabled={isLoading} icon={<BsBrushFill />} title={`Toggle style: ${style}`}  onClick={handleToggleStyle} />,
+        <SidebarButton disabled={isLoading} icon={<BsEyeFill />} title={`Toggle look: ${look}`}  onClick={handleToggleLook} />,
+        <SidebarButton disabled={isLoading} icon={<BsDropletFill />} title={`Toggle hydrogens: ${includeHydrogens ? "true" : "false"}`} onClick={ () => setIncludeHydrogens(!includeHydrogens) } />,
+        <SidebarButton disabled={isLoading} icon={<BsCircleHalf />} title={`Toggle background: ${mode}`} onClick={handleToggleMode} />,
+        <SidebarButton disabled={isLoading} icon={<BsGithub />} title="Open GitHub issues" onClick={ () => window.open("https://github.com/moltools/CineMol/issues", "_blank") } />,
+        <SidebarCounter disabled={isLoading} icon={<BsFillLightningFill />} title="Resolution" value={resolution} 
+            onIncrement={ () => { if (resolution < 100) { setResolution(resolution + 5) } } } 
+            onDecrement={ () => { if (resolution >= 30) { setResolution(resolution - 5) } } }
+        />,
+        <SidebarCounter disabled={isLoading} icon={<BsGlobe2 />} title="Rotation X (rad)" value={rotationX}
+            onIncrement={ () => { if (rotationX < (2 * Math.PI - Math.PI / 12)) { setRotationX(Math.round((rotationX + Math.PI / 12) * 10) / 10) } } }
+            onDecrement={ () => { if (rotationX >= (0 + Math.PI / 12)) { setRotationX(Math.round((rotationX - Math.PI / 12) * 10) / 10) } } }
+        />,
+        <SidebarCounter disabled={isLoading} icon={<BsGlobe2 />} title="Rotation Y (rad)" value={rotationY}
+            onIncrement={ () => { if (rotationY < (2 * Math.PI - Math.PI / 12)) { setRotationY(Math.round((rotationY + Math.PI / 12) * 10) / 10) } } }
+            onDecrement={ () => { if (rotationY >= (0 + Math.PI / 12)) { setRotationY(Math.round((rotationY - Math.PI / 12) * 10) / 10) } } }
+        />,
+        <SidebarCounter disabled={isLoading} icon={<BsGlobe2 />} title="Rotation Z (rad)" value={rotationZ}
+            onIncrement={ () => { if (rotationZ < (2 * Math.PI - Math.PI / 12)) { setRotationZ(Math.round((rotationZ + Math.PI / 12) * 10) / 10) } } }
+            onDecrement={ () => { if (rotationZ >= (0 + Math.PI / 12)) { setRotationZ(Math.round((rotationZ - Math.PI / 12) * 10) / 10) } } }
+        />,
+    ];
+
     return (
-        <div className="cinemol-container">
-            <Sidebar 
-                isOpen={sidebarOpen} 
-                toggleSidebar={handleViewSidebar} 
-                svgString={svgString}
-                setSvgString={setSvgString} 
-                downloadSvgString={handleDownloadSvgString}
-                mode={mode}
-                setMode={setMode}
-                setIsLoading={setIsLoading}
-                isLoading={isLoading}
-            />
+        <div className="cinemol">
+            {/* Sidebar component for user interaction */}
+            <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSideBarOpen(!sidebarOpen)} version={version} buttons={buttons} />
             <div className={`cinemol-viewer-container ${mode}`}>
+                {/* Display the molecular model */}
                 <div className={`cinemol-viewer ${isLoading ? 'grayed-out' : ''}`} dangerouslySetInnerHTML={{ __html: svgString }} />
-                {/* <div>
-                    <img className="cinemol-viewer" src={`data:image/svg+xml;utf8,${encodeURIComponent(svgString)}`} />
-                </div> */}
-           </div>
+            </div>
         </div>
     );
 };
 
+// Export the CineMol component as the default export.
 export default CineMol;

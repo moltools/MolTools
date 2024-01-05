@@ -42,7 +42,7 @@ def draw_smiles() -> Response:
 
     :param str smiles: The SMILES string.
     :return: The SVG string.
-    :rtype: str
+    :rtype: ResponseData
     """
     # Parse request data.
     data = request.get_json()

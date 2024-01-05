@@ -15,5 +15,5 @@
 }
 
 .header-navbar {
-    margin-left: auto;
+    margin-left: auto; /* Push Navbar to the right. */
 }

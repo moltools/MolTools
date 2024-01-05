@@ -1,5 +1,6 @@
-## [Unreleased] - 2024-01-04
+## [0.1.0] - 2024-01-05
 
 ### Added
 
-- Setup basic layout of app.
+- Alpha version of CineMol (0.1.0).
+- Demo version of Biosynfoni (unreleased).

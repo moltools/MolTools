@@ -1,8 +1,16 @@
-# Getting started
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
+[![Maintainer](https://img.shields.io/badge/Maintainer-davidmeijer-blue)](https://github.com/davidmeijer)
+[![Generic badge](https://img.shields.io/badge/Version-alpha-green.svg)](https://shields.io/)
+
+# MolTools
+
+<img src="./logo.png" alt="logo" width="100">
+
+MolTools is a web-based toolbelt for visualizing and analyzing natural product compounds.
 
 :warning: **This app is still under development!** :warning:
 
-## Run locally
+## Run locally for development
 
 ### Server
 
@@ -41,3 +49,13 @@ npm start
 ```
 
 Visit `http://localhost:3000/` to view the app.
+
+## Run with Docker
+
+Run the following script to build and run the app in Docker:
+
+```bash
+run_docker.sh <api_port> <client_port> -d
+```
+
+The app will be available at `http://localhost:<client_port>/`.

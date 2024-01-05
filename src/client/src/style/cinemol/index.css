@@ -1,4 +1,16 @@
-.cinemol-container {
+/* =====================================================================================================================
+   Main container
+===================================================================================================================== */
+
+.cinemol {
+    height: 100%;
+}
+
+/* =====================================================================================================================
+    Viewer container
+===================================================================================================================== */
+
+.cinemol-viewer-container {
     height: 100%;
 }
 
@@ -11,7 +23,25 @@
 .cinemol-viewer-container.dark {
     background-color: #333333; /* Dark background color */
 }
-  
+
+/* =====================================================================================================================
+   Viewer
+===================================================================================================================== */
+
+.cinemol-viewer-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cinemol-viewer {
+    width: 50%;
+}
+
+.grayed-out {
+    filter: grayscale(100%);
+    opacity: 0.5; /* You can adjust the opacity value to control the level of gray-out effect */
+} 
 
 /* =====================================================================================================================
    Sidebar
@@ -35,7 +65,7 @@
     position: absolute;
     top: 55%;
     right: -30px;
-    height: 30px;
+    height: 50px;
     width: 30px;
     z-index: 1;
     border-top-right-radius: 10px;
@@ -81,7 +111,11 @@
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.square-button {
+/* =====================================================================================================================
+    Sidebar button
+===================================================================================================================== */
+
+.cinemol-sidebar-button {
     width: 100%; 
     height: 50px;
     padding: 10px;
@@ -94,20 +128,24 @@
     transition: background-color 0.3s ease;
 }
 
-.square-button:hover {
+.cinemol-sidebar-button:hover {
     background-color: white;
 }
 
-.square-button:active {
+.cinemol-sidebar-button:active {
     background-color: #2f6eb5;
     transform: translateY(2px);
 }
 
-.square-button span {
+.cinemol-sidebar-button span {
     margin-left: 10px;
 }
 
-.increment-container {
+/* =====================================================================================================================
+    Sidebar counter
+===================================================================================================================== */
+
+.cinemol-sidebar-counter-container {
     width: calc(100% - 20px);
     font-family: Arial, Helvetica, sans-serif;
     height: 30px;
@@ -117,17 +155,17 @@
     display: flex;
     align-items: center;
     background-color: #efefef;
-    font-size: 14px;
+    font-size: 13px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
-.increment-title {
+.cinemol-sidebar-counter-title {
     padding-left: 10px;
 }
 
-.increment-button {
+.cinemol-sidebar-counter-button {
     height: 20px;
     width: 25px;
     border: none;
@@ -135,50 +173,30 @@
     transition: background-color 0.3s ease;
 }
 
-.increment-button.left {
+.cinemol-sidebar-counter-button.left {
     border-top-left-radius: 10px;
     border-bottom-left-radius: 10px;
     background-color: #2f6eb5;
 }
 
-.increment-button.left:hover {
+.cinemol-sidebar-counter-button.left:hover {
     background-color: #2f5eb5;
 }
 
-.increment-button.left:active {
+.cinemol-sidebar-counter-button.left:active {
     transform: translateY(0.5px);
 }
 
-.increment-button.right {
+.cinemol-sidebar-counter-button.right {
     border-top-right-radius: 10px;
     border-bottom-right-radius: 10px;
     background-color: #d13f3f;
 }
 
-.increment-button.right:hover {
+.cinemol-sidebar-counter-button.right:hover {
     background-color: #b52f3f;
 }
 
-.increment-button.right:active {
+.cinemol-sidebar-counter-button.right:active {
     transform: translateY(0.5px);
-}
-
-/* =====================================================================================================================
-   Viewer
-===================================================================================================================== */
-
-.cinemol-viewer-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100%;
-}
-
-.cinemol-viewer {
-    width: 75%;
-}
-
-.grayed-out {
-    filter: grayscale(100%);
-    opacity: 0.5; /* You can adjust the opacity value to control the level of gray-out effect */
 }

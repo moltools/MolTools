@@ -13,7 +13,7 @@ def predict_biosynthetic_class() -> Response:
 
     :param str smiles: The SMILES string.
     :return: The predicted biosynthetic classes with their probabilities.
-    :rtype: ty.Dict[str, float]
+    :rtype: ResponseData
     """
     # Parse request data.
     data = request.get_json()
