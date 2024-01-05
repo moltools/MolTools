@@ -1,7 +1,7 @@
 .header {
     padding: var(--default-padding);
-    height: calc(var(--header-height));
-    background-color: var(--color1);
+    height: (var(--header-height));
+    background-color: white;
     box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
 
     /* Header should always be on top of app content. */
@@ -12,17 +12,6 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.header-logo img {
-    height: calc(var(--header-height));
-    width: auto;
-}
-
-.header-title {
-    display: flex;
-    font-size: 25px;
-    margin-left: 10px;
 }
 
 .header-navbar {

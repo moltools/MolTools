@@ -2,7 +2,8 @@ import React from "react";
 
 const MechaMol = () => {
     return (
-        <div>
+        <div className="mechamol-container">
+            Under construction
         </div>
     );
 };

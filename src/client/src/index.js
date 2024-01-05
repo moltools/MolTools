@@ -24,25 +24,25 @@ import Comet from "./pages/comet";
 // Define widgets which will be displayed as tiles on the home page.
 const tilesData = [
     {
-        name: "RetroMol",
-        icon: "widgets/icon_retromol.svg",
-        color: "#F5C900",
-        description: "Under construction",
-        path: "/retromol"
-    },
-    {
         name: "CineMol",
         icon: "widgets/icon_cinemol.svg",
         color: "#2f6eb5",
-        description: "Under construction",
+        description: "Alpha version",
         path: "/cinemol"
     },
     {
         name: "Biosynfoni",
         icon: "widgets/icon_biosynfoni.svg",
         color: "#7B9204",
-        description: "Under construction",
+        description: "Demo version",
         path: "/biosynfoni"
+    },
+    {
+        name: "RetroMol",
+        icon: "widgets/icon_retromol.svg",
+        color: "#F5C900",
+        description: "Under construction",
+        path: "/retromol"
     },
     {
         name: "MechaMol",
@@ -115,12 +115,12 @@ function App () {
                     toast.success("API is available!");
                 } else {
                     console.log(data);
-                    toast.error("API is unavailable!");
+                    toast.error("API is unavailable!", { autoClose: false });
                 };
             })
             .catch(error => {
                 console.log(error);
-                toast.error("API is unavailable!");
+                toast.error("API is unavailable!", { autoClose: false });
             });
     }, []);
 

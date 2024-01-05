@@ -9,7 +9,11 @@
 @import "home/home.css";
 @import "about/about.css";
 @import "changelog/changelog.css";
+@import "retromol/retromol.css";
+@import "cinemol/cinemol.css";
 @import "biosynfoni/biosynfoni.css";
+@import "mechamol/mechamol.css";
+@import "comet/comet.css";
 
 * {
     font-family: "Arial", sans-serif;

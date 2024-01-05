@@ -2,7 +2,8 @@ import React from "react";
 
 const Comet = () => {
     return (
-        <div>
+        <div className="comet-container">
+            Under construction.
         </div>
     );
 };
