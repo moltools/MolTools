@@ -111,6 +111,13 @@ class UploadButton extends React.Component {
         fileInput.accept = ".sdf";
         fileInput.onchange = event => {
             const file = event.target.files[0];
+
+            // Check if the file size is greater than 1 MB (1,000,000 bytes)
+            if (file.size > 1000000) {
+                toast.error("File size exceeds 1 MB limit!", { autoClose: true });
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = event => {
                 const sdfString = event.target.result;
@@ -375,14 +382,15 @@ class RotateZButton extends React.Component {
 
 const Sidebar = props => {    
     const [sdfString, setSdfString] = useState("");
-    const [style, setStyle] = useState("Ball-and-stick");
-    const [look, setLook] = useState("Cartoon");
+    const [style, setStyle] = useState("Space-filling");
+    const [look, setLook] = useState("Glossy");
     const [initialRender, setInitialRender] = useState(true);
     const [includeHydrogens, setIncludeHydrogens] = useState(false);
-    const [resolution, setResolution] = useState(25);
+    const [resolution, setResolution] = useState(50);
     const [rotationX, setRotationX] = useState(0); // in radians
     const [rotationY, setRotationY] = useState(0); // in radians
     const [rotationZ, setRotationZ] = useState(0); // in radians
+    const [viewBox, setViewBox] = useState(undefined);
 
     const sidebarOpen = <BsChevronDoubleLeft className="cinemol-sidebar-toggle-icon" />;
     const sidebarClosed = <BsChevronDoubleRight className="cinemol-sidebar-toggle-icon" />;
@@ -405,7 +413,8 @@ const Sidebar = props => {
                     "resolution": resolution,
                     "rotation_x": rotationX,
                     "rotation_y": rotationY,
-                    "rotation_z": rotationZ
+                    "rotation_z": rotationZ,
+                    "view_box": viewBox,    
                 })
             })
                 .then(response => response.json())
@@ -413,6 +422,7 @@ const Sidebar = props => {
                     resolve(json);
                     if (json.status === "success") {
                         props.setSvgString(json.payload.svg_string);
+                        setViewBox(json.payload.view_box);
                     } else if (json.status === "warning") {
                         toast.warn(json.message, { autoClose: true });
                     } else if (json.status === "failure") {

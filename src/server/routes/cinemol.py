@@ -1,7 +1,8 @@
 import typing as ty
 
+from cinemol.svg import Polygon2D, Line2D, Svg, ViewBox
 from cinemol.geometry import Point3D, Line3D, Sphere, Cylinder, CylinderCapType, get_perpendicular_lines
-from cinemol.style import Color, Cartoon, Glossy, CoreyPaulingKoltungAtomColor as CPK, PubChemAtomRadius
+from cinemol.style import Fill, Color, Cartoon, Glossy, CoreyPaulingKoltungAtomColor as CPK, PubChemAtomRadius
 from cinemol.model import ModelCylinder, ModelSphere, ModelWire, Scene 
 from cinemol.parsers import parse_sdf
 from cinemol.chemistry import Atom, Bond, Style, Look
@@ -20,8 +21,9 @@ def draw_molecule(
     rotation_over_z_axis: float = 0.0,
     verbose: bool = False,
     scale: float = 1.0,
-    focal_length: float = 1.0
-) -> str:
+    focal_length: float = 1.0,
+    view_box: ty.Optional[ViewBox] = None
+) -> ty.Tuple[Svg, ty.List[Fill], ty.List[ty.Union[Polygon2D, Line2D]]]:
     """
     Draw a molecule using the given atoms and bonds.
     
@@ -36,8 +38,9 @@ def draw_molecule(
     :param bool verbose: Whether to print verbose output.
     :param float scale: The scale of the model and viewbox.
     :param float focal_length: The focal length of the camera.
-    :return: The drawn molecule as an SVG string.
-    :rtype: str
+    :param ty.Optional[ViewBox] view_box: The view box of the model.
+    :return: The SVG, fills, and objects.   
+    :rtype: ty.Tuple[Svg, ty.List[Fill], ty.List[ty.Union[Polygon2D, Line2D]]]
     """
     scene = Scene()
     scene.nodes = []
@@ -229,7 +232,9 @@ def draw_molecule(
         calculate_cylinder_sphere_intersections=calculate_cylinder_sphere_intersections,
         calculate_cylinder_cylinder_intersections=calculate_cylinder_cylinder_intersections,
         scale=scale,
-        focal_length=focal_length
+        focal_length=focal_length,
+        view_box=view_box,
+        return_as_objects=True
     )
 
 blueprint_draw_model = Blueprint("draw_model", __name__)
@@ -266,6 +271,15 @@ def draw_model() -> Response:
     rotation_x = float(data.get("rotation_x", 0.0))
     rotation_y = float(data.get("rotation_y", 0.0))
     rotation_z = float(data.get("rotation_z", 0.0))
+
+    view_box = data.get("view_box", None)
+    if view_box is not None:
+        view_box = ViewBox(
+            float(view_box["min_x"]), 
+            float(view_box["min_y"]), 
+            float(view_box["width"]), 
+            float(view_box["height"])
+        )
     
     # Draw molecule.
     if sdf_str is None:
@@ -290,7 +304,7 @@ def draw_model() -> Response:
                         
                 atoms, bonds = filtered_atoms, filtered_bonds
 
-            svg_str = draw_molecule(
+            svg, fills, objects = draw_molecule(
                 atoms, 
                 bonds, 
                 style, 
@@ -300,11 +314,15 @@ def draw_model() -> Response:
                 focal_length=100.0,
                 rotation_over_x_axis=rotation_x,
                 rotation_over_y_axis=rotation_y,
-                rotation_over_z_axis=rotation_z
+                rotation_over_z_axis=rotation_z,
+                view_box=view_box
             )
             
+            svg_str = svg.to_svg(fills, objects)
+            vb = svg.view_box
+
             # Return the SVG string.
-            payload = {"svg_string": svg_str}
+            payload = {"svg_string": svg_str, "view_box": {"min_x": vb.min_x, "min_y": vb.min_y, "width": vb.width, "height": vb.height}}
 
             return ResponseData(Status.Success, payload).to_dict()
         

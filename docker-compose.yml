@@ -1,0 +1,18 @@
+version: "3.3"
+services:
+  api:
+    build:
+      context: . 
+      dockerfile: Dockerfile.server
+    image: moltools-server
+    environment:
+      - "SERVER_PORT=${SERVER_PORT}"
+  client:
+    build: 
+      context: . 
+      dockerfile: Dockerfile.client 
+      args:
+        - SERVER_PORT=${SERVER_PORT}
+    image: moltools-client
+    ports:
+      - "${CLIENT_PORT}:80"
