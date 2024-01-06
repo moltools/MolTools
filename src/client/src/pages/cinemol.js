@@ -548,7 +548,6 @@ const CineMol = () => {
         <SidebarButton key={5} disabled={isLoading} icon={<BsEyeFill />} title={`Toggle look: ${look}`}  onClick={handleToggleLook} />,
         <SidebarButton key={6} disabled={isLoading} icon={<BsDropletFill />} title={`Toggle hydrogens: ${includeHydrogens ? "true" : "false"}`} onClick={ () => setIncludeHydrogens(!includeHydrogens) } />,
         <SidebarButton key={7} disabled={isLoading} icon={<BsCircleHalf />} title={`Toggle background: ${mode}`} onClick={handleToggleMode} />,
-        <SidebarButton key={8} disabled={isLoading} icon={<BsGithub />} title="Open GitHub issues" onClick={ () => window.open("https://github.com/moltools/CineMol/issues", "_blank") } />,
         <SidebarCounter key={9} disabled={isLoading} icon={<BsFillLightningFill />} title="Resolution" value={resolution} 
             onIncrement={ () => { if (resolution < 100) { setResolution(resolution + 5) } } } 
             onDecrement={ () => { if (resolution >= 30) { setResolution(resolution - 5) } } }
@@ -557,6 +556,7 @@ const CineMol = () => {
         <RotationCounter key={11} title="Rotation Y (rad)" isLoading={isLoading} rotation={rotationY} setRotation={setRotationY}/>,
         <RotationCounter key={12} title="Rotation Z (rad)" isLoading={isLoading} rotation={rotationZ} setRotation={setRotationZ}/>,
         <SidebarButton key={13} disabled={isLoading} icon={<BsArrowRepeat />} title="Reset" onClick={handleReset} />,
+        <SidebarButton key={8} disabled={isLoading} icon={<BsGithub />} title="Open GitHub issues" onClick={ () => window.open("https://github.com/moltools/CineMol/issues", "_blank") } />,
     ];
 
     return (
