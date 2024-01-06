@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { 
+    BsArrowRepeat,
     BsBrushFill, 
     BsChevronDoubleLeft, 
     BsChevronDoubleRight, 
@@ -176,6 +177,63 @@ const SidebarCounter = (props) => {
         </div>
     );
 };
+
+/**
+ * RotationCounter Component
+ * 
+ * This component represents a counter with increment and decrement buttons, typically used within the sidebar of the
+ * MolTools application. It provides options for user interaction, displays an icon, title, current value, and allows
+ * users to increment or decrement the value.
+ * 
+ * @param {Object} props - The props for the RotationCounter component.
+ * @param {string} props.title - The title or label to display alongside the icon.
+ * @param {boolean} props.isLoading - Indicates whether the counter buttons are disabled.
+ * @param {number} props.rotation - The current value of the counter.
+ * @param {function} props.setRotation - A function to be called when the increment button is clicked.
+ * @returns {JSX.Element} The rendered RotationCounter component with icon, title, value, and increment/decrement buttons.
+ */
+const RotationCounter = (props) => {
+    // Destructure props into individual variables.
+    const { title, isLoading, rotation, setRotation } = props;
+
+    // Maximum rotation is 2 * pi - pi / 12.
+    const maxRotation = 2 * Math.PI - Math.PI / 12;
+    
+    /**
+     * Increment the rotation.
+     */
+    const handleIncrement = () => {
+        const incrementedValue = rotation + Math.PI / 12;
+        setRotation(() =>
+            incrementedValue <= maxRotation
+            ? Math.round(incrementedValue * 10) / 10
+            : Math.round((incrementedValue % maxRotation) * 10) / 10
+        );
+    };
+    
+    /**
+     * Decrement the rotation.
+     */
+    const handleDecrement = () => {
+        const decrementedValue = rotation - Math.PI / 12;
+        setRotation(() =>
+            decrementedValue >= 0
+            ? Math.round(decrementedValue * 10) / 10
+            : Math.round((maxRotation + decrementedValue) * 10) / 10
+        );
+    };
+  
+    return (
+        <SidebarCounter
+            disabled={isLoading}
+            icon={<BsGlobe2 />}
+            title={title}
+            value={rotation}
+            onIncrement={handleIncrement}
+            onDecrement={handleDecrement}
+        />
+    );
+};    
 
 // =====================================================================================================================
 // Component for Sidebar.
@@ -438,6 +496,23 @@ const CineMol = () => {
     };
 
     /**
+     * Reset the state variables.
+     */
+    const handleReset = () => {
+        setMode("dark");
+        setSvgString("");
+        setSdfString("");
+        setStyle("space-filling");
+        setLook("glossy");
+        setIncludeHydrogens(false);
+        setResolution(50);
+        setRotationX(0.0);
+        setRotationY(0.0);
+        setRotationZ(0.0);
+        setViewBox(undefined);
+    };
+
+    /**
      * Get the version of the CineMol component and skip the first render. When any of the following state variables 
      * change, the component will re-render and the useEffect hook will run again.
      */ 
@@ -466,18 +541,10 @@ const CineMol = () => {
             onIncrement={ () => { if (resolution < 100) { setResolution(resolution + 5) } } } 
             onDecrement={ () => { if (resolution >= 30) { setResolution(resolution - 5) } } }
         />,
-        <SidebarCounter disabled={isLoading} icon={<BsGlobe2 />} title="Rotation X (rad)" value={rotationX}
-            onIncrement={ () => { if (rotationX < (2 * Math.PI - Math.PI / 12)) { setRotationX(Math.round((rotationX + Math.PI / 12) * 10) / 10) } } }
-            onDecrement={ () => { if (rotationX >= (0 + Math.PI / 12)) { setRotationX(Math.round((rotationX - Math.PI / 12) * 10) / 10) } } }
-        />,
-        <SidebarCounter disabled={isLoading} icon={<BsGlobe2 />} title="Rotation Y (rad)" value={rotationY}
-            onIncrement={ () => { if (rotationY < (2 * Math.PI - Math.PI / 12)) { setRotationY(Math.round((rotationY + Math.PI / 12) * 10) / 10) } } }
-            onDecrement={ () => { if (rotationY >= (0 + Math.PI / 12)) { setRotationY(Math.round((rotationY - Math.PI / 12) * 10) / 10) } } }
-        />,
-        <SidebarCounter disabled={isLoading} icon={<BsGlobe2 />} title="Rotation Z (rad)" value={rotationZ}
-            onIncrement={ () => { if (rotationZ < (2 * Math.PI - Math.PI / 12)) { setRotationZ(Math.round((rotationZ + Math.PI / 12) * 10) / 10) } } }
-            onDecrement={ () => { if (rotationZ >= (0 + Math.PI / 12)) { setRotationZ(Math.round((rotationZ - Math.PI / 12) * 10) / 10) } } }
-        />,
+        <RotationCounter title="Rotation X (rad)" isLoading={isLoading} rotation={rotationX} setRotation={setRotationX}/>,
+        <RotationCounter title="Rotation Y (rad)" isLoading={isLoading} rotation={rotationY} setRotation={setRotationY}/>,
+        <RotationCounter title="Rotation Z (rad)" isLoading={isLoading} rotation={rotationZ} setRotation={setRotationZ}/>,
+        <SidebarButton disabled={isLoading} icon={<BsArrowRepeat />} title="Reset" onClick={handleReset} />,
     ];
 
     return (
