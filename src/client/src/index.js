@@ -49,7 +49,7 @@ const tilesData = [
  * @returns {object} - Object containing the route display names.
  */
 const routeDisplayNames = {
-    "/": "Home",
+    "/": "MolTools",
     "/about": "About",
     "/changelog": "Changelog",
     "/retromol": "RetroMol",
