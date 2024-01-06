@@ -116,12 +116,18 @@ const PredictionView = (props) => {
         width: 500,
         height: 350,
         xaxis: {
-            title: "Probability",
+            title: {
+                text: "Probability",
+                standoff: 20,
+                font: { size: 14, family: "HelveticaNeue-Light" }
+            },
             range: [0, 1.1],
-            tickformat: ",.0",
+            tickformat: ",.1",
+            hoverformat: ",.3",
             automargin: true,
             titlefont: { size: 14, family: "HelveticaNeue-Light" },
-            tickfont: { size: 12, family: "HelveticaNeue-Light" }
+            tickfont: { size: 12, family: "HelveticaNeue-Light" },
+            ticklen: 10
         },
         yaxis: {
             range: [-1, 5],
@@ -163,7 +169,6 @@ const PredictionView = (props) => {
  * - predictions: Predictions related to the molecule's biosynthetic class.
  * 
  * Side Effects:
- * - Displays a warning toast message when the page loads.
  * - Calls the 'drawSmiles' function to fetch and update 'svgString' when 'smiles' changes.
  * - Calls the 'getPredictions' function to fetch and update 'predictions' when 'smiles' changes.
  * - Displays toast messages for success, error, or warning messages from the backend.
@@ -178,11 +183,6 @@ const Biosynfoni = () => {
     const [smiles, setSmiles] = useState("");
     const [svgString, setSvgString] = useState("");
     const [predictions, setPredictions] = useState({});
-
-    // Send toast on page load.
-    React.useEffect(() => {
-        toast.warn("This is a demo page!", { autoClose: false });
-    }, []);
 
     // Send smiles to backend and receive svgString of drawn molecule.
     const drawSmiles = async () => {
