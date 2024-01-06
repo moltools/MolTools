@@ -8,7 +8,7 @@
 
 MolTools is a web-based toolbelt for visualizing and analyzing natural product compounds.
 
-:warning: **This app is still under development!** :warning:
+Visit the MolTools toolbelt [here](https://moltools.bioinformatics.nl/).
 
 ## Run locally for development
 
