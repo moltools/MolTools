@@ -97,24 +97,16 @@ function AppRoutes () {
 };
 
 function App () {
+    const [apiOk, setApiOk] = useState(false);
+
     /**
      * Check if the API is available.
      */
     useEffect(() => {
         fetch("/api/ping_server")
             .then(response => response.json())
-            .then(data => {
-                if (data.status === "success") {
-                    toast.success("API is available!");
-                } else {
-                    console.log(data);
-                    toast.error("API is unavailable!", { autoClose: false });
-                };
-            })
-            .catch(error => {
-                console.log(error);
-                toast.error("API is unavailable!", { autoClose: false });
-            });
+            .then(data => { if (data.status === "success") { setApiOk(true); }; })
+            .catch(error => { console.log(error); });
     }, []);
 
     /**
@@ -125,6 +117,7 @@ function App () {
             <BrowserRouter>
                 <Header 
                     routeDisplayNames={routeDisplayNames}
+                    apiOk={apiOk}
                     navbarLinks={[
                         { name: "Home", path: "/" },
                         { name: "About", path: "/about" },

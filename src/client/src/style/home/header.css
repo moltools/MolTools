@@ -17,3 +17,20 @@
 .header-navbar {
     margin-left: auto; /* Push Navbar to the right. */
 }
+
+.api-status {
+    margin-left: 20px;
+    padding: 5px 10px;
+    transition: background-color 0.2s ease-in-out;
+    border-radius: 15px;
+    color: white;
+    opacity: 0.8;
+}
+
+.api-status.ok {
+    background-color: green;
+}
+
+.api-status.not-ok {
+    background-color: red;
+}

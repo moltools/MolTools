@@ -11,7 +11,7 @@ import Navbar from "./Navbar";
  */
 const Header = (props) => {
     // Destructure the props.
-    const { routeDisplayNames, navbarLinks } = props;
+    const { routeDisplayNames, navbarLinks, apiOk } = props;
 
     // Get the current location using the useLocation hook from react-router-dom.
     const location = useLocation();
@@ -29,6 +29,9 @@ const Header = (props) => {
             <div className="header-navbar">
                 {/* Render the Navbar component with the provided links */}
                 <Navbar links={navbarLinks} />
+            </div>
+            <div className={`api-status ${apiOk ? "ok" : "not-ok"}`}>
+                API
             </div>
         </header>
     );
