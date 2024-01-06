@@ -47,6 +47,8 @@ def predict_biosynthetic_class() -> Response:
             }
             payload = {"predictions": predictions}
 
+            print(predictions)
+
             msg = "Successfully predicted biosynthetic class!"
             return ResponseData(Status.Success, payload, msg).to_dict()
         

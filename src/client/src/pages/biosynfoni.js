@@ -89,8 +89,8 @@ const SmilesInput = (props) => {
 const PredictionView = (props) => {
     // Parse predictions into Plotly format. Only keep the top 5 predictions and sort from highest to lowest probability.
     const predictions = props.predictions;
-    const sortedPredictions = Object.keys(predictions).sort((a, b) => predictions[a] - predictions[b]);
-    const topPredictions = sortedPredictions.slice(0, 5);
+    const sortedPredictions = Object.keys(predictions).sort((a, b) => predictions[b] - predictions[a]);
+    const topPredictions = sortedPredictions.slice(0, 5).reverse();
     const topProbabilities = topPredictions.map((prediction) => predictions[prediction]);
 
     // Format keys to have a maximum of 10 characters. If longer, truncate and add "...".
