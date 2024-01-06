@@ -48,6 +48,15 @@ def draw_model() -> Response:
             float(view_box["width"]), 
             float(view_box["height"])
         )
+
+    # Get window size.
+    width = data.get("width", None)
+    height = data.get("height", None)
+
+    if width is not None and height is not None:
+        window = (int(width), int(height))
+    else:
+        window = None
     
     # Draw molecule.
     if sdf_str is None:
@@ -66,6 +75,7 @@ def draw_model() -> Response:
                 style=style, 
                 look=look,
                 resolution=resolution,
+                window=window,
                 view_box=view_box,
                 rotation_over_x_axis=rotation_x,
                 rotation_over_y_axis=rotation_y,
@@ -75,8 +85,6 @@ def draw_model() -> Response:
                 exclude_atoms=None if include_hydrogens else ["H"],
                 verbose=False
             )
-
-            print(svg)
             
             svg_str = svg.to_svg()
             vb = svg.view_box 

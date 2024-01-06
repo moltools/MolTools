@@ -416,6 +416,16 @@ const CineMol = () => {
         // Set is loading to true, which grays out model and deactivates buttons.
         setIsLoading(true);
 
+        // Get dimensions parent container.
+        const container = document.querySelector(".cinemol-viewer-container");
+        var sidebarWidth = 0;
+        if (sidebarOpen) {
+            const sidebar = document.querySelector(".cinemol-sidebar");
+            sidebarWidth = sidebar.clientWidth;
+        };
+        const width = container.clientWidth - sidebarWidth - 5; // Add small margin to prevent horizontal scrollbar.
+        const height = container.clientHeight - 5; // Add small margin to prevent vertical scrollbar.
+
         if (sdfString.length === 0) {
             // Set is loading to false again.
             setIsLoading(false);
@@ -436,6 +446,8 @@ const CineMol = () => {
                     "rotation_y": rotationY,
                     "rotation_z": rotationZ,
                     "view_box": viewBox,
+                    "width": width,
+                    "height": height,
                 }),
             });
     
@@ -529,22 +541,22 @@ const CineMol = () => {
      * Sidebar buttons.
      */
     const buttons = [
-        <SidebarButton disabled={isLoading} icon={<BsFillCloudUploadFill />} title="Upload SDF file" onClick={handleUploadSdfFile} />,
-        <SidebarButton disabled={isLoading} icon={<BsFillCloudDownloadFill />} title="Download model as SVG" onClick={handleDownloadSvgString} />,
-        <SidebarButton disabled={isLoading} icon={<BsFillDatabaseFill />} title="Load example: penicillin G" onClick={ () => setSdfString(exampleSdfString) } />,
-        <SidebarButton disabled={isLoading} icon={<BsBrushFill />} title={`Toggle style: ${style}`}  onClick={handleToggleStyle} />,
-        <SidebarButton disabled={isLoading} icon={<BsEyeFill />} title={`Toggle look: ${look}`}  onClick={handleToggleLook} />,
-        <SidebarButton disabled={isLoading} icon={<BsDropletFill />} title={`Toggle hydrogens: ${includeHydrogens ? "true" : "false"}`} onClick={ () => setIncludeHydrogens(!includeHydrogens) } />,
-        <SidebarButton disabled={isLoading} icon={<BsCircleHalf />} title={`Toggle background: ${mode}`} onClick={handleToggleMode} />,
-        <SidebarButton disabled={isLoading} icon={<BsGithub />} title="Open GitHub issues" onClick={ () => window.open("https://github.com/moltools/CineMol/issues", "_blank") } />,
-        <SidebarCounter disabled={isLoading} icon={<BsFillLightningFill />} title="Resolution" value={resolution} 
+        <SidebarButton key={1} disabled={isLoading} icon={<BsFillCloudUploadFill />} title="Upload SDF file" onClick={handleUploadSdfFile} />,
+        <SidebarButton key={2} disabled={isLoading} icon={<BsFillCloudDownloadFill />} title="Download model as SVG" onClick={handleDownloadSvgString} />,
+        <SidebarButton key={3} disabled={isLoading} icon={<BsFillDatabaseFill />} title="Load example: penicillin G" onClick={ () => setSdfString(exampleSdfString) } />,
+        <SidebarButton key={4} disabled={isLoading} icon={<BsBrushFill />} title={`Toggle style: ${style}`}  onClick={handleToggleStyle} />,
+        <SidebarButton key={5} disabled={isLoading} icon={<BsEyeFill />} title={`Toggle look: ${look}`}  onClick={handleToggleLook} />,
+        <SidebarButton key={6} disabled={isLoading} icon={<BsDropletFill />} title={`Toggle hydrogens: ${includeHydrogens ? "true" : "false"}`} onClick={ () => setIncludeHydrogens(!includeHydrogens) } />,
+        <SidebarButton key={7} disabled={isLoading} icon={<BsCircleHalf />} title={`Toggle background: ${mode}`} onClick={handleToggleMode} />,
+        <SidebarButton key={8} disabled={isLoading} icon={<BsGithub />} title="Open GitHub issues" onClick={ () => window.open("https://github.com/moltools/CineMol/issues", "_blank") } />,
+        <SidebarCounter key={9} disabled={isLoading} icon={<BsFillLightningFill />} title="Resolution" value={resolution} 
             onIncrement={ () => { if (resolution < 100) { setResolution(resolution + 5) } } } 
             onDecrement={ () => { if (resolution >= 30) { setResolution(resolution - 5) } } }
         />,
-        <RotationCounter title="Rotation X (rad)" isLoading={isLoading} rotation={rotationX} setRotation={setRotationX}/>,
-        <RotationCounter title="Rotation Y (rad)" isLoading={isLoading} rotation={rotationY} setRotation={setRotationY}/>,
-        <RotationCounter title="Rotation Z (rad)" isLoading={isLoading} rotation={rotationZ} setRotation={setRotationZ}/>,
-        <SidebarButton disabled={isLoading} icon={<BsArrowRepeat />} title="Reset" onClick={handleReset} />,
+        <RotationCounter key={10} title="Rotation X (rad)" isLoading={isLoading} rotation={rotationX} setRotation={setRotationX}/>,
+        <RotationCounter key={11} title="Rotation Y (rad)" isLoading={isLoading} rotation={rotationY} setRotation={setRotationY}/>,
+        <RotationCounter key={12} title="Rotation Z (rad)" isLoading={isLoading} rotation={rotationZ} setRotation={setRotationZ}/>,
+        <SidebarButton key={13} disabled={isLoading} icon={<BsArrowRepeat />} title="Reset" onClick={handleReset} />,
     ];
 
     return (
