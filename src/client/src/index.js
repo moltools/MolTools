@@ -33,7 +33,7 @@ import Comet from "./pages/comet";
  * @returns {object} - Object containing the widget data.
  */
 const tilesData = [
-    { name: "CineMol", icon: "widgets/icon_cinemol.svg", color: "#2f6eb5", description: "Alpha version", path: "/cinemol" },
+    { name: "CineMol", icon: "widgets/icon_cinemol.svg", color: "#2f6eb5", description: "Draw 3D molecule models", path: "/cinemol" },
     { name: "Biosynfoni", icon: "widgets/icon_biosynfoni.svg", color: "#7B9204", description: "Demo version", path: "/biosynfoni" },
     { name: "RetroMol", icon: "widgets/icon_retromol.svg", color: "#F5C900", description: "Under construction", path: "/retromol" },
     { name: "MechaMol", icon: <FiHexagon />, color: "#ccc", description: "Under construction", path: "/mechamol" },
