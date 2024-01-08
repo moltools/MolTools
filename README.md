@@ -59,3 +59,11 @@ run_docker.sh <api_port> <client_port> -d
 ```
 
 The app will be available at `http://localhost:<client_port>/`.
+
+### Rebuild Docker image
+
+Run the following script to rebuild the Docker image:
+
+```bash
+docker-compose build
+```
