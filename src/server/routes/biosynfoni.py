@@ -1,9 +1,22 @@
 import random 
+import os
 
+import joblib
 from flask import Blueprint, Response, request 
 from rdkit import Chem
 
 from .common import Status, ResponseData
+
+from biosynfoni import overlapped_fp
+
+# Load the predictor. If it fails, set it to None.
+try:
+    absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    PREDICTOR = joblib.load(os.path.join(absolute_path, "models/model.pkl"))
+    PREDICTOR.set_params(n_jobs=1)
+except Exception as e:
+    print(e)
+    PREDICTOR = None
 
 blueprint_predict_biosynthetic_class = Blueprint("predict_biosynthetic_class", __name__)
 @blueprint_predict_biosynthetic_class.route("/api/predict_biosynthetic_class", methods=["POST"])
@@ -17,6 +30,11 @@ def predict_biosynthetic_class() -> Response:
     """
     # Parse request data.
     data = request.get_json()
+
+    # Check if the predictor is loaded.
+    if PREDICTOR is None:
+        msg = "No predictor loaded!"
+        return ResponseData(Status.Failure, message=msg).to_dict()
     
     # Retrieve the SMILES string.
     smiles = data.get("smiles", None)
@@ -33,25 +51,31 @@ def predict_biosynthetic_class() -> Response:
             if mol is None:
                 raise ValueError()
             
-            # Predict biosynthetic classes for the molecule. 
-            # For now, get random floats between 0 and 1.
-            predictions = {
-                "Polyketide":   random.random(),
-                "NRP":          random.random(),
-                "Saccharide":   random.random(),
-                "Terpene":      random.random(),
-                "Alkaloid":     random.random(),
-                "Nucleoside":   random.random(),
-                "RiPP":         random.random(),
-                "Other":        random.random()
-            }
-            payload = {"predictions": predictions}
+            # Define labels.
+            pathway_labels = [
+                "Alkaloid",
+                "Amino acid",
+                "Carbohydrate",
+                "Fatty acid",
+                "Isoprenoid",
+                "Phenylpropanoid",
+                "Polyketide"
+            ]
 
-            print(predictions)
+            # Get the overlapped fingerprint.
+            fp = overlapped_fp(mol)
+            preds = PREDICTOR.predict_proba([fp])
+            preds = [pred[0][1] for pred in preds]
+            labeled_preds = list(zip(pathway_labels, preds))
+            labeled_preds = {label: pred for label, pred in labeled_preds}
+
+            # Return the response.
+            payload = {"predictions": labeled_preds}
 
             msg = "Successfully predicted biosynthetic class!"
             return ResponseData(Status.Success, payload, msg).to_dict()
         
-        except Exception:
+        except Exception as e:
+            print(e)
             msg = "Could not parse SMILES string!"
             return ResponseData(Status.Failure, message=msg).to_dict()

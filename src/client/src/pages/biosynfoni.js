@@ -95,8 +95,8 @@ const PredictionView = (props) => {
 
     // Format keys to have a maximum of 10 characters. If longer, truncate and add "...".
     for (let i = 0; i < topPredictions.length; i++) {
-        if (topPredictions[i].length > 10) {
-            topPredictions[i] = topPredictions[i].slice(0, 10) + "...";
+        if (topPredictions[i].length > 20) {
+            topPredictions[i] = topPredictions[i].slice(0, 20) + "...";
         }
     }
 
@@ -133,9 +133,10 @@ const PredictionView = (props) => {
             range: [-1, 5],
             automargin: true,
             titlefont: { size: 14, family: "HelveticaNeue-Light" },
-            tickfont: { size: 12, family: "HelveticaNeue-Light" }
+            tickfont: { size: 12, family: "HelveticaNeue-Light" },
+            ticklen: 10,
         },
-        margin: { l: 0, r: 0, b: 0, t: 0, pad: 0 }
+        margin: { l: 100, r: 0, b: 0, t: 0, pad: 0 }
     };
 
     // Only return the plot if predictions are available. Check this by verifying if props.predictions has any keys.
@@ -183,6 +184,7 @@ const Biosynfoni = () => {
     const [smiles, setSmiles] = useState("");
     const [svgString, setSvgString] = useState("");
     const [predictions, setPredictions] = useState({});
+    const [isLoading, setIsLoading] = useState(false);
 
     // Send smiles to backend and receive svgString of drawn molecule.
     const drawSmiles = async () => {
@@ -217,6 +219,10 @@ const Biosynfoni = () => {
 
     // Send smiles to backend and receive predictions.
     const getPredictions = async () => {
+        
+        // Set isLoading to true, which disables submit button.
+        setIsLoading(true);
+
         try {
             const response = await fetch("/api/predict_biosynthetic_class", {
                 method: "POST",
@@ -244,6 +250,9 @@ const Biosynfoni = () => {
             toast.error(msg, { autoClose: true });
             console.error(error);
         };
+
+        // Set isLoading to false, which enables submit button.
+        setIsLoading(false);
     };
 
     // Every time smiles is updated, send smiles to backend and receive svgString of drawn molecule.
@@ -259,7 +268,7 @@ const Biosynfoni = () => {
             <div className="biosynfoni-input-container">
                 {/* SmilesInput component */}
                 <SmilesInput 
-                    locked={false} 
+                    locked={isLoading} 
                     active={false} 
                     value="" 
                     error="" 
@@ -268,6 +277,7 @@ const Biosynfoni = () => {
                 />
                 {/* Button to submit the SMILES */}
                 <button 
+                    disabled={isLoading}
                     className="biosynfoni-submit-button"
                     onClick={() => {
                         if (smiles) {
