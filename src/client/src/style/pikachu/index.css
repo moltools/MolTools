@@ -1,0 +1,66 @@
+.pikachu {
+    background-color: #FFA500;
+    height: calc(100% - 40px);
+    margin: calc(-1 * var(--default-padding));
+}
+
+.pikachu-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 400px;
+    width: 100vw;
+    background: white;
+    box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.2);
+}
+
+/* =====================================================================================================================
+   Input container
+===================================================================================================================== */
+
+.pikachu-input-container {
+    padding: var(--default-padding);
+    display: flex;
+    align-items: center;
+}
+
+/* =====================================================================================================================
+   SMILES input
+===================================================================================================================== */
+
+.pikachu-smiles-input {}
+
+/* =====================================================================================================================
+   Download button
+===================================================================================================================== */
+
+.pikachu-submit-button {
+    width: 100px;
+    height: 56px;
+    border: none;
+    cursor: pointer;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    transition: background-color 0.2s, transform 0.2s;
+}
+
+.pikachu-submit-button:hover {
+    background-color: #FF8C00;
+}
+
+.pikachu-submit-button:active {
+    transform: translateY(2px);
+}
+
+/* =====================================================================================================================
+   SVG display
+===================================================================================================================== */
+
+.pikachu-mol-view {
+    display: flex;
+    justify-content: center;
+    height: 400px;
+    width: 400px;
+    background-color: white;
+    border-radius: 0px;
+}

@@ -334,9 +334,7 @@ const CineMol = () => {
     const [rotationZ, setRotationZ] = useState(0.0);                    // Rotation over the z-axis of the molecular model in radians.
     const [viewBox, setViewBox] = useState(undefined);                  // View box of the molecular model.
 
-    /**
-     * Downloads the SVG representation of the molecular model.
-     */
+    // Downloads the SVG representation of the molecular model.
     const handleDownloadSvgString = () => {
         if (svgString.length > 0) {
             const blob = new Blob([svgString], { type: "image/svg+xml" });
@@ -353,9 +351,7 @@ const CineMol = () => {
         }
     };
 
-    /**
-     * Uploads an SDF file and sets the SDF string.
-     */
+    // Uploads an SDF file and sets the SDF string.
     const handleUploadSdfFile = () => {
         const fileInput = document.createElement("input");
         fileInput.type = "file";
@@ -380,9 +376,7 @@ const CineMol = () => {
         fileInput.click();
     };
 
-    /**
-     * Get the version of the CineMol component.
-     */
+    // Get the version of the CineMol component.
     const handleGetVersion = async () => {
         try {
             const response = await fetch("/api/fetch_cinemol_version");
@@ -409,9 +403,7 @@ const CineMol = () => {
         };
     };
 
-    /**
-     *  Draw the molecular model. 
-     */
+    // Draw the molecular model. 
     const handleDrawModel = async () => {
         // Set is loading to true, which grays out model and deactivates buttons.
         setIsLoading(true);
@@ -537,9 +529,7 @@ const CineMol = () => {
         }
     }, [sdfString, style, look, includeHydrogens, resolution, rotationX, rotationY, rotationZ]);
 
-    /**
-     * Sidebar buttons.
-     */
+    // Sidebar buttons.
     const buttons = [
         <SidebarButton key={1} disabled={isLoading} icon={<BsFillCloudUploadFill />} title="Upload SDF file" onClick={handleUploadSdfFile} />,
         <SidebarButton key={2} disabled={isLoading} icon={<BsFillCloudDownloadFill />} title="Download model as SVG" onClick={handleDownloadSvgString} />,

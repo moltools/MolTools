@@ -15,6 +15,7 @@ import Toast from "./components/Toast";
 import Home from "./pages";
 import About from "./pages/about";
 import Changelog from "./pages/changelog";
+import PIKAChU from "./pages/pikachu";
 import RetroMol from "./pages/retromol";
 import CineMol from "./pages/cinemol";
 import Biosynfoni from "./pages/biosynfoni";
@@ -33,7 +34,8 @@ import Comet from "./pages/comet";
  * @returns {object} - Object containing the widget data.
  */
 const tilesData = [
-    { name: "CineMol", icon: "widgets/icon_cinemol.svg", color: "#2f6eb5", description: "Draw 3D molecule models", path: "/cinemol" },
+    { name: "PIKAChU", icon: <FiHexagon />, color: "#FFA500", description: "Draw 2D structural formula", path: "/pikachu"},
+    { name: "CineMol", icon: "widgets/icon_cinemol.svg", color: "#2f6eb5", description: "Draw 3D molecule model", path: "/cinemol" },
     { name: "Biosynfoni", icon: "widgets/icon_biosynfoni.svg", color: "#7B9204", description: "Predict biosynthetic class", path: "/biosynfoni" },
     { name: "RetroMol", icon: "widgets/icon_retromol.svg", color: "#F5C900", description: "Under construction", path: "/retromol" },
     { name: "MechaMol", icon: <FiHexagon />, color: "#ccc", description: "Under construction", path: "/mechamol" },
@@ -52,6 +54,7 @@ const routeDisplayNames = {
     "/": "MolTools",
     "/about": "About",
     "/changelog": "Changelog",
+    "/pikachu": "PIKAChU",
     "/retromol": "RetroMol",
     "/cinemol": "CineMol",
     "/biosynfoni": "Biosynfoni",
@@ -85,6 +88,7 @@ function AppRoutes () {
                 <Route path="/" element={<Home tilesData={tilesData}/>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/changelog" element={<Changelog url={"https://raw.githubusercontent.com/moltools/MolTools/master/CHANGELOG.md"} />} />
+                <Route path="/pikachu" element={<PIKAChU />} />
                 <Route path="/retromol" element={<RetroMol />} />
                 <Route path="/cinemol" element={<CineMol />} />
                 <Route path="/biosynfoni" element={<Biosynfoni />} />

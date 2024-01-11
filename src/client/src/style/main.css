@@ -10,6 +10,7 @@
 @import "home/index.css"; 
 @import "cinemol/index.css";   
 @import "biosynfoni/index.css";
+@import "pikachu/index.css";
 
 /* Apply styles to all elements in the HTML document */
 * {
