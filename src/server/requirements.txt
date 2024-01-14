@@ -3,5 +3,5 @@ gunicorn
 rdkit
 scikit-learn==1.3.0
 git+https://github.com/moltools/cinemol.git
-git+https://github.com/davidmeijer/biosynfoni.git 
+git+https://github.com/moltools/biosynfoni.git 
 git+https://github.com/moltools/pikachu.git

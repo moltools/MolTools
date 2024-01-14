@@ -10,3 +10,10 @@
 ### Updated
 
 - CineMol (1.0.0) is now released.
+
+## [1.0.1] - 2024-01-14
+
+### Updated
+
+- Demo version of Biosynfoni (0.0.1) is now released.
+- PIKAChU drawer added to toolbelt.

@@ -1,7 +1,6 @@
 .pikachu {
     background-color: #FFA500;
     height: calc(100% - 40px);
-    margin: calc(-1 * var(--default-padding));
 }
 
 .pikachu-container {
@@ -9,7 +8,7 @@
     justify-content: center;
     align-items: center;
     height: 400px;
-    width: 100vw;
+    width: 100%;
     background: white;
     box-shadow: 0px 4px 20px 0px rgba(0, 0, 0, 0.2);
 }
@@ -28,7 +27,10 @@
    SMILES input
 ===================================================================================================================== */
 
-.pikachu-smiles-input {}
+.pikachu-smiles-input {
+    border-top-right-radius: 0px;
+    border-bottom-right-radius: 0px;
+}
 
 /* =====================================================================================================================
    Download button

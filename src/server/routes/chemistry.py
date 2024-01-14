@@ -9,7 +9,15 @@ from .common import Status, ResponseData
 def mol_to_svg(
     mol: Chem.Mol,
     window_size: ty.Tuple[int, int] = (450, 350),
-    background_color: ty.Optional[str] = None
+    background_color: ty.Optional[str] = None,
+    highlights: ty.Optional[
+        ty.Tuple[
+            ty.List[int],
+            ty.List[int],
+            ty.Dict[int, ty.Tuple[float, float, float]],
+            ty.Dict[int, ty.Tuple[float, float, float]],
+        ]
+    ] = None 
 ) -> str:
     """
     Draw a molecule with its substructures highlighted.
@@ -17,6 +25,9 @@ def mol_to_svg(
     :param Chem.Mol mol: The molecule to draw.
     :param ty.Tuple[int, int] window_size: The size of the window.
     :param ty.Optional[str] background_color: The background color.
+    :param ty.Optional[ty.Tuple[ty.List[int], ty.List[int], ty.Dict[int, 
+        ty.Tuple[float, float, float]], ty.Dict[int, ty.Tuple[float, float, 
+        float]]]] highlights: The highlights.
     :return: The SVG string.
     :rtype: str
     """
@@ -27,7 +38,17 @@ def mol_to_svg(
         options.setBackgroundColour(background_color)
     options.useBWAtomPalette()
 
-    drawing.DrawMolecule(mol)
+    if highlights is None:
+        drawing.DrawMolecule(mol)
+    
+    else:
+        drawing.DrawMolecule(
+            mol,
+            highlightAtoms=highlights[0],
+            highlightBonds=highlights[1],
+            highlightAtomColors=highlights[2],
+            highlightBondColors=highlights[3]
+        )
 
     drawing.FinishDrawing()
     svg_str = drawing.GetDrawingText().replace("svg:", "")

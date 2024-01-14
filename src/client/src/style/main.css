@@ -7,6 +7,11 @@
 }
 
 /* Import external CSS files */
+@import "components/toast.css";
+@import "components/header.css";
+@import "components/navbar.css";
+@import "components/tile.css";
+@import "components/text-input.css";
 @import "home/index.css"; 
 @import "cinemol/index.css";   
 @import "biosynfoni/index.css";

@@ -1,13 +1,13 @@
-import random 
 import os
 
 import joblib
 from flask import Blueprint, Response, request 
 from rdkit import Chem
 
+from .chemistry import mol_to_svg
 from .common import Status, ResponseData
 
-from biosynfoni import overlapped_fp
+from biosynfoni import overlapped_fp, get_highlight_mapping
 
 # Load the predictor. If it fails, set it to None.
 try:
@@ -69,8 +69,15 @@ def predict_biosynthetic_class() -> Response:
             labeled_preds = list(zip(pathway_labels, preds))
             labeled_preds = {label: pred for label, pred in labeled_preds}
 
+            # Get highlight mapping.
+            highlights = get_highlight_mapping(mol)
+            svg_string = mol_to_svg(mol, highlights=highlights)
+
             # Return the response.
-            payload = {"predictions": labeled_preds}
+            payload = {
+                "predictions": labeled_preds,
+                "svg_string": svg_string
+            }
 
             msg = "Successfully predicted biosynthetic class!"
             return ResponseData(Status.Success, payload, msg).to_dict()
