@@ -232,6 +232,26 @@ const Biosynfoni = () => {
                     <PredictionView predictions={predictions} />
                 </div>
             </div>
+            <div className="biosynfoni-link-container">
+                {/* Doi with link to paper */}
+                {/* <a 
+                    className="biosynfoni-paper-link"
+                    href=""
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    10.1186/s13321-022-00616-5
+                </a> */}
+                {/* Link with doi to paper */}
+                <a 
+                    className="biosynfoni-github-link"
+                    href="https://github.com/lucinamay/biosynfoni"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    github.com/lucinamay/biosynfoni
+                </a>
+            </div>
         </div>
     );
 };

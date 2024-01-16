@@ -96,3 +96,19 @@
     display: flex;
     justify-content: left;
 }
+
+/* =====================================================================================================================
+   Link container
+===================================================================================================================== */
+.biosynfoni-link-container {
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    padding-left: 20px;
+    font-size: 12px;
+}
+
+.biosynfoni-paper-link, .biosynfoni-github-link {
+    margin-bottom: 5px;
+    text-decoration: none;
+}

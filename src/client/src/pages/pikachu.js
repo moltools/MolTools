@@ -105,6 +105,26 @@ const PIKAChU = () => {
                     <div dangerouslySetInnerHTML={{ __html: svgString }} />
                 </div>
             </div>
+            <div className="pikachu-link-container">
+                {/* Doi with link to paper */}
+                <a 
+                    className="pikachu-paper-link"
+                    href="https://jcheminf.biomedcentral.com/articles/10.1186/s13321-022-00616-5"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    10.1186/s13321-022-00616-5
+                </a>
+                {/* Link with doi to paper */}
+                <a 
+                    className="pikachu-github-link"
+                    href="https://github.com/BTheDragonMaster/pikachu"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
+                    github.com/BTheDragonMaster/pikachu
+                </a>
+            </div>
         </div>
     );
 };

@@ -66,3 +66,19 @@
     background-color: white;
     border-radius: 0px;
 }
+
+/* =====================================================================================================================
+   Link container
+===================================================================================================================== */
+.pikachu-link-container {
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    padding-left: 20px;
+    font-size: 12px;
+}
+
+.pikachu-paper-link, .pikachu-github-link {
+    margin-bottom: 5px;
+    text-decoration: none;
+}
