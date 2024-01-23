@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { FiHexagon } from "react-icons/fi";
-import { toast } from "react-toastify";
 
 // Import styling.
 import "./style/main.css";
@@ -36,7 +35,7 @@ import Comet from "./pages/comet";
 const tilesData = [
     { name: "CineMol", icon: "widgets/icon_cinemol.svg", color: "#2f6eb5", description: "Draw 3D molecule model", path: "/cinemol" },
     { name: "Biosynfoni", icon: "widgets/icon_biosynfoni.svg", color: "#7B9204", description: "Predict biosynthetic class", path: "/biosynfoni" },
-    { name: "RetroMol", icon: "widgets/icon_retromol.svg", color: "#F5C900", description: "Under construction", path: "/retromol" },
+    { name: "RetroMol", icon: "widgets/icon_retromol.svg", color: "#F5C900", description: "Discover biosynthetically similar molecules", path: "/retromol" },
     { name: "PIKAChU", icon: <FiHexagon />, color: "#FFA500", description: "Draw 2D structural formula", path: "/pikachu"},
     { name: "MechaMol", icon: <FiHexagon />, color: "#ccc", description: "Under construction", path: "/mechamol" },
     { name: "Comet", icon: <FiHexagon />, color: "#ccc", description: "Under construction", path: "/comet" }
@@ -72,7 +71,7 @@ function AppRoutes () {
 
     useEffect(() => {
         if (location !== displayLocation) setTransitionStage("fade-out");
-    }, [location]);
+    }, [location, displayLocation]);
 
     return (
         <div 

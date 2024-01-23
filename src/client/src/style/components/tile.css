@@ -39,4 +39,7 @@
 
 .tile p {
     margin-top: -5px;
+    font-size: 0.8rem;
+    text-align: center;
+    width: 70%;
 }
