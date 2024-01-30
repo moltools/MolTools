@@ -16,5 +16,8 @@ def predict_paras() -> Response:
 
     print(data)
     
-    msg = "Backend for PARAS not fully implemented yet!"
-    return ResponseData(Status.Warning, message=msg).to_dict()
+    # msg = "Backend for PARAS not fully implemented yet!"
+    # return ResponseData(Status.Warning, message=msg).to_dict()
+    
+    payload = {"predictions": {"x": 0.1, "y": 0.13, "z": 0.3}}
+    return ResponseData(Status.Success, message="Success!", payload=payload).to_dict()

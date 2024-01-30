@@ -63,24 +63,8 @@ const SliderWithDynamicMax = (props) => {
     // Unpack props.
     const { value, setValue, maxValue } = props;
 
-    // const handleInputChange = (event) => {
-    //     const newValue = parseInt(event.target.value, 10);
-    //     setValue(newValue);
-    //     if (!isNaN(newValue)) {
-    //         setMaxValue(newValue);
-    //     } else {
-    //         setMaxValue(100);
-    //     }
-    // };
-
     return (
         <div>
-            {/* <input
-                type="number"
-                value={value}
-                onChange={handleInputChange}
-                placeholder="Enter a value"
-            /> */}
             <input
                 type="range"
                 min="0"
@@ -109,7 +93,7 @@ const PARASECT = () => {
     const [fileContent, setFileContent] = useState(null);
     const [fileContentType, setFileContentType] = useState(null);
     const [smiles, setSmiles] = useState(null);
-    const [prediction, setPrediction] = useState(null);
+    const [predictions, setPredictions] = useState(null);
     const [excludeStandardSubstrates, setExcludeStandardSubstrates] = useState(false);
 
     const [sliderValue, setSliderValue] = useState(3);
@@ -150,7 +134,13 @@ const PARASECT = () => {
             const response = await fetch("/api/predict_parasect", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({}),
+                body: JSON.stringify({
+                    file_content: fileContent,
+                    file_content_type: fileContentType,
+                    smiles: smiles,
+                    exclude_standard_substrates: excludeStandardSubstrates,
+                    number_of_predictions: sliderValue,
+                }),
             });
     
             if (!response.ok) {
@@ -161,6 +151,8 @@ const PARASECT = () => {
             
             // Unpack response.
             if (json.status === "success") {
+                setPredictions(json.payload["predictions"]);
+                console.log(json.payload["predictions"]);
                 toast.success(json.message);
             } else if (json.status === "warning") {
                 toast.warn(json.message);
@@ -220,8 +212,8 @@ const PARASECT = () => {
                 Predict
             </button>
             <div>
-                {prediction !== null && (
-                    <div>{prediction}</div>
+                {predictions !== null && (
+                    <div>Result</div>
                 ) || (
                     <div>No prediction made yet.</div>
                 )}

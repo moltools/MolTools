@@ -50,7 +50,7 @@ const PARAS = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [fileContent, setFileContent] = useState(null);
     const [fileContentType, setFileContentType] = useState(null);
-    const [prediction, setPrediction] = useState(null);
+    const [predictions, setPredictions] = useState(null);
 
     // Set the file content.
     const handleFileSelected = (content) => {
@@ -92,6 +92,8 @@ const PARAS = () => {
             
             // Unpack response.
             if (json.status === "success") {
+                setPredictions(json.payload["predictions"]);
+                console.log(json.payload["predictions"]);
                 toast.success(json.message);
             } else if (json.status === "warning") {
                 toast.warn(json.message);
@@ -134,8 +136,8 @@ const PARAS = () => {
                 Predict
             </button>
             <div>
-                {prediction !== null && (
-                    <div>{prediction}</div>
+                {predictions !== null && (
+                    <div>result</div>
                 ) || (
                     <div>No prediction made yet.</div>
                 )}
