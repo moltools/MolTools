@@ -8,6 +8,7 @@
 
 /* Import external CSS files */
 @import "components/toast.css";
+@import "components/file-picker.css";
 @import "components/header.css";
 @import "components/navbar.css";
 @import "components/tile.css";
@@ -17,6 +18,8 @@
 @import "biosynfoni/index.css";
 @import "retromol/index.css";
 @import "pikachu/index.css";
+@import "paras/index.css";
+@import "parasect/index.css";
 
 /* Apply styles to all elements in the HTML document */
 * {
