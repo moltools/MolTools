@@ -14,12 +14,12 @@ import Toast from "./components/Toast";
 import Home from "./pages";
 import About from "./pages/about";
 import Changelog from "./pages/changelog";
-import RetroMol from "./pages/retromol";
+// import RetroMol from "./pages/retromol";
 import CineMol from "./pages/cinemol";
 import Biosynfoni from "./pages/biosynfoni";
 import PIKAChU from "./pages/pikachu";
-import PARAS from "./pages/paras";
-import PARASECT from "./pages/parasect";
+// import PARAS from "./pages/paras";
+// import PARASECT from "./pages/parasect";
 
 /**
  * Define widgets which will be displayed as tiles on the home page.
@@ -35,10 +35,10 @@ import PARASECT from "./pages/parasect";
 const tilesData = [
     { name: "CineMol", icon: "widgets/icon_cinemol.svg", color: "#2f6eb5", description: "Draw 3D molecule model", path: "/cinemol" },
     { name: "Biosynfoni", icon: "widgets/icon_biosynfoni.svg", color: "#7B9204", description: "Predict biosynthetic class", path: "/biosynfoni" },
-    { name: "RetroMol", icon: "widgets/icon_retromol.svg", color: "#F5C900", description: "Discover biosynthetically similar molecules", path: "/retromol" },
+    // { name: "RetroMol", icon: "widgets/icon_retromol.svg", color: "#F5C900", description: "Discover biosynthetically similar molecules", path: "/retromol" },
     { name: "PIKAChU", icon: <FiHexagon />, color: "#FFA500", description: "Draw 2D structural formula", path: "/pikachu" },
-    { name: "PARAS", icon: <FiHexagon />, color: "#D68AA7", description: "Predict A-domain specificity", path: "/paras" },
-    { name: "PARASECT", icon: <FiHexagon />, color: "#F7D0A1", description: "Predict A-domain-substrate interaction", path: "/parasect" },
+    // { name: "PARAS", icon: <FiHexagon />, color: "#D68AA7", description: "Predict A-domain specificity", path: "/paras" },
+    // { name: "PARASECT", icon: <FiHexagon />, color: "#F7D0A1", description: "Predict A-domain-substrate interaction", path: "/parasect" },
 ];
 
 /**
@@ -55,10 +55,10 @@ const routeDisplayNames = {
     "/changelog": "Changelog",
     "/cinemol": "CineMol",
     "/biosynfoni": "Biosynfoni",
-    "/retromol": "RetroMol",
+    // "/retromol": "RetroMol",
     "/pikachu": "PIKAChU",
-    "/paras": "PARAS",
-    "/parasect": "PARASECT"
+    // "/paras": "PARAS",
+    // "/parasect": "PARASECT"
 };
 
 /**
@@ -87,12 +87,9 @@ function AppRoutes () {
                 <Route path="/" element={<Home tilesData={tilesData}/>} />
                 <Route path="/about" element={<About />} />
                 <Route path="/changelog" element={<Changelog url={"https://raw.githubusercontent.com/moltools/MolTools/master/CHANGELOG.md"} />} />
-                <Route path="/retromol" element={<RetroMol />} />
                 <Route path="/cinemol" element={<CineMol />} />
                 <Route path="/biosynfoni" element={<Biosynfoni />} />
                 <Route path="/pikachu" element={<PIKAChU />} />
-                <Route path="/paras" element={<PARAS />} />
-                <Route path="/parasect" element={<PARASECT />} />
                 <Route path="/*" element={<div>404</div>} />
             </Routes>
         </div>

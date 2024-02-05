@@ -123,7 +123,7 @@ const PARASECT = () => {
         // Set is loading to true, which grays out model and deactivates buttons.
         setIsLoading(true);
 
-        if (fileContent === null || fileContentType === null) {
+        if ((fileContent === null) || (fileContentType === null)) {
             // Set is loading to false again.
             setIsLoading(false);
             toast.warn("Please select a file and its file type first!");
