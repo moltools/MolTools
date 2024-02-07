@@ -13,7 +13,7 @@ import Toast from "./components/Toast";
 // Import pages.
 import Home from "./pages";
 import About from "./pages/about";
-import Changelog from "./pages/changelog";
+// import Changelog from "./pages/changelog";
 // import RetroMol from "./pages/retromol";
 import CineMol from "./pages/cinemol";
 import Biosynfoni from "./pages/biosynfoni";
@@ -52,7 +52,7 @@ const tilesData = [
 const routeDisplayNames = {
     "/": "MolTools",
     "/about": "About",
-    "/changelog": "Changelog",
+    // "/changelog": "Changelog",
     "/cinemol": "CineMol",
     "/biosynfoni": "Biosynfoni",
     // "/retromol": "RetroMol",
@@ -86,7 +86,7 @@ function AppRoutes () {
             <Routes location={displayLocation}>
                 <Route path="/" element={<Home tilesData={tilesData}/>} />
                 <Route path="/about" element={<About />} />
-                <Route path="/changelog" element={<Changelog url={"https://raw.githubusercontent.com/moltools/MolTools/master/CHANGELOG.md"} />} />
+                {/* <Route path="/changelog" element={<Changelog url={"https://raw.githubusercontent.com/moltools/MolTools/master/CHANGELOG.md"} />} /> */}
                 <Route path="/cinemol" element={<CineMol />} />
                 <Route path="/biosynfoni" element={<Biosynfoni />} />
                 <Route path="/pikachu" element={<PIKAChU />} />
@@ -121,7 +121,7 @@ function App () {
                     navbarLinks={[
                         { name: "Home", path: "/" },
                         { name: "About", path: "/about" },
-                        { name: "Changelog", path: "/changelog" }
+                        // { name: "Changelog", path: "/changelog" }
                     ]}
                 />
                 <AppRoutes />
