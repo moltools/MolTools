@@ -199,3 +199,43 @@
 .cinemol-sidebar-counter-button.right:active {
     transform: translateY(0.5px);
 }
+
+/* =====================================================================================================================
+    Sidebar input
+===================================================================================================================== */
+
+.cinemol-sidebar-input-container {
+    width: calc(100% - 20px);
+    font-family: Arial, Helvetica, sans-serif;
+    height: 20px;
+    text-align: left; 
+    padding: 10px;
+    border: none;
+    display: flex;
+    align-items: center;
+    background-color: #efefef;
+    font-size: 13px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.cinemol-sidebar-input-title {
+    padding-left: 10px;
+}
+
+.cinemol-sidebar-input-container.right {
+    width: 60px;
+}
+
+.cinemol-sidebar-input-container.right input {
+    width: 60px;
+    height: 20px;
+}
+
+.cinemol-sidebar-set-input-button {
+    width: 30px;
+    padding: 0px;
+    margin: 0px;
+    cursor: pointer;
+}

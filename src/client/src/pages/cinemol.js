@@ -166,11 +166,11 @@ const SidebarCounter = (props) => {
 
     return (
         <div className="cinemol-sidebar-counter-container">
-            <div className="cinemol-sidebar-counter-container-part-left">
+            <div>
                 {icon}
                 <span className="cinemol-sidebar-counter-title">{title}: {value}</span>
             </div>
-            <div className="cinemol-sidebar-counter-container-part-right">
+            <div>
                 <button className="cinemol-sidebar-counter-button left" onClick={onDecrement} disabled={disabled}>{"<"}</button>
                 <button className="cinemol-sidebar-counter-button right" onClick={onIncrement} disabled={disabled}>{">"}</button>
             </div>
@@ -233,7 +233,7 @@ const RotationCounter = (props) => {
             onDecrement={handleDecrement}
         />
     );
-};    
+};  
 
 // =====================================================================================================================
 // Component for Sidebar.
