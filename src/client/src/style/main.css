@@ -7,19 +7,14 @@
 }
 
 /* Import external CSS files */
+@import "bulma/css/bulma.css";
 @import "components/toast.css";
 @import "components/file-picker.css";
-@import "components/header.css";
-@import "components/navbar.css";
-@import "components/tile.css";
 @import "components/text-input.css";
-@import "home/index.css"; 
-@import "cinemol/index.css";   
-@import "biosynfoni/index.css";
-@import "retromol/index.css";
-@import "pikachu/index.css";
-@import "paras/index.css";
-@import "parasect/index.css";
+@import "home.css"; 
+@import "cinemol.css";   
+@import "biosynfoni.css";
+@import "pikachu.css";
 
 /* Apply styles to all elements in the HTML document */
 * {

@@ -16,7 +16,7 @@ const About = () => {
     return (
         <div className="widget-content">
             <p>
-                MolTools is a collection of tools for visualization and analysis of natural product compounds.
+                MolTools is a collection of tools for the visualization and analysis of natural product compounds.
             </p>
         </div>
     );

@@ -1,41 +1,76 @@
-import React from "react";
-import { useLocation } from "react-router-dom";
-import Navbar from "./Navbar";
+import React, { useState, useEffect } from "react";
 
-/**
- * Header component that displays a header with the current page's display name and a navigation bar.
- * @param {Object} props - The props for the Header component.
- * @param {Object} props.routeDisplayNames - A mapping of route paths to display names.
- * @param {Array} props.navbarLinks - An array of navigation links.
- * @returns {JSX.Element} - The rendered Header component.
- */
-const Header = (props) => {
-    // Destructure the props.
-    const { routeDisplayNames, navbarLinks, apiOk } = props;
+const Header = ({ widgetRoutes }) => {
+    const [apiAvailable, setApiAvailable] = useState(false);
 
-    // Get the current location using the useLocation hook from react-router-dom.
-    const location = useLocation();
+    const checkApi = async () => {
+        try {
+            const response = await fetch("/api/ping_server");
+            const data = await response.json();
+            if (data.status === "success") {
+                setApiAvailable(true);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
-    // Get the current display name based on the current route's path using the mapping.
-    // If the path is not found in the mapping, use an empty string as the default.
-    const currentDisplayName = routeDisplayNames[location.pathname] || "";
+    useEffect(() => {
+        checkApi();
+        }
+    );
 
-    return (
-        <header className="header">
-            <div>
-                {/* Display the current display name */}
-                <h2>{currentDisplayName}</h2>
+    return (        
+        <nav 
+            class="navbar has-navbar-fixed-top"
+            role="navigation" 
+            aria-label="main-navigation"
+            style={{top: 0, width: "100%", zIndex: 100, boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)"}}
+        >
+            <div class="navbar-brand">
+                <a class="navbar-item" href="/" style={{cursor: "pointer"}}>
+                    <h1 style={{color: "black",fontWeight: "bold"}}>MolTools</h1>
+                </a>
+                <a 
+                    role="button" class="navbar-burger" aria-label="menu" aria-expanded="tr" data-target="navbarBasicExample"
+                    onClick={() => {
+                        const burger = document.querySelector(".navbar-burger");
+                        const menu = document.querySelector(".navbar-menu");
+                        burger.classList.toggle("is-active");
+                        menu.classList.toggle("is-active");
+                    }}
+                >
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                    <span aria-hidden="true"></span>
+                </a>
             </div>
-            <div className="header-navbar">
-                {/* Render the Navbar component with the provided links */}
-                <Navbar links={navbarLinks} />
+            <div id="navbarBasicExample" class="navbar-menu">
+                <div class="navbar-start">
+                    <a class="navbar-item" href="/">Home</a>
+                    <a class="navbar-item" href="/about">About</a>
+                    <div class="navbar-item has-dropdown is-hoverable">
+                        <a class="navbar-link">More</a>
+                        <div class="navbar-dropdown">
+                            {widgetRoutes.map((widget, index) => (
+                                <a class="navbar-item" href={widget.path}>{widget.name}</a>
+                            ))}
+                            <hr class="navbar-divider" />
+                            <a class="navbar-item" href="https://github.com/moltools/MolTools/issues" target="_blank" rel="noopener noreferrer">Report an issue</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="navbar-end" style={{margin: "1rem"}}>
+                    <div 
+                        class={`tag ${apiAvailable ? "is-success" : "is-danger"}`} 
+                        style={{transition: "background-color 0.5s ease"}}
+                    >
+                        Server is {apiAvailable ? "online" : "offline"}
+                    </div>  
+                </div>
             </div>
-            <div className={`api-status ${apiOk ? "ok" : "not-ok"}`}>
-                API
-            </div>
-        </header>
+        </nav>
     );
 };
 
-// Export the Header component as the default export.
 export default Header;

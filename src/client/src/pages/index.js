@@ -1,45 +1,37 @@
 import React from "react";
-import Tile from "../components/Tile";
+import { Link } from "react-router-dom";
+import { FiImage } from "react-icons/fi";
 
-// =====================================================================================================================
-// Home component.
-// =====================================================================================================================
-
-/**
- * Home Component
- *
- * This component represents the home page of the MolTools application, displaying a collection of tiles based on the
- * provided 'tilesData' prop.
- *
- * @param {Object} props - The props for the Home component.
- * @param {Array} props.tilesData - An array of tile data objects to be displayed.
- * @returns {JSX.Element} The rendered Home component displaying the tiles.
- */
-const Home = (props) => {
-    // Destructure the props.
-    const { tilesData } = props;
+const Home = ( { widgets }) => {
 
     return (
-        <div>
-            <div className="tile-container">
-                {tilesData.length === 0 ? (
-                    <p>No app tiles are available.</p>
-                ) : (
-                        tilesData.map((tile, index) => (
-                            <Tile
-                                key={index}
-                                name={tile.name}
-                                icon={tile.icon}
-                                color={tile.color}
-                                description={tile.description}
-                                path={tile.path}
-                            />
-                        ))
-                )}
-            </div>
+        <div style={{padding: "20px"}}>
+            {widgets.map((widget, index) => (
+                <Link to={widget.path}>
+                    <div 
+                        key={index} 
+                        class="card"
+                        style={{marginBottom: "20px", boxShadow: "0 0 10px rgba(0, 0, 0, 0.25)"}}
+                    >
+                        <div class="card-content">
+                            <div class="media">
+                                <div class="media-left">
+                                    <FiImage size={48} />
+                                </div>
+                                <div class="media-content">
+                                    <p class="title is-4">{widget.name}</p>
+                                    <p class="subtitle is-6">{widget.description}</p>
+                                </div>
+                            </div>
+                            <div class="content">
+                                No content to display
+                            </div>
+                        </div>
+                    </div>
+                </Link>
+            ))}
         </div>
     );
 };
 
-// Export the Home component as the default export.
 export default Home;

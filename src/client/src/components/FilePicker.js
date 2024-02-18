@@ -24,7 +24,7 @@ function FilePickerButton(props) {
                 const contents = await readFileContents(selectedFile);
                 onFileSelected(contents);
             } catch (error) {
-                console.error('Error reading file:', error);
+                console.error("Error reading file:", error);
             }
         }
     };

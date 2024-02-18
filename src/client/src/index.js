@@ -2,68 +2,43 @@ import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { FiHexagon } from "react-icons/fi";
-
-// Import styling.
 import "./style/main.css";
-
-// Import widgets.
 import Header from "./components/Header";
 import Toast from "./components/Toast";
-
-// Import pages.
 import Home from "./pages";
 import About from "./pages/about";
-// import Changelog from "./pages/changelog";
-// import RetroMol from "./pages/retromol";
+import RetroMol from "./pages/retromol";
 import CineMol from "./pages/cinemol";
 import Biosynfoni from "./pages/biosynfoni";
 import PIKAChU from "./pages/pikachu";
-// import PARAS from "./pages/paras";
-// import PARASECT from "./pages/parasect";
 
-/**
- * Define widgets which will be displayed as tiles on the home page.
- * 
- * @param {string} name - Name of the widget.
- * @param {string} icon - Icon of the widget.
- * @param {string} color - Color of the widget.
- * @param {string} description - Description of the widget.
- * @param {string} path - Path to the widget.
- * 
- * @returns {object} - Object containing the widget data.
- */
-const tilesData = [
-    { name: "CineMol", icon: "widgets/icon_cinemol.svg", color: "#2f6eb5", description: "Draw 3D molecule model", path: "/cinemol" },
-    { name: "Biosynfoni", icon: "widgets/icon_biosynfoni.svg", color: "#7B9204", description: "Predict biosynthetic class", path: "/biosynfoni" },
-    // { name: "RetroMol", icon: "widgets/icon_retromol.svg", color: "#F5C900", description: "Discover biosynthetically similar molecules", path: "/retromol" },
-    { name: "PIKAChU", icon: <FiHexagon />, color: "#FFA500", description: "Draw 2D structural formula", path: "/pikachu" },
-    // { name: "PARAS", icon: <FiHexagon />, color: "#D68AA7", description: "Predict A-domain specificity", path: "/paras" },
-    // { name: "PARASECT", icon: <FiHexagon />, color: "#F7D0A1", description: "Predict A-domain-substrate interaction", path: "/parasect" },
+const widgets = [
+    { 
+        name: "RetroMol", 
+        description: "Discover biosynthetically similar molecules", 
+        path: "/retromol", 
+        component: <RetroMol />
+    },
+    // { 
+    //     name: "CineMol", 
+    //     description: "Draw 3D molecule model", 
+    //     path: "/cinemol",
+    //     component: <CineMol />
+    // },
+    // {
+    //     name: "Biosynfoni", 
+    //     description: "Predict biosynthetic class", 
+    //     path: "/biosynfoni",
+    //     component: <Biosynfoni />
+    // },
+    // { 
+    //     name: "PIKAChU", 
+    //     description: "Draw 2D structural formula", 
+    //     path: "/pikachu",
+    //     component: <PIKAChU /> 
+    // },
 ];
 
-/**
- * Define the display names of the routes.
- * 
- * @param {string} path - Path to the route.
- * @param {string} name - Display name of the route.
- * 
- * @returns {object} - Object containing the route display names.
- */
-const routeDisplayNames = {
-    "/": "MolTools",
-    "/about": "About",
-    // "/changelog": "Changelog",
-    "/cinemol": "CineMol",
-    "/biosynfoni": "Biosynfoni",
-    // "/retromol": "RetroMol",
-    "/pikachu": "PIKAChU",
-    // "/paras": "PARAS",
-    // "/parasect": "PARASECT"
-};
-
-/**
- * Define the routes of the app.
- */
 function AppRoutes () {
     const location = useLocation();
     const [displayLocation, setDisplayLocation] = useState(location);
@@ -84,46 +59,22 @@ function AppRoutes () {
             }}
         >
             <Routes location={displayLocation}>
-                <Route path="/" element={<Home tilesData={tilesData}/>} />
+                <Route path="/" element={<Home widgets={widgets}/>} />
                 <Route path="/about" element={<About />} />
-                {/* <Route path="/changelog" element={<Changelog url={"https://raw.githubusercontent.com/moltools/MolTools/master/CHANGELOG.md"} />} /> */}
-                <Route path="/cinemol" element={<CineMol />} />
-                <Route path="/biosynfoni" element={<Biosynfoni />} />
-                <Route path="/pikachu" element={<PIKAChU />} />
-                <Route path="/*" element={<div>404</div>} />
+                <Route path="/*" element={<div style={{padding: "2rem"}}><h1>404 Not Found</h1></div>} />
+                {widgets.map((widget, index) => (
+                    <Route key={index} path={widget.path} element={widget.component} />
+                ))}
             </Routes>
         </div>
     );
 };
 
 function App () {
-    const [apiOk, setApiOk] = useState(false);
-
-    /**
-     * Check if the API is available.
-     */
-    useEffect(() => {
-        fetch("/api/ping_server")
-            .then(response => response.json())
-            .then(data => { if (data.status === "success") { setApiOk(true); }; })
-            .catch(error => { console.log(error); });
-    }, []);
-
-    /**
-     * Render the app.
-     */
     return (
-        <div className="app">
+        <div>
             <BrowserRouter>
-                <Header 
-                    routeDisplayNames={routeDisplayNames}
-                    apiOk={apiOk}
-                    navbarLinks={[
-                        { name: "Home", path: "/" },
-                        { name: "About", path: "/about" },
-                        // { name: "Changelog", path: "/changelog" }
-                    ]}
-                />
+                <Header widgetRoutes={widgets} />
                 <AppRoutes />
                 <Toast />
             </BrowserRouter>    
@@ -131,7 +82,6 @@ function App () {
     );
 };
 
-// Render the app.
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(<App />);
