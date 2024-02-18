@@ -115,27 +115,7 @@ const exampleSdfString = `5904
 M  END
 $$$$`;
 
-// =====================================================================================================================
-// Sidebar buttons.
-// =====================================================================================================================
-
-/**
- * SidebarButton Component
- *
- * This component represents a button element typically used within the sidebar of the MolTools application. It provides
- * options for user interaction and displays an icon along with a title.
- *
- * @param {Object} props - The props for the SidebarButton component.
- * @param {boolean} props.disabled - Indicates whether the button is disabled.
- * @param {JSX.Element} props.icon - The JSX element representing an icon to display within the button.
- * @param {string} props.title - The title or label to display alongside the icon.
- * @param {function} props.onClick - A function to be called when the button is clicked.
- * @returns {JSX.Element} The rendered SidebarButton component with icon, title, and click functionality.
- */
-const SidebarButton = (props) => {
-    // Destructure props into individual variables.
-    const { disabled, icon, title, onClick } = props;
-
+const SidebarButton = ({ disabled, icon, title, onClick }) => {
     return (
         <button className="cinemol-sidebar-button" onClick={onClick} disabled={disabled}>
             {icon}
@@ -144,26 +124,7 @@ const SidebarButton = (props) => {
     );
 };
 
-/**
- * SidebarCounter Component
- *
- * This component represents a counter with increment and decrement buttons, typically used within the sidebar of the
- * MolTools application. It provides options for user interaction, displays an icon, title, current value, and allows
- * users to increment or decrement the value.
- *
- * @param {Object} props - The props for the SidebarCounter component.
- * @param {boolean} props.disabled - Indicates whether the counter buttons are disabled.
- * @param {JSX.Element} props.icon - The JSX element representing an icon to display.
- * @param {string} props.title - The title or label to display alongside the icon.
- * @param {number} props.value - The current value of the counter.
- * @param {function} props.onIncrement - A function to be called when the increment button is clicked.
- * @param {function} props.onDecrement - A function to be called when the decrement button is clicked.
- * @returns {JSX.Element} The rendered SidebarCounter component with icon, title, value, and increment/decrement buttons.
- */
-const SidebarCounter = (props) => {
-    // Destructure props into individual variables.
-    const { disabled, icon, title, value, onIncrement, onDecrement } = props;
-
+const SidebarCounter = ({ disabled, icon, title, value, onIncrement, onDecrement } ) => {
     return (
         <div className="cinemol-sidebar-counter-container">
             <div>
@@ -178,30 +139,10 @@ const SidebarCounter = (props) => {
     );
 };
 
-/**
- * RotationCounter Component
- * 
- * This component represents a counter with increment and decrement buttons, typically used within the sidebar of the
- * MolTools application. It provides options for user interaction, displays an icon, title, current value, and allows
- * users to increment or decrement the value.
- * 
- * @param {Object} props - The props for the RotationCounter component.
- * @param {string} props.title - The title or label to display alongside the icon.
- * @param {boolean} props.isLoading - Indicates whether the counter buttons are disabled.
- * @param {number} props.rotation - The current value of the counter.
- * @param {function} props.setRotation - A function to be called when the increment button is clicked.
- * @returns {JSX.Element} The rendered RotationCounter component with icon, title, value, and increment/decrement buttons.
- */
-const RotationCounter = (props) => {
-    // Destructure props into individual variables.
-    const { title, isLoading, rotation, setRotation } = props;
-
+const RotationCounter = ({ title, isLoading, rotation, setRotation }) => {
     // Maximum rotation is 2 * pi - pi / 12.
     const maxRotation = 2 * Math.PI - Math.PI / 12;
     
-    /**
-     * Increment the rotation.
-     */
     const handleIncrement = () => {
         const incrementedValue = rotation + Math.PI / 12;
         setRotation(() =>
@@ -211,9 +152,6 @@ const RotationCounter = (props) => {
         );
     };
     
-    /**
-     * Decrement the rotation.
-     */
     const handleDecrement = () => {
         const decrementedValue = rotation - Math.PI / 12;
         setRotation(() =>
@@ -235,30 +173,9 @@ const RotationCounter = (props) => {
     );
 };  
 
-// =====================================================================================================================
-// Component for Sidebar.
-// =====================================================================================================================
-
-/**
- * Sidebar Component
- *
- * This component represents the sidebar in the "CineMol" section of the MolTools application. It provides options to
- * toggle the sidebar, display version information, and render buttons for user interaction.
- *
- * @param {Object} props - The props for the Sidebar component.
- * @param {boolean} props.isOpen - Indicates whether the sidebar is open or closed.
- * @param {function} props.toggleSidebar - A function to toggle the visibility of the sidebar.
- * @param {string} props.version - The version information to display.
- * @param {JSX.Element} props.buttons - Buttons or components for user interaction within the sidebar.
- * @returns {JSX.Element} The rendered Sidebar component with toggle, version, and buttons.
- */
-const Sidebar = (props) => {
-    // Destructure props into individual variables.
-    const { isOpen, toggleSidebar, version, buttons } = props;
-
+const Sidebar = ({ isOpen, toggleSidebar, version, buttons } ) => {
     return (
         <div className={"cinemol-sidebar" + (isOpen ? " open" : "")}>
-            {/* Button to toggle the sidebar */}
             <button onClick={toggleSidebar} className="cinemol-sidebar-toggle">
                 {isOpen ? 
                     <BsChevronDoubleLeft className="cinemol-sidebar-toggle-icon" />  
@@ -267,53 +184,13 @@ const Sidebar = (props) => {
                 }
             </button>
             <div className="cinemol-sidebar-content">
-                {/* Display the version information */}
                 <div className="cinemol-sidebar-version">Version {version}</div>
-                {/* Render buttons or components for user interaction */}
                 {buttons}
             </div>
         </div>
     );
 };
 
-// =====================================================================================================================
-// CineMol component.
-// =====================================================================================================================
-
-/**
- * CineMol component widget
- * 
- * This component represents the "CineMol" section of the MolTools application. It provides options for user interaction
- * and displays a 3D molecular model.
- * 
- * State Variables:
- * - version: The version of the CineMol component.
- * - mode: Dark or light background of the molecular model.
- * - svgString: SVG representation of the molecular model.
- * - sidebarOpen: Determines if the sidebar is collapsed or not.
- * - isLoading: App grays out when loading.
- * - initialRender: Initial render of the molecular model.
- * - sdfString: SDF string of the molecular model.
- * - style: Style of the molecular model.
- * - look: Look of the molecular model.
- * - includeHydrogens: Include hydrogens in the molecular model.
- * - resolution: Resolution of the molecular model.
- * - rotationX: Rotation over the x-axis of the molecular model in radians.
- * - rotationY: Rotation over the y-axis of the molecular model in radians.
- * - rotationZ: Rotation over the z-axis of the molecular model in radians.
- * - viewBox: View box of the molecular model.
- * 
- * Side Effects:
- * - When the component is rendered, the molecular model is drawn.
- * - When the component is rendered, the version of the CineMol component is retrieved.
- * - When the component is rendered, the sidebar is collapsed.
- * 
- * Usage:
- * - Include this component in your React application to create a molecule drawing widget.
- * - Requires the Sidebar, SidebarButton, and SidebarCounter components.
- * 
- * @returns {JSX.Element} The rendered CineMol component.
- */
 const CineMol = () => {
     // General state variables.
     const [version, setVersion] = useState("0.0.0");                    // Version of the CineMol component.
@@ -419,7 +296,6 @@ const CineMol = () => {
         const height = container.clientHeight - 5; // Add small margin to prevent vertical scrollbar.
 
         if (sdfString.length === 0) {
-            // Set is loading to false again.
             setIsLoading(false);
             return;
         };
@@ -448,8 +324,7 @@ const CineMol = () => {
             };
     
             const json = await response.json();
-            
-            // Unpack response.
+
             if (json.status === "success") {
                 setSvgString(json.payload.svg_string);
                 setViewBox(json.payload.view_box);
@@ -458,23 +333,16 @@ const CineMol = () => {
             } else if (json.status === "failure") {
                 toast.error(json.message);
             };
-    
-            // Set is loading to false again.
             setIsLoading(false);
 
         } catch (error) {
             const msg = "Could not parse SDF string!";
             toast.error(msg, { autoClose: true });
             console.error(error);
-    
-            // Set is loading to false again.
             setIsLoading(false);
         };
     };
 
-    /**
-     * Toggle style.
-     */
     const handleToggleStyle = () => {
         if        (style === "space-filling")   { setStyle("ball-and-stick");
         } else if (style === "ball-and-stick")  { setStyle("tube");
@@ -483,25 +351,16 @@ const CineMol = () => {
         } else                                  { setStyle("ball-and-stick"); }
     };
 
-    /**
-     * Toggle look.
-     */
     const handleToggleLook = () => {
         if        (look === "glossy")   { setLook("cartoon");
         } else if (look === "cartoon")  { setLook("glossy");
         } else                          { setLook("cartoon"); }
     };
-    
-    /**
-     * Toggle background style.
-     */
+
     const handleToggleMode = () => {
         if (mode === "dark") { setMode("light"); } else { setMode("dark"); };
     };
 
-    /**
-     * Reset the state variables.
-     */
     const handleReset = () => {
         setMode("dark");
         setSvgString("");
@@ -551,15 +410,12 @@ const CineMol = () => {
 
     return (
         <div className="cinemol">
-            {/* Sidebar component for user interaction */}
             <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSideBarOpen(!sidebarOpen)} version={version} buttons={buttons} />
             <div className={`cinemol-viewer-container ${mode}`}>
-                {/* Display the molecular model */}
                 <div className={`cinemol-viewer ${isLoading ? 'grayed-out' : ''}`} dangerouslySetInnerHTML={{ __html: svgString }} />
             </div>
         </div>
     );
 };
 
-// Export the CineMol component as the default export.
 export default CineMol;

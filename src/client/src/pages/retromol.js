@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { toast } from "react-toastify";
 
 const Overview = () => {
     return (
@@ -29,8 +30,52 @@ const Overview = () => {
 };
 
 const ParseMolecule = () => {
+    const [smiles, setSmiles] = useState("");
+    const [monomerGraph, setMonomerGraph] = useState({});
+
+    const parseMolecule = async () => {
+        try {
+            const response = await fetch("/api/parse_molecule", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ "smiles": smiles })
+            });
+
+            if (!response.ok) {
+                throw new Error("Network response was not ok!");
+            };
+
+            const json = await response.json();
+            
+            if (json.status === "success") {
+                setMonomerGraph(json.payload.monomer_graph);
+            } else if (json.status === "warning") {
+                toast.warn(json.message);
+            } else if (json.status === "failure") {
+                toast.error(json.message);
+            };
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
     return (
-        <div></div>
+        <div class="column is-full">
+            <div class="field">
+                <div 
+                    class="control"
+                >
+                    <input class="input" type="text" placeholder="Enter SMILES" onChange={(e) => setSmiles(e.target.value)} />
+                </div>
+            </div>
+            <div class="control">
+                <button class="button is-link is-light" style={{marginRight: "5px"}} onClick={parseMolecule}>Parse</button>
+                <button class="button is-link is-light" onClick={() => setMonomerGraph({})}>Clear</button>
+            </div>
+            <div>
+                
+            </div>
+        </div>
     );
 };
 
@@ -40,7 +85,7 @@ const ParseProtoCluster = () => {
     );
 };
 
-const QueryDatabase = () => {
+const EmbedResults = () => {
     return (
         <div></div>
     );
@@ -52,7 +97,7 @@ const RetroMol = () => {
 
     return (
         <div>
-            <div class="tabs is-boxed" style={{paddingTop: "20px"}}>
+            <div class="tabs is-boxed" style={{padding: "20px"}}>
                 <ul>
                     {tabs.map((tab, index) => (
                         <li 
@@ -65,11 +110,11 @@ const RetroMol = () => {
                     ))}
                 </ul>
             </div>
-            <div class="container" style={{paddingTop: "20px"}}>
+            <div class="container">
                 {selectedTab === "Overview" && <Overview />}
                 {selectedTab === "Parse molecule" && <ParseMolecule />}
                 {selectedTab === "Parse proto-cluster" && <ParseProtoCluster />}
-                {selectedTab === "Query database" && <QueryDatabase />}
+                {selectedTab === "Embed results" && <EmbedResults />}
             </div>
         </div>
     );

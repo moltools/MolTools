@@ -1,21 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import Plot from "react-plotly.js";
-import TextInput from "../components/TextInput";
 
-// =====================================================================================================================
-// PredictionView component.
-// =====================================================================================================================
-
-/**
- * PredictionView component displays a bar chart of predictions.
- * 
- * This component uses the Plotly library to render a bar chart of predictions.
- * 
- * @param {Object} props - The props for the PredictionView component.
- * @param {Object} props.predictions - A dictionary with class names as keys and probabilities as values.
- * @returns {JSX.Element} - The rendered PredictionView component.
- */
 const PredictionView = (props) => {
     // Parse predictions into Plotly format. Only keep the top 5 predictions and sort from highest to lowest probability.
     const predictions = props.predictions;
@@ -69,7 +55,6 @@ const PredictionView = (props) => {
         margin: { l: 100, r: 0, b: 0, t: 0, pad: 0 }
     };
 
-    // Only return the plot if predictions are available. Check this by verifying if props.predictions has any keys.
     if (Object.keys(props.predictions).length > 0) {
         return (
             <Plot
@@ -83,43 +68,27 @@ const PredictionView = (props) => {
     };
 };
 
-// =====================================================================================================================
-// Biosynfoni component.
-// =====================================================================================================================
+const Overview = () => {
+    return (
+        <div>
+            <h1 class="title">Biosynfoni</h1>
+            <p>
+                Biosynfoni is a tool for the prediction of the biosynthetic class of a given molecule. The scope of the tool
+                is to provide a user-friendly interface for the prediction of the biosynthetic class of a molecule, based on
+                its SMILES string representation. The tool is able to predict the biosynthetic class of a molecule using a
+                pre-trained machine learning model.
+            </p>
+        </div>
+    );
+};
 
-/**
- * Biosynfoni component widget
- * 
- * This component represents a widget for inputting SMILES (Simplified Molecular Input Line Entry System)
- * strings, sending them to a backend API for molecule drawing and biosynthetic class predictions,
- * and displaying the results.
- * 
- * State Variables:
- * - smiles: The SMILES string entered by the user.
- * - svgString: The SVG representation of the drawn molecule.
- * - predictions: Predictions related to the molecule's biosynthetic class.
- * 
- * Side Effects:
- * - Calls the 'drawSmiles' function to fetch and update 'svgString' when 'smiles' changes.
- * - Calls the 'getPredictions' function to fetch and update 'predictions' when 'smiles' changes.
- * - Displays toast messages for success, error, or warning messages from the backend.
- * 
- * Usage:
- * - Include this component in your React application to create a molecule drawing and prediction widget.
- * - Requires the 'TextInput' and 'PredictionView' components.
- * 
- * @returns {JSX.Element} The rendered Biosynfoni component.
- */
-const Biosynfoni = () => {
+const PredictMolecule = () => {
     const [smiles, setSmiles] = useState("");
     const [svgString, setSvgString] = useState("");
     const [predictions, setPredictions] = useState({});
     const [isLoading, setIsLoading] = useState(false);
 
-    // Send smiles to backend and receive predictions.
     const getPredictions = async () => {
-        
-        // Set isLoading to true, which disables submit button.
         setIsLoading(true);
 
         try {
@@ -135,7 +104,6 @@ const Biosynfoni = () => {
     
             const json = await response.json();
             
-            // Unpack response.
             if (json.status === "success") {
                 setPredictions(json.payload.predictions);
                 setSvgString(json.payload.svg_string);
@@ -151,13 +119,15 @@ const Biosynfoni = () => {
             console.error(error);
         };
 
-        // Set isLoading to false, which enables submit button.
         setIsLoading(false);
     };
 
-    // Every time smiles is updated, send smiles to backend and receive svgString of drawn molecule.
+    const clearPredictions = () => {
+        setPredictions({});
+        setSvgString("");
+    };
+
     React.useEffect(() => {
-        // Send smiles to backend and receive svgString of drawn molecule.
         const drawSmiles = async () => {
             try {
                 const response = await fetch("/api/draw_smiles", {
@@ -193,68 +163,52 @@ const Biosynfoni = () => {
         };
     }, [smiles]);
 
-    // Render the Biosynfoni widget.
     return (
-        <div className="biosynfoni">
-            <div className="biosynfoni-input-container">
-                {/* TextInput component */}
-                <TextInput 
-                    className="biosynfoni-smiles-input"
-                    locked={isLoading} 
-                    active={false} 
-                    value="" 
-                    error="" 
-                    label="Enter SMILES" 
-                    setValue={setSmiles}
-                />
-                {/* Button to submit the SMILES */}
-                <button 
-                    disabled={isLoading}
-                    className="biosynfoni-submit-button"
-                    onClick={() => {
-                        if (smiles) {
-                            getPredictions();
-                        } else {
-                            toast.error("First enter a SMILES string!");
-                        }
-                    }}  
+        <div class="column is-full">
+            <div class="field">
+                <div 
+                    class="control"
                 >
-                    Submit
-                </button>
-            </div>
-            <div className="biosynfoni-result-container">
-                <div className="biosynfoni-mol-view">
-                    {/* Render the SVG string as HTML */}
-                    <div dangerouslySetInnerHTML={{ __html: svgString }} />
-                </div>
-                <div className="biosynfoni-pred-view">
-                    {/* Render the PredictionView component with 'predictions' */}
-                    <PredictionView predictions={predictions} />
+                    <input class="input" type="text" placeholder="Enter SMILES" onChange={(e) => setSmiles(e.target.value)} />
                 </div>
             </div>
-            <div className="biosynfoni-link-container">
-                {/* Doi with link to paper */}
-                {/* <a 
-                    className="biosynfoni-paper-link"
-                    href=""
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    10.1186/s13321-022-00616-5
-                </a> */}
-                {/* Link with doi to paper */}
-                <a 
-                    className="biosynfoni-github-link"
-                    href="https://github.com/lucinamay/biosynfoni"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    github.com/lucinamay/biosynfoni
-                </a>
+            <div class="control">
+                <button class="button is-link is-light" style={{marginRight: "5px"}} onClick={getPredictions}>Submit</button>
+                <button class="button is-link is-light" onClick={clearPredictions}>Clear</button>
+            </div>
+            <div>
+                <div dangerouslySetInnerHTML={{ __html: svgString }} />
+                <PredictionView predictions={predictions} />
+            </div>
+        </div>
+    );
+};     
+
+const Biosynfoni = () => {
+    const tabs = ["Overview", "Predict biosynthetic class"];
+    const [selectedTab, setSelectedTab] = useState("Overview");
+
+    return (
+        <div>
+            <div class="tabs is-boxed" style={{padding: "20px"}}>
+                <ul>
+                    {tabs.map((tab, index) => (
+                        <li 
+                            key={index}
+                            class={selectedTab === tab ? "is-active" : ""}
+                            onClick={() => setSelectedTab(tab)}
+                        >
+                            <a>{tab}</a>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div class="container">
+                {selectedTab === "Overview" && <Overview />}
+                {selectedTab === "Predict biosynthetic class" && <PredictMolecule />}
             </div>
         </div>
     );
 };
 
-// Export the Biosynfoni component as the default export.
 export default Biosynfoni;

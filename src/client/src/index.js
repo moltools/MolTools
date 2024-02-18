@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
-import { FiHexagon } from "react-icons/fi";
+import { FiGithub, FiPaperclip } from "react-icons/fi";
 import "./style/main.css";
 import Header from "./components/Header";
 import Toast from "./components/Toast";
@@ -16,27 +16,45 @@ const widgets = [
     { 
         name: "RetroMol", 
         description: "Discover biosynthetically similar molecules", 
+        logo: "/widgets/retromol.svg",
+        links: [
+            { icon: <FiGithub />, name: "GitHub", url: "https://github.com/moltools/RetroMol"},
+        ],
         path: "/retromol", 
         component: <RetroMol />
     },
-    // { 
-    //     name: "CineMol", 
-    //     description: "Draw 3D molecule model", 
-    //     path: "/cinemol",
-    //     component: <CineMol />
-    // },
-    // {
-    //     name: "Biosynfoni", 
-    //     description: "Predict biosynthetic class", 
-    //     path: "/biosynfoni",
-    //     component: <Biosynfoni />
-    // },
-    // { 
-    //     name: "PIKAChU", 
-    //     description: "Draw 2D structural formula", 
-    //     path: "/pikachu",
-    //     component: <PIKAChU /> 
-    // },
+    { 
+        name: "CineMol", 
+        description: "Draw 3D molecule model", 
+        logo: "/widgets/cinemol.svg",
+        links: [
+            { icon: <FiGithub />, name: "GitHub", url: "https://github.com/moltools/CineMol"},
+            { icon: <FiPaperclip />, name: "Paper", url: "https://chemrxiv.org/engage/chemrxiv/article-details/65bbb3c966c1381729bd6e27"}
+        ],
+        path: "/cinemol",
+        component: <CineMol />
+    },
+    {
+        name: "Biosynfoni", 
+        description: "Predict biosynthetic class", 
+        logo: "/widgets/biosynfoni.svg",
+        links: [
+            { icon: <FiGithub />, name: "GitHub", url: "https://github.com/lucinamay/biosynfoni"},
+        ],
+        path: "/biosynfoni",
+        component: <Biosynfoni />
+    },
+    { 
+        name: "PIKAChU", 
+        description: "Draw 2D structural formula", 
+        logo: "/widgets/moltools.svg",
+        links: [
+            { icon: <FiGithub />, name: "GitHub", url: "https://github.com/BTheDragonMaster/pikachu"},
+            { icon: <FiPaperclip />, name: "Paper", url: "https://jcheminf.biomedcentral.com/articles/10.1186/s13321-022-00616-5"}
+        ],
+        path: "/pikachu",
+        component: <PIKAChU /> 
+    },
 ];
 
 function AppRoutes () {

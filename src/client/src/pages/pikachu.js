@@ -1,23 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import TextInput from "../components/TextInput";
 
-// =====================================================================================================================
-// PIKAChU component.
-// =====================================================================================================================
+const Overview = () => {
+    return (
+        <div>
+            <h1 class="title">PIKAChU</h1>
+            <p>
+                The Python-based Informatics Kit for the Analysis of Chemical Units (PIKAChU) is cheminformatics toolkit 
+                fully written in Python, without any external dependencies. PIKAChU is designed to be a lightweight, 
+                easy-to-use, and efficient toolkit for the analysis of chemical units, such as molecules and reactions.
+                It is able to draw a molecule using only the SMILES string representation of the molecule.
+            </p>
+        </div>
+    );
+};
 
-/**
- * PICAChU Component
- *
- * This component represents the "PIKAChU" section of the MolTools application. 
- *
- * @returns {JSX.Element} The rendered PIKAChU component.
- */
-const PIKAChU = () => {
+const DrawMolecule = () => {
     const [smiles, setSmiles] = useState("");
     const [svgString, setSvgString] = useState("");
 
-    // Downloads the SVG representation of the molecular model.
     const handleDownloadSvgString = () => {
         if (svgString.length > 0) {
             const blob = new Blob([svgString], { type: "image/svg+xml" });
@@ -34,9 +35,7 @@ const PIKAChU = () => {
         }
     };
 
-    // Every time smiles is updated, send smiles to backend and receive svgString of drawn molecule.
     React.useEffect(() => {
-        // Draw SMILES.
         const drawSmiles = async () => {
             try {
                 const response = await fetch("/api/draw_smiles_with_pikachu", {
@@ -51,7 +50,6 @@ const PIKAChU = () => {
 
                 const json = await response.json();
                 
-                // Unpack response.
                 if (json.status === "success") {
                     setSvgString(json.payload.svg_string);
                 } else if (json.status === "warning") {
@@ -73,61 +71,50 @@ const PIKAChU = () => {
     }, [smiles]);
 
     return (
-        <div className="pikachu">
-            <div className="biosynfoni-input-container">
-                {/* TextInput component */}
-                <TextInput 
-                    className="pikachu-smiles-input"
-                    locked={false} 
-                    active={false} 
-                    value="" 
-                    error="" 
-                    label="Enter SMILES" 
-                    setValue={setSmiles}
-                />
-                {/* Button to submit the SMILES */}
-                <button 
-                    className="pikachu-submit-button"
-                    onClick={() => {
-                        if (smiles) {
-                            handleDownloadSvgString();
-                        } else {
-                            toast.error("First enter a SMILES string!");
-                        }
-                    }}  
+        <div class="column is-full">
+            <div class="field">
+                <div 
+                    class="control"
                 >
-                    Download
-                </button>
-            </div>
-            <div className="pikachu-container">
-                <div className="pikachu-mol-view">
-                    {/* Render the SVG string as HTML */}
-                    <div dangerouslySetInnerHTML={{ __html: svgString }} />
+                    <input class="input" type="text" placeholder="Enter SMILES" onChange={(e) => setSmiles(e.target.value)} />
                 </div>
             </div>
-            <div className="pikachu-link-container">
-                {/* Doi with link to paper */}
-                <a 
-                    className="pikachu-paper-link"
-                    href="https://jcheminf.biomedcentral.com/articles/10.1186/s13321-022-00616-5"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    10.1186/s13321-022-00616-5
-                </a>
-                {/* Link with doi to paper */}
-                <a 
-                    className="pikachu-github-link"
-                    href="https://github.com/BTheDragonMaster/pikachu"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                >
-                    github.com/BTheDragonMaster/pikachu
-                </a>
+            <div class="control">
+                <button class="button is-link is-light" style={{marginRight: "5px"}} onClick={handleDownloadSvgString}>Download</button>
+                <button class="button is-link is-light" onClick={() => setSvgString("")}>Clear</button>
+            </div>
+            <div>
+                <div dangerouslySetInnerHTML={{ __html: svgString }} />
+            </div>
+        </div>
+    );
+};      
+
+const PIKAChU = () => {
+    const tabs = ["Overview", "Draw molecule"];
+    const [selectedTab, setSelectedTab] = useState("Overview");
+
+    return (
+        <div>
+            <div class="tabs is-boxed" style={{padding: "20px"}}>
+                <ul>
+                    {tabs.map((tab, index) => (
+                        <li 
+                            key={index}
+                            class={selectedTab === tab ? "is-active" : ""}
+                            onClick={() => setSelectedTab(tab)}
+                        >
+                            <a>{tab}</a>
+                        </li>
+                    ))}
+                </ul>
+            </div>
+            <div class="container">
+                {selectedTab === "Overview" && <Overview />}
+                {selectedTab === "Draw molecule" && <DrawMolecule />}
             </div>
         </div>
     );
 };
 
-// Export the PICAChU component as the default export.
 export default PIKAChU;

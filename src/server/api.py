@@ -5,8 +5,6 @@ from routes.pikachu import blueprint_draw_smiles_with_pikachu
 from routes.chemistry import blueprint_draw_smiles
 from routes.biosynfoni import blueprint_predict_biosynthetic_class
 from routes.cinemol import blueprint_draw_model, blueprint_fetch_cinemol_version
-from routes.paras import blueprint_predict_paras
-from routes.parasect import blueprint_predict_parasect
 
 app = Flask(__name__)
 app.register_blueprint(blueprint_ping_server)
@@ -15,8 +13,6 @@ app.register_blueprint(blueprint_draw_smiles)
 app.register_blueprint(blueprint_predict_biosynthetic_class)
 app.register_blueprint(blueprint_draw_model)
 app.register_blueprint(blueprint_fetch_cinemol_version)
-app.register_blueprint(blueprint_predict_paras)
-app.register_blueprint(blueprint_predict_parasect)
 
 @app.errorhandler(404)
 def not_found(e) -> Response:

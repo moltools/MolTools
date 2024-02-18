@@ -1,35 +1,15 @@
-/* Define CSS custom properties (variables) in :root */
-:root {
-    --default-padding: 20px; 
-    --header-height: 50px; 
-    --tile-size: 250px;
-    --tile-padding: 5px; 
-}
-
-/* Import external CSS files */
 @import "bulma/css/bulma.css";
 @import "components/toast.css";
 @import "components/file-picker.css";
-@import "components/text-input.css";
-@import "home.css"; 
 @import "cinemol.css";   
-@import "biosynfoni.css";
-@import "pikachu.css";
 
-/* Apply styles to all elements in the HTML document */
 * {
     font-family: "Arial", sans-serif;
     color: black;                 
 }
 
-/* Reset margin for the html and body elements */
 html, body {
     margin: 0;
-}
-
-.app {
-    height: 100vh; 
-    overflow: hidden;
 }
 
 .widget {
@@ -46,19 +26,4 @@ html, body {
 
 .fade-out {
     opacity: 0; /* Set opacity to 0 (completely invisible) for fading out */
-}
-
-.widget-content {
-    padding: var(--default-padding);
-}
-
-/* Define a keyframe animation named 'spin' for rotating elements */
-@keyframes spin {
-    0% { transform: rotate(0deg); }     /* Starting point of the rotation */
-    100% { transform: rotate(360deg); } /* Ending point of the rotation (full circle) */
-}
-
-/* Apply the 'spin' animation to elements with the 'spin' class */
-.spin {
-    animation: spin 0.5s linear infinite; /* Apply the 'spin' animation with infinite looping */
 }
