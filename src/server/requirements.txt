@@ -2,6 +2,8 @@ flask
 gunicorn
 rdkit
 scikit-learn==1.3.0
+networkx
+git+https://github.com/moltools/retromol.git
 git+https://github.com/moltools/cinemol.git
 git+https://github.com/moltools/biosynfoni.git 
 git+https://github.com/moltools/pikachu.git

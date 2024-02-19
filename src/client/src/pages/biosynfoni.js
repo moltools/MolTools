@@ -123,6 +123,7 @@ const PredictMolecule = () => {
     };
 
     const clearPredictions = () => {
+        setSmiles("");
         setPredictions({});
         setSvgString("");
     };
@@ -163,22 +164,31 @@ const PredictMolecule = () => {
         };
     }, [smiles]);
 
+    const loadExample = () => {
+        setSmiles("CCC1C(C(C(C(=O)C(CC(C(C(C(C(C(=O)O1)C)OC2CC(C(C(O2)C)O)(C)OC)C)OC3C(C(CC(O3)C)N(C)C)O)(C)O)C)C)O)(C)O");
+    };
+
     return (
         <div class="column is-full">
             <div class="field">
                 <div 
                     class="control"
                 >
-                    <input class="input" type="text" placeholder="Enter SMILES" onChange={(e) => setSmiles(e.target.value)} />
+                    <input class="input" value={smiles} type="text" placeholder="Enter SMILES" onChange={(e) => setSmiles(e.target.value)} />
                 </div>
             </div>
             <div class="control">
+                <button class="button is-link is-light" style={{marginRight: "5px"}} onClick={loadExample}>Example</button>
                 <button class="button is-link is-light" style={{marginRight: "5px"}} onClick={getPredictions}>Submit</button>
                 <button class="button is-link is-light" onClick={clearPredictions}>Clear</button>
             </div>
-            <div>
-                <div dangerouslySetInnerHTML={{ __html: svgString }} />
-                <PredictionView predictions={predictions} />
+            <div class="columns" style={{marginTop: "5px"}}>
+                <div class="column has-text-centered" style={{margin: "5px"}}>
+                    <div dangerouslySetInnerHTML={{ __html: svgString }} />
+                </div>
+                <div class="column has-text-centered" style={{margin: "5px"}}>
+                    <PredictionView predictions={predictions} />
+                </div>
             </div>
         </div>
     );

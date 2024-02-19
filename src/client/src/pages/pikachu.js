@@ -70,21 +70,31 @@ const DrawMolecule = () => {
         };
     }, [smiles]);
 
+    const loadExample = () => {
+        setSmiles("CCC1C(C(C(C(=O)C(CC(C(C(C(C(C(=O)O1)C)OC2CC(C(C(O2)C)O)(C)OC)C)OC3C(C(CC(O3)C)N(C)C)O)(C)O)C)C)O)(C)O");
+    };
+
+    const clear = () => {
+        setSmiles("");
+        setSvgString("");
+    };
+
     return (
         <div class="column is-full">
             <div class="field">
                 <div 
                     class="control"
                 >
-                    <input class="input" type="text" placeholder="Enter SMILES" onChange={(e) => setSmiles(e.target.value)} />
+                    <input class="input" value={smiles} type="text" placeholder="Enter SMILES" onChange={(e) => setSmiles(e.target.value)} />
                 </div>
             </div>
             <div class="control">
+                <button class="button is-link is-light" style={{marginRight: "5px"}} onClick={loadExample}>Example</button>
                 <button class="button is-link is-light" style={{marginRight: "5px"}} onClick={handleDownloadSvgString}>Download</button>
-                <button class="button is-link is-light" onClick={() => setSvgString("")}>Clear</button>
+                <button class="button is-link is-light" onClick={clear}>Clear</button>
             </div>
-            <div>
-                <div dangerouslySetInnerHTML={{ __html: svgString }} />
+            <div class="columns">
+                <div class="column has-text-centered" dangerouslySetInnerHTML={{ __html: svgString }} />
             </div>
         </div>
     );
