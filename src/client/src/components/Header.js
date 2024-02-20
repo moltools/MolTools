@@ -25,7 +25,7 @@ const Header = ({ widgetRoutes }) => {
             className="navbar has-navbar-fixed-top"
             role="navigation" 
             aria-label="main-navigation"
-            style={{top: 0, width: "100%", zIndex: 100, boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)"}}
+            style={{top: 0, width: "100%", zIndex: 1000, boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)"}}
         >
             <div className="navbar-brand">
                 <a className="navbar-item" href="/" style={{cursor: "pointer"}}>

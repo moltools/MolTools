@@ -173,24 +173,6 @@ const RotationCounter = ({ title, isLoading, rotation, setRotation }) => {
     );
 };  
 
-const Sidebar = ({ isOpen, toggleSidebar, version, buttons } ) => {
-    return (
-        <div className={"cinemol-sidebar" + (isOpen ? " open" : "")}>
-            <button onClick={toggleSidebar} className="cinemol-sidebar-toggle">
-                {isOpen ? 
-                    <BsChevronDoubleLeft className="cinemol-sidebar-toggle-icon" />  
-                    : 
-                    <BsChevronDoubleRight className="cinemol-sidebar-toggle-icon" /> 
-                }
-            </button>
-            <div className="cinemol-sidebar-content">
-                <div className="cinemol-sidebar-version">Version {version}</div>
-                {buttons}
-            </div>
-        </div>
-    );
-};
-
 const CineMol = () => {
     // General state variables.
     const [version, setVersion] = useState("0.0.0");                    // Version of the CineMol component.
@@ -210,6 +192,9 @@ const CineMol = () => {
     const [rotationY, setRotationY] = useState(0.0);                    // Rotation over the y-axis of the molecular model in radians.
     const [rotationZ, setRotationZ] = useState(0.0);                    // Rotation over the z-axis of the molecular model in radians.
     const [viewBox, setViewBox] = useState(undefined);                  // View box of the molecular model.
+    const [width, setWidth] = useState(500);                            // Width of the molecular model.
+    const [height, setHeight] = useState(500);                          // Height of the molecular model.
+
 
     // Downloads the SVG representation of the molecular model.
     const handleDownloadSvgString = () => {
@@ -284,16 +269,6 @@ const CineMol = () => {
     const handleDrawModel = async () => {
         // Set is loading to true, which grays out model and deactivates buttons.
         setIsLoading(true);
-
-        // Get dimensions parent container.
-        const container = document.querySelector(".cinemol-viewer-container");
-        var sidebarWidth = 0;
-        if (sidebarOpen) {
-            const sidebar = document.querySelector(".cinemol-sidebar");
-            sidebarWidth = sidebar.clientWidth;
-        };
-        const width = container.clientWidth - sidebarWidth - 5; // Add small margin to prevent horizontal scrollbar.
-        const height = container.clientHeight - 5; // Add small margin to prevent vertical scrollbar.
 
         if (sdfString.length === 0) {
             setIsLoading(false);
@@ -373,6 +348,8 @@ const CineMol = () => {
         setRotationY(0.0);
         setRotationZ(0.0);
         setViewBox(undefined);
+        setWidth(500);
+        setHeight(500);
     };
 
     /**
@@ -386,17 +363,17 @@ const CineMol = () => {
         } else {
             handleDrawModel();
         }
-    }, [sdfString, style, look, includeHydrogens, resolution, rotationX, rotationY, rotationZ]);
+    }, [sdfString, style, look, includeHydrogens, resolution, rotationX, rotationY, rotationZ, width, height]);
 
     // Sidebar buttons.
     const buttons = [
-        <SidebarButton key={1} disabled={isLoading} icon={<BsFillCloudUploadFill />} title="Upload SDF file" onClick={handleUploadSdfFile} />,
-        <SidebarButton key={2} disabled={isLoading} icon={<BsFillCloudDownloadFill />} title="Download model as SVG" onClick={handleDownloadSvgString} />,
-        <SidebarButton key={3} disabled={isLoading} icon={<BsFillDatabaseFill />} title="Load example: penicillin G" onClick={ () => setSdfString(exampleSdfString) } />,
-        <SidebarButton key={4} disabled={isLoading} icon={<BsBrushFill />} title={`Toggle style: ${style}`}  onClick={handleToggleStyle} />,
-        <SidebarButton key={5} disabled={isLoading} icon={<BsEyeFill />} title={`Toggle look: ${look}`}  onClick={handleToggleLook} />,
-        <SidebarButton key={6} disabled={isLoading} icon={<BsDropletFill />} title={`Toggle hydrogens: ${includeHydrogens ? "true" : "false"}`} onClick={ () => setIncludeHydrogens(!includeHydrogens) } />,
-        <SidebarButton key={7} disabled={isLoading} icon={<BsCircleHalf />} title={`Toggle background: ${mode}`} onClick={handleToggleMode} />,
+        // <SidebarButton key={1} disabled={isLoading} icon={<BsFillCloudUploadFill />} title="Upload SDF file" onClick={handleUploadSdfFile} />,
+        // <SidebarButton key={2} disabled={isLoading} icon={<BsFillCloudDownloadFill />} title="Download model as SVG" onClick={handleDownloadSvgString} />,
+        // <SidebarButton key={3} disabled={isLoading} icon={<BsFillDatabaseFill />} title="Load example: penicillin G" onClick={ () => setSdfString(exampleSdfString) } />,
+        // <SidebarButton key={4} disabled={isLoading} icon={<BsBrushFill />} title={`Toggle style: ${style}`}  onClick={handleToggleStyle} />,
+        // <SidebarButton key={5} disabled={isLoading} icon={<BsEyeFill />} title={`Toggle look: ${look}`}  onClick={handleToggleLook} />,
+        // <SidebarButton key={6} disabled={isLoading} icon={<BsDropletFill />} title={`Toggle hydrogens: ${includeHydrogens ? "true" : "false"}`} onClick={ () => setIncludeHydrogens(!includeHydrogens) } />,
+        // <SidebarButton key={7} disabled={isLoading} icon={<BsCircleHalf />} title={`Toggle background: ${mode}`} onClick={handleToggleMode} />,
         <SidebarCounter key={9} disabled={isLoading} icon={<BsFillLightningFill />} title="Resolution" value={resolution} 
             onIncrement={ () => { if (resolution < 100) { setResolution(resolution + 5) } } } 
             onDecrement={ () => { if (resolution >= 30) { setResolution(resolution - 5) } } }
@@ -404,17 +381,161 @@ const CineMol = () => {
         <RotationCounter key={10} title="Rotation X (rad)" isLoading={isLoading} rotation={rotationX} setRotation={setRotationX}/>,
         <RotationCounter key={11} title="Rotation Y (rad)" isLoading={isLoading} rotation={rotationY} setRotation={setRotationY}/>,
         <RotationCounter key={12} title="Rotation Z (rad)" isLoading={isLoading} rotation={rotationZ} setRotation={setRotationZ}/>,
-        <SidebarButton key={13} disabled={isLoading} icon={<BsArrowRepeat />} title="Reset" onClick={handleReset} />,
-        <SidebarButton key={8} disabled={isLoading} icon={<BsGithub />} title="Open GitHub issues" onClick={ () => window.open("https://github.com/moltools/CineMol/issues", "_blank") } />,
+        // <SidebarButton key={13} disabled={isLoading} icon={<BsArrowRepeat />} title="Reset" onClick={handleReset} />,
+        // <SidebarButton key={8} disabled={isLoading} icon={<BsGithub />} title="Open GitHub issues" onClick={ () => window.open("https://github.com/moltools/CineMol/issues", "_blank") } />,
     ];
 
     return (
-        <div className="cinemol">
-            <Sidebar isOpen={sidebarOpen} toggleSidebar={() => setSideBarOpen(!sidebarOpen)} version={version} buttons={buttons} />
-            <div className={`cinemol-viewer-container ${mode}`}>
-                <div className={`cinemol-viewer ${isLoading ? 'grayed-out' : ''}`} dangerouslySetInnerHTML={{ __html: svgString }} />
+        <div 
+            id="cinemol"
+            class="columns is-fullheight"
+        >
+            {isLoading && <div 
+                class="column is-loading" 
+                style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", zIndex:999, position: "absolute", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}
+            />}
+            <div 
+                class="column is-3 is-sidebar-menu" 
+                style={{ backgroundColor: "#d3d3d3", minWidth: "300px"}}
+            >
+                <aside class="menu" style={{ marginTop: "1.5rem", marginLeft: "1.5rem" }}>
+                    <p class="menu-label">
+                        General
+                    </p>
+                    <ul class="menu-list">
+                        <li onClick={handleUploadSdfFile} disabled={isLoading}><a>Upload SDF</a></li>
+                        <li onClick={handleDownloadSvgString} disabled={isLoading}><a>Download SVG</a></li>
+                        <li onClick={ () => setSdfString(exampleSdfString) } disabled={isLoading}><a>Load Example</a></li>
+                        <li onClick={handleReset} disabled={isLoading}><a>Reset</a></li>
+                    </ul>
+                    <p class="menu-label">
+                        Settings
+                    </p>
+                    <ul class="menu-list">
+                        <li onClick={handleToggleStyle} disabled={isLoading}><a>Toggle Style: {style}</a></li>
+                        <li onClick={handleToggleLook} disabled={isLoading}><a>Toggle Look: {look}</a></li>
+                        <li onClick={ () => setIncludeHydrogens(!includeHydrogens) } disabled={isLoading}><a>Toggle Hydrogens: {includeHydrogens ? "true" : "false"}</a></li>
+                        <li onClick={handleToggleMode} disabled={isLoading}><a>Toggle Background: {mode}</a></li>
+                    </ul>
+                    <ul class="menu-list">
+                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p class="control">
+                                <button class="button">
+                                    <span className="has-text-left" style={{"width": "150px"}}>Resolution: {resolution}</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (resolution >= 30) { setResolution(resolution - 5) } } }>
+                                    <span>-</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (resolution < 100) { setResolution(resolution + 5) } } }>
+                                    <span>+</span>
+                                </button>
+                            </p>
+                        </div>
+                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p class="control">
+                                <button class="button">
+                                    <span className="has-text-left" style={{"width": "150px"}}>Width: {width}</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (width >= 100) { setWidth(width - 50) } } }>
+                                    <span>-</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (width < 1000) { setWidth(width + 50) } } }>
+                                    <span>+</span>
+                                </button>
+                            </p>
+                        </div>
+                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p class="control">
+                                <button class="button">
+                                    <span className="has-text-left" style={{"width": "150px"}}>Height: {height}</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (height >= 100) { setHeight(height - 50) } } }>
+                                    <span>-</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (height < 1000) { setHeight(height + 50) } } }>
+                                    <span>+</span>
+                                </button>
+                            </p>
+                        </div>
+                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p class="control">
+                                <button class="button">
+                                    <span className="has-text-left" style={{"width": "150px"}}>Rotation X: {rotationX}</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationX > 0) { setRotationX(Math.round((rotationX - Math.PI / 12) * 10) / 10) } } }>
+                                    <span>-</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationX < 2 * Math.PI) { setRotationX(Math.round((rotationX + Math.PI / 12) * 10) / 10) } } }>
+                                    <span>+</span>
+                                </button>
+                            </p>
+                        </div>
+                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p class="control">
+                                <button class="button">
+                                    <span className="has-text-left" style={{"width": "150px"}}>Rotation Y: {rotationY}</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationY > 0) { setRotationY(Math.round((rotationY - Math.PI / 12) * 10) / 10) } } }>
+                                    <span>-</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationY < 2 * Math.PI) { setRotationY(Math.round((rotationY + Math.PI / 12) * 10) / 10) } } }>
+                                    <span>+</span>
+                                </button>
+                            </p>
+                        </div>
+                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p class="control">
+                                <button class="button">
+                                    <span className="has-text-left" style={{"width": "150px"}}>Rotation Z: {rotationZ}</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationZ > 0) { setRotationZ(Math.round((rotationZ - Math.PI / 12) * 10) / 10) } } }>
+                                    <span>-</span>
+                                </button>
+                            </p>
+                            <p class="control">
+                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationZ < 2 * Math.PI) { setRotationZ(Math.round((rotationZ + Math.PI / 12) * 10) / 10) } } }>
+                                    <span>+</span>
+                                </button>
+                            </p>
+                        </div>
+                    </ul>
+                    <hr />
+                    <p class="menu-label
+                    ">
+                        Information
+                    </p>
+                    <ul class="menu-list">
+                        <li><a>Version: {version}</a></li>
+                    </ul>
+
+                </aside>
             </div>
-        </div>
+            <div class="column is-main-content" style={{ backgroundColor: mode === "dark" ? "#363636" : "#f5f5f5" }}>
+                <div dangerouslySetInnerHTML={{ __html: svgString }} />
+            </div>
+        </div> 
     );
 };
 

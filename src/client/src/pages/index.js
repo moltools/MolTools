@@ -25,7 +25,7 @@ const Home = ( { widgets }) => {
                         <div class="content">
                             <div class="buttons" style={{marginBottom: 0}}>
                                 {widget.links.map((link, index) => (
-                                    <p class="control" key={index} style={{margin: 5}}>
+                                    <p class="control" key={index} style={{marginTop: 5, marginBottom: 5, marginRight: 5}}>
                                         <a 
                                             href={link.url} 
                                             target="_blank"

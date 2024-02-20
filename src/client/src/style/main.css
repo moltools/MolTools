@@ -1,7 +1,5 @@
+@import "react-toastify/dist/ReactToastify.css";
 @import "bulma/css/bulma.css";
-@import "components/toast.css";
-@import "components/file-picker.css";
-@import "cinemol.css";   
 
 * {
     font-family: "Arial", sans-serif;
@@ -12,10 +10,22 @@ html, body {
     margin: 0;
 }
 
+.Toastify__toast {
+    border-radius: 5;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #d6d6d6;
+    padding: 10px;
+    font-family: var(--main-font);
+    box-shadow: 0 5px 5px rgba(0, 0, 0, 0.3);
+    background-color: white;
+    color: black;
+}
+
+
 .widget {
     opacity: 1;                     
     transition: opacity 0.5s ease-in-out;
-    height: calc(100% - var(--header-height));
     overflow: auto;
     background-color: transparent;
 }

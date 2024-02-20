@@ -9,6 +9,7 @@
         "bulma": "^0.9.4",
         "react": "^18.1.0",
         "react-dom": "^18.1.0",
+        "react-force-graph": "^1.44.3",
         "react-icons": "^4.10.1",
         "react-markdown": "^8.0.7",
         "react-plotly.js": "^2.6.0",

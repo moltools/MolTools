@@ -2,3 +2,6 @@
 
 # Exclude .pkl model files
 *.pkl
+*.joblib
+embedding_identifiers.txt
+*.npy
