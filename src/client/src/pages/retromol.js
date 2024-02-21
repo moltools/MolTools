@@ -219,9 +219,9 @@ const ParseMolecule = () => {
                 </div>
             </div>
             <div className="control">
-                <button className="button is-link is-light" style={{marginRight: "5px"}} onClick={loadExample} disabled={isLoading}>Load example</button>
-                <button className="button is-link is-light" style={{marginRight: "5px"}} onClick={parseMolecule} disabled={isLoading}>Parse</button>
-                <button className="button is-link is-light" style={{marginRight: "5px"}} onClick={clear} disabled={isLoading}>Clear</button>
+                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={loadExample} disabled={isLoading}>Load example</button>
+                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={parseMolecule} disabled={isLoading}>Parse</button>
+                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={clear} disabled={isLoading}>Clear</button>
                 <button 
                     className="button is-link is-light" 
                     onClick={() => {

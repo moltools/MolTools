@@ -313,8 +313,8 @@ const CineMol = () => {
                 style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", zIndex:999, position: "absolute", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}
             />}
             <div 
-                class="column is-narrow is-sidebar-menu is-fullheight"
-                style={{ backgroundColor: "#d3d3d3", width: "270px"}}
+                class="column is-narrow is-3is-sidebar-menu is-fullheight"
+                style={{ backgroundColor: "#d3d3d3", minWidth: "275px"}}
             >
                 <section className="hero is-fullheight" style={{marginTop: "-4rem", paddingTop: "4rem"}}>
                 <aside class="menu" style={{ marginTop: "1.5rem", marginLeft: "1.5rem" }}>
@@ -429,7 +429,10 @@ const CineMol = () => {
                     ">
                         Information
                     </p>
-                    <ul class="menu-list">
+                    <ul 
+                        class="menu-list" 
+                        onClick={ () => window.open("https://github.com/moltools/CineMol", "_blank") }
+                    >
                         <li><a>Version: {version}</a></li>
                     </ul>
 
