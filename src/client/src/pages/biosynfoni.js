@@ -213,7 +213,7 @@ const Biosynfoni = () => {
                     ))}
                 </ul>
             </div>
-            <div class="container">
+            <div class="container" style={{padding: "20px"}}>
                 {selectedTab === "Overview" && <Overview />}
                 {selectedTab === "Predict biosynthetic class" && <PredictMolecule />}
             </div>

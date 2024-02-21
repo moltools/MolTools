@@ -119,7 +119,7 @@ const PIKAChU = () => {
                     ))}
                 </ul>
             </div>
-            <div class="container">
+            <div class="container" style={{padding: "20px"}}>
                 {selectedTab === "Overview" && <Overview />}
                 {selectedTab === "Draw molecule" && <DrawMolecule />}
             </div>

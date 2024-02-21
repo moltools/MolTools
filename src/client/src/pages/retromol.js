@@ -4,7 +4,7 @@ import { ForceGraph2D } from "react-force-graph";
 
 const Overview = () => {
     return (
-        <div>
+        <div> 
             <h1 className="title">RetroMol</h1>
             <p>
                 RetroMol is a tool for the generation of retrosynthetic trees for a given molecule, with the purpose
@@ -364,7 +364,7 @@ const RetroMol = () => {
                     ))}
                 </ul>
             </div>
-            <div className="container">
+            <div className="container" style={{padding: "20px"}}>
                 {selectedTab === "Overview" && <Overview />}
                 {selectedTab === "Parse molecule" && <ParseMolecule />}
                 {selectedTab === "Parse proto-cluster" && <ParseProtoCluster />}

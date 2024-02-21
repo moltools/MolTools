@@ -22,7 +22,7 @@ const Header = ({ widgetRoutes }) => {
 
     return (        
         <nav 
-            className="navbar has-navbar-fixed-top"
+            className="navbar is-fixed-top"
             role="navigation" 
             aria-label="main-navigation"
             style={{top: 0, width: "100%", zIndex: 1000, boxShadow: "0 0 10px rgba(0, 0, 0, 0.5)"}}

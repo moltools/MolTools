@@ -115,68 +115,10 @@ const exampleSdfString = `5904
 M  END
 $$$$`;
 
-const SidebarButton = ({ disabled, icon, title, onClick }) => {
-    return (
-        <button className="cinemol-sidebar-button" onClick={onClick} disabled={disabled}>
-            {icon}
-            <span>{title}</span>
-        </button>
-    );
-};
-
-const SidebarCounter = ({ disabled, icon, title, value, onIncrement, onDecrement } ) => {
-    return (
-        <div className="cinemol-sidebar-counter-container">
-            <div>
-                {icon}
-                <span className="cinemol-sidebar-counter-title">{title}: {value}</span>
-            </div>
-            <div>
-                <button className="cinemol-sidebar-counter-button left" onClick={onDecrement} disabled={disabled}>{"<"}</button>
-                <button className="cinemol-sidebar-counter-button right" onClick={onIncrement} disabled={disabled}>{">"}</button>
-            </div>
-        </div>
-    );
-};
-
-const RotationCounter = ({ title, isLoading, rotation, setRotation }) => {
-    // Maximum rotation is 2 * pi - pi / 12.
-    const maxRotation = 2 * Math.PI - Math.PI / 12;
-    
-    const handleIncrement = () => {
-        const incrementedValue = rotation + Math.PI / 12;
-        setRotation(() =>
-            incrementedValue <= maxRotation
-            ? Math.round(incrementedValue * 10) / 10
-            : Math.round((incrementedValue % maxRotation) * 10) / 10
-        );
-    };
-    
-    const handleDecrement = () => {
-        const decrementedValue = rotation - Math.PI / 12;
-        setRotation(() =>
-            decrementedValue >= 0
-            ? Math.round(decrementedValue * 10) / 10
-            : Math.round((maxRotation + decrementedValue) * 10) / 10
-        );
-    };
-  
-    return (
-        <SidebarCounter
-            disabled={isLoading}
-            icon={<BsGlobe2 />}
-            title={title}
-            value={rotation}
-            onIncrement={handleIncrement}
-            onDecrement={handleDecrement}
-        />
-    );
-};  
-
 const CineMol = () => {
     // General state variables.
     const [version, setVersion] = useState("0.0.0");                    // Version of the CineMol component.
-    const [mode, setMode] = useState("dark");                           // Dark or light background of the molecular model.
+    const [mode, setMode] = useState("light");                           // Dark or light background of the molecular model.
     const [svgString, setSvgString] = useState("");                     // SVG representation of the molecular model.
     const [sidebarOpen, setSideBarOpen] = useState(true);               // Determines if the sidebar is collapsed or not.
     const [isLoading, setIsLoading] = useState(false);                  // App grays out when loading.
@@ -194,7 +136,6 @@ const CineMol = () => {
     const [viewBox, setViewBox] = useState(undefined);                  // View box of the molecular model.
     const [width, setWidth] = useState(500);                            // Width of the molecular model.
     const [height, setHeight] = useState(500);                          // Height of the molecular model.
-
 
     // Downloads the SVG representation of the molecular model.
     const handleDownloadSvgString = () => {
@@ -365,39 +306,17 @@ const CineMol = () => {
         }
     }, [sdfString, style, look, includeHydrogens, resolution, rotationX, rotationY, rotationZ, width, height]);
 
-    // Sidebar buttons.
-    const buttons = [
-        // <SidebarButton key={1} disabled={isLoading} icon={<BsFillCloudUploadFill />} title="Upload SDF file" onClick={handleUploadSdfFile} />,
-        // <SidebarButton key={2} disabled={isLoading} icon={<BsFillCloudDownloadFill />} title="Download model as SVG" onClick={handleDownloadSvgString} />,
-        // <SidebarButton key={3} disabled={isLoading} icon={<BsFillDatabaseFill />} title="Load example: penicillin G" onClick={ () => setSdfString(exampleSdfString) } />,
-        // <SidebarButton key={4} disabled={isLoading} icon={<BsBrushFill />} title={`Toggle style: ${style}`}  onClick={handleToggleStyle} />,
-        // <SidebarButton key={5} disabled={isLoading} icon={<BsEyeFill />} title={`Toggle look: ${look}`}  onClick={handleToggleLook} />,
-        // <SidebarButton key={6} disabled={isLoading} icon={<BsDropletFill />} title={`Toggle hydrogens: ${includeHydrogens ? "true" : "false"}`} onClick={ () => setIncludeHydrogens(!includeHydrogens) } />,
-        // <SidebarButton key={7} disabled={isLoading} icon={<BsCircleHalf />} title={`Toggle background: ${mode}`} onClick={handleToggleMode} />,
-        <SidebarCounter key={9} disabled={isLoading} icon={<BsFillLightningFill />} title="Resolution" value={resolution} 
-            onIncrement={ () => { if (resolution < 100) { setResolution(resolution + 5) } } } 
-            onDecrement={ () => { if (resolution >= 30) { setResolution(resolution - 5) } } }
-        />,
-        <RotationCounter key={10} title="Rotation X (rad)" isLoading={isLoading} rotation={rotationX} setRotation={setRotationX}/>,
-        <RotationCounter key={11} title="Rotation Y (rad)" isLoading={isLoading} rotation={rotationY} setRotation={setRotationY}/>,
-        <RotationCounter key={12} title="Rotation Z (rad)" isLoading={isLoading} rotation={rotationZ} setRotation={setRotationZ}/>,
-        // <SidebarButton key={13} disabled={isLoading} icon={<BsArrowRepeat />} title="Reset" onClick={handleReset} />,
-        // <SidebarButton key={8} disabled={isLoading} icon={<BsGithub />} title="Open GitHub issues" onClick={ () => window.open("https://github.com/moltools/CineMol/issues", "_blank") } />,
-    ];
-
     return (
-        <div 
-            id="cinemol"
-            class="columns is-fullheight"
-        >
+        <div class="columns is-fullheight">
             {isLoading && <div 
                 class="column is-loading" 
                 style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", zIndex:999, position: "absolute", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}
             />}
             <div 
-                class="column is-3 is-sidebar-menu" 
-                style={{ backgroundColor: "#d3d3d3", minWidth: "300px"}}
+                class="column is-narrow is-sidebar-menu is-fullheight"
+                style={{ backgroundColor: "#d3d3d3", width: "270px"}}
             >
+                <section className="hero is-fullheight" style={{marginTop: "-4rem", paddingTop: "4rem"}}>
                 <aside class="menu" style={{ marginTop: "1.5rem", marginLeft: "1.5rem" }}>
                     <p class="menu-label">
                         General
@@ -418,27 +337,11 @@ const CineMol = () => {
                         <li onClick={handleToggleMode} disabled={isLoading}><a>Toggle Background: {mode}</a></li>
                     </ul>
                     <ul class="menu-list">
+                        
                         <div class="field has-addons" style={{"marginBottom": "0px"}}>
                             <p class="control">
                                 <button class="button">
-                                    <span className="has-text-left" style={{"width": "150px"}}>Resolution: {resolution}</span>
-                                </button>
-                            </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (resolution >= 30) { setResolution(resolution - 5) } } }>
-                                    <span>-</span>
-                                </button>
-                            </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (resolution < 100) { setResolution(resolution + 5) } } }>
-                                    <span>+</span>
-                                </button>
-                            </p>
-                        </div>
-                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p class="control">
-                                <button class="button">
-                                    <span className="has-text-left" style={{"width": "150px"}}>Width: {width}</span>
+                                    <span className="has-text-left" style={{"width": "100px"}}>Width: {width}</span>
                                 </button>
                             </p>
                             <p class="control">
@@ -455,7 +358,7 @@ const CineMol = () => {
                         <div class="field has-addons" style={{"marginBottom": "0px"}}>
                             <p class="control">
                                 <button class="button">
-                                    <span className="has-text-left" style={{"width": "150px"}}>Height: {height}</span>
+                                    <span className="has-text-left" style={{"width": "100px"}}>Height: {height}</span>
                                 </button>
                             </p>
                             <p class="control">
@@ -472,7 +375,7 @@ const CineMol = () => {
                         <div class="field has-addons" style={{"marginBottom": "0px"}}>
                             <p class="control">
                                 <button class="button">
-                                    <span className="has-text-left" style={{"width": "150px"}}>Rotation X: {rotationX}</span>
+                                    <span className="has-text-left" style={{"width": "100px"}}>Rotation X: {rotationX}</span>
                                 </button>
                             </p>
                             <p class="control">
@@ -489,7 +392,7 @@ const CineMol = () => {
                         <div class="field has-addons" style={{"marginBottom": "0px"}}>
                             <p class="control">
                                 <button class="button">
-                                    <span className="has-text-left" style={{"width": "150px"}}>Rotation Y: {rotationY}</span>
+                                    <span className="has-text-left" style={{"width": "100px"}}>Rotation Y: {rotationY}</span>
                                 </button>
                             </p>
                             <p class="control">
@@ -506,7 +409,7 @@ const CineMol = () => {
                         <div class="field has-addons" style={{"marginBottom": "0px"}}>
                             <p class="control">
                                 <button class="button">
-                                    <span className="has-text-left" style={{"width": "150px"}}>Rotation Z: {rotationZ}</span>
+                                    <span className="has-text-left" style={{"width": "100px"}}>Rotation Z: {rotationZ}</span>
                                 </button>
                             </p>
                             <p class="control">
@@ -531,8 +434,9 @@ const CineMol = () => {
                     </ul>
 
                 </aside>
+                </section>
             </div>
-            <div class="column is-main-content" style={{ backgroundColor: mode === "dark" ? "#363636" : "#f5f5f5" }}>
+            <div class="column is-main-content" style={{ backgroundColor: mode === "dark" ? "#000" : "#f5f5f5" }}>
                 <div dangerouslySetInnerHTML={{ __html: svgString }} />
             </div>
         </div> 

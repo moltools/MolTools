@@ -26,7 +26,7 @@ html, body {
 .widget {
     opacity: 1;                     
     transition: opacity 0.5s ease-in-out;
-    overflow: auto;
+    /* overflow: auto; */
     background-color: transparent;
 }
 
