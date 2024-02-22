@@ -13,7 +13,7 @@ export BROWSER_PORT=$3
 export DATABASE_PORT=$4
 
 # Check if the optional '-d' flag is provided as the third argument
-if [ $# -eq 3 ] && [ "$3" == "-d" ]; then
+if [ $# -eq 5 ] && [ "$5" == "-d" ]; then
   # Run Docker Compose with the updated environment variables in detached mode
   SERVER_PORT=$1 CLIENT_PORT=$2 BROWSER_PORT=$3 DATABASE_PORT=$4 docker-compose up --build --force-recreate -d
 else
