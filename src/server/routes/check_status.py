@@ -17,6 +17,7 @@ def ping_database() -> Response:
             result = session.run("MATCH (n) RETURN count(n) AS count")
             count = result.single()["count"]
         driver.close()
-        return ResponseData(Status.Success, {"count": count}).to_dict()
+        message = f"Database is up and running with {count} nodes!"
+        return ResponseData(Status.Success, message=message).to_dict()
     except Exception as e:
-        return ResponseData(Status.Failure, {"error": str(e)}).to_dict()
+        return ResponseData(Status.Failure, message=f"{e}").to_dict()
