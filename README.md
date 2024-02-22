@@ -65,5 +65,5 @@ The app will be available at `http://localhost:<client_port>/`.
 Run the following script to rebuild the Docker image:
 
 ```bash
-SERVER_PORT=<server_port> CLIENT_PORT=<client_port> docker-compose build
+SERVER_PORT=<server_port> CLIENT_PORT=<client_port> BROWSER_PORT=<browser_port> DATABASE_PORT=<database_port> docker-compose build
 ```

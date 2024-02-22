@@ -30,8 +30,8 @@ services:
     environment:
       - NEO4J_AUTH=none
     ports:
-      - "4003:7474"
-      - "4002:7687"
+      - "${BROWSER_PORT}:7474"
+      - "${DATABASE_PORT}:7687"
     # volumes:
     #   - /Users/davidmeijer/Desktop/neo4j-data:/data
     restart: always
