@@ -7,6 +7,9 @@ services:
     image: moltools-server
     environment:
       - "SERVER_PORT=${SERVER_PORT}"
+    restart: always
+    networks:
+      - moltools-network
   client:
     build: 
       context: . 
@@ -16,3 +19,25 @@ services:
     image: moltools-client
     ports:
       - "${CLIENT_PORT}:80"
+    restart: always
+    networks:
+      - moltools-network
+  database:
+    build:
+      context: . 
+      dockerfile: Dockerfile.database
+    image: neo4j:5.16.0
+    environment:
+      - NEO4J_AUTH=none
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    # volumes:
+    #   - /Users/davidmeijer/Desktop/neo4j-data:/data
+    restart: always
+    networks:
+      - moltools-network
+
+networks:
+  moltools-network:
+    driver: bridge

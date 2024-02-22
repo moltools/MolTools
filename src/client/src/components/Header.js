@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 
 const Header = ({ widgetRoutes }) => {
     const [apiAvailable, setApiAvailable] = useState(false);
+    const [dbAvailable, setDbAvailable] = useState(false);
 
     const checkApi = async () => {
         try {
@@ -15,10 +16,25 @@ const Header = ({ widgetRoutes }) => {
         }
     };
 
+    const checkDb = async () => {
+        try {
+            const response = await fetch("/api/ping_database");
+            const data = await response.json();
+            if (data.status === "success") {
+                console.log(data.message);
+                setDbAvailable(true);
+            } else {
+                console.log(data.message);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+
     useEffect(() => {
         checkApi();
-        }
-    );
+        checkDb();
+    });
 
     return (        
         <nav 
@@ -63,10 +79,16 @@ const Header = ({ widgetRoutes }) => {
                 <div className="navbar-end" style={{margin: "1rem"}}>
                     <div 
                         className={`tag ${apiAvailable ? "is-success" : "is-danger"}`} 
-                        style={{transition: "background-color 0.5s ease"}}
+                        style={{transition: "background-color 0.5s ease", marginRight: "5px"}}
                     >
                         Server is {apiAvailable ? "online" : "offline"}
                     </div>  
+                    <div
+                        className={`tag ${dbAvailable ? "is-success" : "is-danger"}`}
+                        style={{transition: "background-color 0.5s ease"}}
+                    >
+                        Database is {dbAvailable ? "online" : "offline"}
+                    </div>
                 </div>
             </div>
         </nav>
