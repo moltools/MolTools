@@ -134,7 +134,7 @@ const ParseMolecule = () => {
             if (json.status === "success") {
                 toast.success(json.message);
                 if (json.payload.matches) setMatches(json.payload.matches);
-                console.log(json.payload.matches);
+                // console.log(json.payload.matches);
                 toggleModal();
             } else if (json.status === "warning") {
                 toast.warn(json.message);
@@ -190,7 +190,7 @@ const ParseMolecule = () => {
                                         </thead>
                                         <tbody>
                                             {matches.map((match, index) => (
-                                                console.log(match),
+                                                // console.log(match),
                                                 <tr key={index}>
                                                     <td>{match.index + 1}</td>
                                                     {match.link == null ? (

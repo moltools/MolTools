@@ -32,8 +32,8 @@ services:
     ports:
       - "${BROWSER_PORT}:7474"
       - "${DATABASE_PORT}:7687"
-    # volumes:
-    #   - /Users/davidmeijer/Desktop/neo4j-data:/data
+    volumes:
+      - "${VOLUME}:/data"
     restart: always
     networks:
       - moltools-network
