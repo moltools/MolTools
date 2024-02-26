@@ -2,21 +2,21 @@ from flask import Blueprint, Response, request
 import os 
 import json 
 import typing as ty
-import re
-import joblib
+# import re
+# import joblib
 
-import umap 
-import rdkit
-from rdkit import Chem
+# import umap 
+# import rdkit
+# from rdkit import Chem
 from rdkit.Chem import AllChem 
-from sklearn.neighbors import KDTree
+# from sklearn.neighbors import KDTree
 
 import numpy as np
 
 from retromol.chem import Molecule, MolecularPattern, ReactionRule
-from retromol_sequencing.fingerprint import get_amino_acid_fingerprint, amino_acid_class_to_label
+# from retromol_sequencing.fingerprint import get_amino_acid_fingerprint, amino_acid_class_to_label
 from retromol.parsing import parse_reaction_rules, parse_molecular_patterns, parse_mol
-from retromol_sequencing.primary_sequence import resolve_biosynthetic_sequence
+# from retromol_sequencing.primary_sequence import resolve_biosynthetic_sequence
 from retromol_sequencing.fingerprint import get_biosynthetic_fingerprint
 
 from .common import Status, ResponseData
@@ -31,92 +31,92 @@ except Exception as e:
     REACTIONS = []
     MONOMERS = []
 
-try:
-    absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    PREDICTOR = joblib.load(os.path.join(absolute_path, "models/aa_classifier.joblib"))
-    PREDICTOR.set_params(n_jobs=1)
-except Exception as e:
-    print(e)
-    PREDICTOR = None
+# try:
+#     absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#     PREDICTOR = joblib.load(os.path.join(absolute_path, "models/aa_classifier.joblib"))
+#     PREDICTOR.set_params(n_jobs=1)
+# except Exception as e:
+#     print(e)
+#     PREDICTOR = None
 
-try:
-    TREE = KDTree(np.load(os.path.join(absolute_path, "models/embedding.npy")))
-    EMBEDDING_LABELS = np.loadtxt(os.path.join(absolute_path, "models/embedding_identifiers.txt"), dtype=str)
-    EMBEDDER = joblib.load(os.path.join(absolute_path, "models/embedder.joblib"))
-except Exception as e:
-    print(e)
-    TREE = None
-    EMBEDDING_LABELS = None
-    EMBEDDER = None
+# try:
+#     TREE = KDTree(np.load(os.path.join(absolute_path, "models/embedding.npy")))
+#     EMBEDDING_LABELS = np.loadtxt(os.path.join(absolute_path, "models/embedding_identifiers.txt"), dtype=str)
+#     EMBEDDER = joblib.load(os.path.join(absolute_path, "models/embedder.joblib"))
+# except Exception as e:
+#     print(e)
+#     TREE = None
+#     EMBEDDING_LABELS = None
+#     EMBEDDER = None
 
-def is_polyketide(name: str, motif: Chem.Mol) -> bool:
-    """
-    Check if motif is a polyketide.
+# def is_polyketide(name: str, motif: Chem.Mol) -> bool:
+#     """
+#     Check if motif is a polyketide.
 
-    :param str name: Name of motif.
-    :param Chem.Mol motif: Motif.
-    :returns: True if motif is a polyketide.
-    :rtype: bool
-    """
-    if re.match(r"^[A-D]\d+$", name):
-        return True
+#     :param str name: Name of motif.
+#     :param Chem.Mol motif: Motif.
+#     :returns: True if motif is a polyketide.
+#     :rtype: bool
+#     """
+#     if re.match(r"^[A-D]\d+$", name):
+#         return True
     
-    return False
+#     return False
 
-def is_amino_acid(name: str, motif: Chem.Mol) -> bool:
-    """
-    Check if motif is an amino acid.
+# def is_amino_acid(name: str, motif: Chem.Mol) -> bool:
+#     """
+#     Check if motif is an amino acid.
 
-    :param str name: Name of motif.
-    :param Chem.Mol motif: Motif.
-    :returns: True if motif is an amino acid.
-    :rtype: bool
-    """
-    smarts_strings = [
-        r"[NH1,NH2][C][C](=[O])[O]", # Alpha amino acid
-        r"[NH1,NH2][C][C][C](=[O])[O]" # Beta amino acid
-    ]
+#     :param str name: Name of motif.
+#     :param Chem.Mol motif: Motif.
+#     :returns: True if motif is an amino acid.
+#     :rtype: bool
+#     """
+#     smarts_strings = [
+#         r"[NH1,NH2][C][C](=[O])[O]", # Alpha amino acid
+#         r"[NH1,NH2][C][C][C](=[O])[O]" # Beta amino acid
+#     ]
 
-    if any([motif.HasSubstructMatch(Chem.MolFromSmarts(x)) for x in smarts_strings]):
-        return True
+#     if any([motif.HasSubstructMatch(Chem.MolFromSmarts(x)) for x in smarts_strings]):
+#         return True
     
-    return False
+#     return False
 
-def is_primary_motif(motif: Chem.Mol) -> ty.Optional[str]:
-    """
-    Check if motif is a primary motif.
+# def is_primary_motif(motif: Chem.Mol) -> ty.Optional[str]:
+#     """
+#     Check if motif is a primary motif.
 
-    :param Chem.Mol motif: Motif.
-    :returns: Primary motif identity or None.
-    :rtype: ty.Optional[str]
-    """
-    for monomer in MONOMERS:
-        if motif.HasSubstructMatch(monomer.compiled):
-            name = monomer.name
+#     :param Chem.Mol motif: Motif.
+#     :returns: Primary motif identity or None.
+#     :rtype: ty.Optional[str]
+#     """
+#     for monomer in MONOMERS:
+#         if motif.HasSubstructMatch(monomer.compiled):
+#             name = monomer.name
 
-            if is_polyketide(name, motif):
-                return name 
-            elif is_amino_acid(name, motif):
-                return name
+#             if is_polyketide(name, motif):
+#                 return name 
+#             elif is_amino_acid(name, motif):
+#                 return name
         
-    return False
+#     return False
 
-def classify(name: str, mol: Chem.Mol) -> str:
-    """
-    Classify monomer.
+# def classify(name: str, mol: Chem.Mol) -> str:
+#     """
+#     Classify monomer.
     
-    :param str name: Name of monomer.
-    :param Chem.Mol mol: Molecule representing monomer.
-    :returns: Classification.
-    :rtype: str
-    """
-    if is_polyketide(name, mol):
-        return name[0] # Any of A, B, C, D.
-    else:
-        fp = get_amino_acid_fingerprint(mol)
-        pred = PREDICTOR.predict([fp])[0]
-        label = amino_acid_class_to_label(pred)
-        return label
+#     :param str name: Name of monomer.
+#     :param Chem.Mol mol: Molecule representing monomer.
+#     :returns: Classification.
+#     :rtype: str
+#     """
+#     if is_polyketide(name, mol):
+#         return name[0] # Any of A, B, C, D.
+#     else:
+#         fp = get_amino_acid_fingerprint(mol)
+#         pred = PREDICTOR.predict([fp])[0]
+#         label = amino_acid_class_to_label(pred)
+#         return label
 
 Record = ty.Tuple[Molecule, ty.List[ReactionRule], ty.List[MolecularPattern]]
 
@@ -146,22 +146,22 @@ def parse_retromol() -> Response:
             primary_seq_monomer_ids = []
             primary_seq = []
 
-            if result.success == True:
-                seq = resolve_biosynthetic_sequence(result, is_primary_motif, return_monomer_id=True)
+            # if result.success == True:
+            #     seq = resolve_biosynthetic_sequence(result, is_primary_motif, return_monomer_id=True)
 
-                for i, _ in enumerate(seq): # monomer ID 
-                    # get edges
-                    if i > 0:
-                        primary_seq_monomer_ids.append([seq[i-1][2], seq[i][2]])
+            #     for i, _ in enumerate(seq): # monomer ID 
+            #         # get edges
+            #         if i > 0:
+            #             primary_seq_monomer_ids.append([seq[i-1][2], seq[i][2]])
 
-                if PREDICTOR is not None:
-                    seq = [(t[0], classify(t[0], t[1])) for t in seq]
-                    for item in seq:
-                        primary_seq.append(item[1])
-                else:
-                    seq = []
-            else:
-                return ResponseData(Status.Failure, message="Failed to parse molecule!").to_dict()
+            #     if PREDICTOR is not None:
+            #         seq = [(t[0], classify(t[0], t[1])) for t in seq]
+            #         for item in seq:
+            #             primary_seq.append(item[1])
+            #     else:
+            #         seq = []
+            # else:
+            #     return ResponseData(Status.Failure, message="Failed to parse molecule!").to_dict()
 
             monomer_to_nodes = {}
             for sub_id, (node_id, name) in result.monomer_mapping.items():
@@ -254,35 +254,38 @@ def parse_retromol() -> Response:
     # Parse request data.
     data = request.get_json()
 
-    if seq := data.get("primary_seq", None):
+    # if seq := data.get("primary_seq", None):
         
-        fp = get_biosynthetic_fingerprint(seq)
+        # fp = get_biosynthetic_fingerprint(seq)
         
-        if (EMBEDDER is not None) and (TREE is not None) and (EMBEDDING_LABELS is not None):
-            query = EMBEDDER.transform([fp])
-            dists, ind = TREE.query(query, k=10)
+        # if (EMBEDDER is not None) and (TREE is not None) and (EMBEDDING_LABELS is not None):
+        #     query = EMBEDDER.transform([fp])
+        #     dists, ind = TREE.query(query, k=10)
             
-            matches = []    
-            for i, index in enumerate(ind[0]):
-                label = EMBEDDING_LABELS[index]
-                dist = dists[0][i]
+        #     matches = []    
+        #     for i, index in enumerate(ind[0]):
+        #         label = EMBEDDING_LABELS[index]
+        #         dist = dists[0][i]
 
-                if label.startswith("NPA"):
-                    url = f"https://www.npatlas.org/explore/compounds/{label}"
-                else:
-                    url = None 
+        #         if label.startswith("NPA"):
+        #             url = f"https://www.npatlas.org/explore/compounds/{label}"
+        #         else:
+        #             url = None 
 
-                matches.append({
-                    "index": i,
-                    "label": label.replace("_", " "),
-                    "distance": round(dist, 3),
-                    "link": url
-                })
+        #         matches.append({
+        #             "index": i,
+        #             "label": label.replace("_", " "),
+        #             "distance": round(dist, 3),
+        #             "link": url
+        #         })
 
-            payload = {"matches": matches}
-            return ResponseData(Status.Success, payload=payload, message="Retrieved matches!").to_dict()
-        else:
-            return ResponseData(Status.Success, message="Could not load embedding!").to_dict()
-    else:
-        msg = "No primary sequence provided!"
-        return ResponseData(Status.Failure, message=msg).to_dict()
+        #     payload = {"matches": matches}
+        #     return ResponseData(Status.Success, payload=payload, message="Retrieved matches!").to_dict()
+        # else:
+    #     return ResponseData(Status.Success, message="Could not load embedding!").to_dict()
+    
+    # else:
+    #     msg = "No primary sequence provided!"
+    #     return ResponseData(Status.Failure, message=msg).to_dict()
+
+    return ResponseData(Status.Failure, message="Matching not inplemented!").to_dict()

@@ -8,6 +8,7 @@
         "@testing-library/user-event": "^13.5.0",
         "bulma": "^0.9.4",
         "react": "^18.1.0",
+        "react-beautiful-dnd": "^13.1.1",
         "react-dom": "^18.1.0",
         "react-force-graph": "^1.44.3",
         "react-icons": "^4.10.1",

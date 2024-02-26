@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { toast } from "react-toastify";
 import { ForceGraph2D } from "react-force-graph";
+import QueryDesigner from "../components/QueryDesigner";
 
 const Overview = () => {
     return (
@@ -73,6 +74,15 @@ const ParseMolecule = () => {
 
     const [modalActive, setModalActive] = useState(false);
     const [matches, setMatches] = useState([]);
+
+    const [matchOptions, setMatchOptions] = useState({
+        matchMolecules: true,
+        matchProtoClusters: false
+    });
+
+    const handleOptionChange = (option) => {
+        setMatchOptions({ ...matchOptions, [option]: !matchOptions[option] });
+    };
 
     const toggleModal = () => {
         setModalActive(!modalActive);
@@ -162,18 +172,15 @@ const ParseMolecule = () => {
         setMatches([]);
     };
 
-    const margin = 30;
-    const rightContainer = document.getElementById("right-column");
-    const widthRightContainer = rightContainer ? rightContainer.offsetWidth - margin : 0;
-    const leftContainer = document.getElementById("left-column");
-    const widthLeftContainer = leftContainer ? leftContainer.offsetWidth - margin: 0;
-    const height = 400;
+    // const columnsContainer = document.getElementById("content-space");
+    // const width = columnsContainer ? (columnsContainer.clientWidth / 2) - 100 : 0;
+    // const height = 400;
 
     const graphRef = useRef(null);
     const monomerGraphRef = useRef(null);
 
     return (
-        <div className="column is-full">
+        <div id="content-space" className="column is-full">
             <Modal closeModal={toggleModal} modalState={modalActive} title="Embedding results">
                 {primarySequence.length > 0 && (
                     <div>
@@ -219,111 +226,189 @@ const ParseMolecule = () => {
                 </div>
             </div>
             <div className="control">
-                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={loadExample} disabled={isLoading}>Load example</button>
-                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={parseMolecule} disabled={isLoading}>Parse</button>
-                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={clear} disabled={isLoading}>Clear</button>
-                <button 
-                    className="button is-link is-light" 
-                    onClick={() => {
-                        embedSeq();
-                    }}
-                    // enable when there is a monomergraph
-                    disabled={isLoading || monomerGraphData.nodes.length === 0}
-                >
-                    Query database
-                </button>
-            </div>
-            <div className="columns" style={{marginTop: "5px"}}>
-                <div id="left-column" className="column has-text-centered">
-                    <ForceGraph2D
-                        ref={graphRef}
-                        style={{position: "relative"}}
-                        graphData={moleculeGraphData}
-                        nodeRelSize={0.3}
-                        nodeLabel={(node) => `${node.name}`}
-                        nodeColor={(node) => {
-                            if (selectedAtomIds.includes(node.id)) {
-                                return "orange";
-                            } else {
-                                return node.color;
-                            }
-                        }}
-                        linkLabel={(link) => {
-                            if (link.bondtype === 1.0) {
-                                return "Single";
-                            } else if (link.bondtype === 2.0) {
-                                return "Double";
-                            } else if (link.bondtype === 3.0) {
-                                return "Triple";
-                            } else {
-                                return "Unknown";
-                            }
-                        }}
-                        linkWidth={6}
-                        width={widthLeftContainer}
-                        height={height}
-                        backgroundColor="#f5f5f5"
-                        cooldownTicks={0}
-                        onEngineStop={() => {
-                            graphRef.current.zoomToFit();
-                        }}
-                        enableNodeDrag={false}
-                        // enablePanInteraction={false}
-                        // enableZoomInteraction={false}
-                    />
-                </div>
-                <div id="right-column" className="column has-text-centered">
-                    <ForceGraph2D
-                        ref={monomerGraphRef}
-                        style={{position: "relative"}}
-                        graphData={monomerGraphData}
-                        nodeRelSize={0.5}
-                        nodeLabel={(node) => "Select"}
-                        onNodeClick={(node) => {
-                            setSelectedAtomIds(node.atom_ids);
-                        }}
-                        nodeColor={(node) => node.color}
-                        linkColor={(link) => {
-                            if (isListInListOfLists([link.source.id, link.target.id], monomerGraphEdges) || isListInListOfLists([link.target.id, link.source.id], monomerGraphEdges)) {
-                                return "rgba(255, 0, 0, 0.5)";
-                            };
-                        }}
-                        linkWidth={(link) => {
-                            if (isListInListOfLists([link.source.id, link.target.id], monomerGraphEdges) || isListInListOfLists([link.target.id, link.source.id], monomerGraphEdges)) {
-                                return 5;
-                            } else {
-                                return 2;
-                            }
-                        }}
-                        width={widthRightContainer}
-                        height={height}
-                        backgroundColor="#f5f5f5"
-                        cooldownTicks={0}
-                        onEngineStop={() => {
-                            monomerGraphRef.current.zoomToFit();
-                        }}
-                        enableNodeDrag={false}
-                        // enablePanInteraction={false}
-                        // enableZoomInteraction={false}
-                        nodeCanvasObject={(node, ctx, globalScale) => {
-                            const label = node.name;
-                            const fontSize = 12/globalScale;
-                            ctx.font = `${fontSize}px Sans-Serif`;
-                            const textWidth = ctx.measureText(label).width;
-                            const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
-
-                            // ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-                            ctx.fillStyle = "rgba(255, 140, 0, 0.5)";
-                            ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
-
-                            ctx.textAlign = "center";
-                            ctx.textBaseline = "middle";
-                            ctx.fillStyle = "black";
-                            ctx.fillText(label, node.x, node.y);
-                        }}
-                    />
+                <div className="panel" style={{marginBottom: "10px"}}>
+                    <div className="panel-block">
+                        <div className="field has-addons">
+                            <div className="control">
+                                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={loadExample} disabled={isLoading}>Load example</button>
+                                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={parseMolecule} disabled={isLoading}>Parse molecule</button>
+                                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={clear} disabled={isLoading}>Clear results</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+            <div className="control">
+                <div className="panel" style={{marginBottom: "10px"}}>
+                    <div className="panel-block">
+                        <div className="field has-addons">
+                        <div className="control">
+                            <button 
+                                className="button is-link is-light" 
+                                onClick={() => {
+                                    embedSeq();
+                                }}
+                                disabled={isLoading || monomerGraphData.nodes.length === 0}
+                            >
+                                Match against database
+                            </button>
+                        </div>
+                        </div>
+                    </div>
+                    <div className="panel-block">
+                        <label className="checkbox">
+                        <input 
+                            type="checkbox" 
+                            checked={matchOptions.matchMolecules} 
+                            onChange={() => handleOptionChange('matchMolecules')}
+                        />
+                        Match against molecules
+                        </label>
+                    </div>
+                    <div className="panel-block">
+                        <label className="checkbox">
+                        <input 
+                            type="checkbox" 
+                            checked={matchOptions.matchProtoClusters} 
+                            onChange={() => handleOptionChange('matchProtoClusters')}
+                        />
+                        Match against proto-clusters
+                        </label>
+                    </div>
+                </div>
+            </div>
+                <div id="columns" className="columns">
+                    <div id="left-column" className="column has-text-centered">
+                        <div className="control">
+                            <div className="panel" style={{marginBottom: "10px"}}>
+                                <div id="left-panel-block" className="panel-block">
+                                    <div className="field has-addons">
+                                        <div className="control">
+                                        <ForceGraph2D
+                                            ref={graphRef}
+                                            style={{position: "relative"}}
+                                            graphData={moleculeGraphData}
+                                            nodeRelSize={0.3}
+                                            nodeLabel={(node) => `${node.name}`}
+                                            nodeColor={(node) => {
+                                                if (selectedAtomIds.includes(node.id)) {
+                                                    return "orange";
+                                                } else {
+                                                    return node.color;
+                                                }
+                                            }}
+                                            linkLabel={(link) => {
+                                                if (link.bondtype === 1.0) {
+                                                    return "Single";
+                                                } else if (link.bondtype === 2.0) {
+                                                    return "Double";
+                                                } else if (link.bondtype === 3.0) {
+                                                    return "Triple";
+                                                } else {
+                                                    return "Unknown";
+                                                }
+                                            }}
+                                            linkWidth={6}
+                                            width={
+                                                document.getElementById("left-panel-block") ? 
+                                                document.getElementById("left-panel-block").clientWidth - 25 : 
+                                                0
+                                            }
+                                            // width={width}
+                                            height = {
+                                                document.getElementById("left-panel-block") ? 
+                                                document.getElementById("left-panel-block").clientWidth - 25 : 
+                                                0
+                                            }
+                                            // backgroundColor="#f5f5f5"
+                                            backgroundColor="#fff"
+                                            cooldownTicks={0}
+                                            onEngineStop={() => {
+                                                graphRef.current.zoomToFit();
+                                            }}
+                                            enableNodeDrag={false}
+                                            enablePanInteraction={true}
+                                            enableZoomInteraction={false}
+                                        />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="right-column" className="column has-text-centered">
+                        <div className="control">
+                            <div className="panel" style={{marginBottom: "10px"}}>
+                                <div id="right-panel-block" className="panel-block">
+                                    <div className="field has-addons">
+                                        <div className="control">
+                                            <ForceGraph2D
+                                                ref={monomerGraphRef}
+                                                style={{position: "relative"}}
+                                                graphData={monomerGraphData}
+                                                nodeRelSize={0.5}
+                                                nodeLabel={(node) => "Select"}
+                                                onNodeClick={(node) => {
+                                                    setSelectedAtomIds(node.atom_ids);
+                                                }}
+                                                nodeColor={(node) => node.color}
+                                                linkColor={(link) => {
+                                                    if (isListInListOfLists([link.source.id, link.target.id], monomerGraphEdges) || isListInListOfLists([link.target.id, link.source.id], monomerGraphEdges)) {
+                                                        return "rgba(255, 0, 0, 0.5)";
+                                                    };
+                                                }}
+                                                linkWidth={(link) => {
+                                                    if (isListInListOfLists([link.source.id, link.target.id], monomerGraphEdges) || isListInListOfLists([link.target.id, link.source.id], monomerGraphEdges)) {
+                                                        return 5;
+                                                    } else {
+                                                        return 2;
+                                                    }
+                                                }}
+                                                // width={width}
+                                                // height={height}
+                                                width={
+                                                    document.getElementById("right-panel-block") ? 
+                                                    document.getElementById("right-panel-block").clientWidth - 25 : 
+                                                    0
+                                                }
+                                                height = {
+                                                    document.getElementById("right-panel-block") ? 
+                                                    document.getElementById("right-panel-block").clientWidth - 25 : 
+                                                    0
+                                                }
+                                                // backgroundColor="#f5f5f5"
+                                                backgroundColor="#fff"
+                                                cooldownTicks={0}
+                                                onEngineStop={() => {
+                                                    monomerGraphRef.current.zoomToFit();
+                                                }}
+                                                enableNodeDrag={false}
+                                                enablePanInteraction={true}
+                                                enableZoomInteraction={false}
+                                                nodeCanvasObject={(node, ctx, globalScale) => {
+                                                    const label = node.name;
+                                                    const fontSize = 12/globalScale;
+                                                    ctx.font = `${fontSize}px Sans-Serif`;
+                                                    const textWidth = ctx.measureText(label).width;
+                                                    const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
+
+                                                    // ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+                                                    ctx.fillStyle = "rgba(255, 140, 0, 0.5)";
+                                                    ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
+
+                                                    ctx.textAlign = "center";
+                                                    ctx.textBaseline = "middle";
+                                                    ctx.fillStyle = "black";
+                                                    ctx.fillText(label, node.x, node.y);
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
         </div>
     );
 };
@@ -336,10 +421,69 @@ const ParseProtoCluster = () => {
     );
 };
 
+const QueryBuilder = () => {
+    const [queryItems, setQueryItems] = useState([]);
+  
+    const handleAddItem = () => {
+      setQueryItems([...queryItems, 'New Item']);
+    };
+  
+    const handleRemoveItem = (index) => {
+      const updatedQueryItems = [...queryItems];
+      updatedQueryItems.splice(index, 1);
+      setQueryItems(updatedQueryItems);
+    };
+  
+    const handleDragStart = (event, index) => {
+      event.dataTransfer.setData('index', index.toString());
+    };
+  
+    const handleDrop = (event) => {
+      const indexFrom = parseInt(event.dataTransfer.getData('index'));
+      const indexTo = parseInt(event.target.dataset.index);
+  
+      const updatedQueryItems = [...queryItems];
+      const [removed] = updatedQueryItems.splice(indexFrom, 1);
+      updatedQueryItems.splice(indexTo, 0, removed);
+      setQueryItems(updatedQueryItems);
+    };
+  
+    return (
+      <div>
+        <div className="panel">
+          <div className="panel-heading">
+            <button className="button is-primary" onClick={handleAddItem}>Add Item</button>
+          </div>
+        </div>
+        <div className="field">
+          {queryItems.map((item, index) => (
+            <div
+              key={index}
+              data-index={index}
+              className="query-item"
+              draggable
+              onDragStart={(event) => handleDragStart(event, index)}
+              onDrop={handleDrop}
+              onDragOver={(event) => event.preventDefault()}
+            >
+              <div className="panel">
+                <div className="panel-block">
+                  <div>{item}</div>
+                  <button className="button is-danger" onClick={() => handleRemoveItem(index)}>Remove</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+};
+
 const QueryDatabase = () => {
     return (
         <div className="column is-full">
-            Not implemented yet
+            {/* <QueryBuilder /> */}
+            <QueryDesigner />
         </div>
     );
 }

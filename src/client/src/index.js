@@ -34,27 +34,27 @@ const widgets = [
         path: "/cinemol",
         component: <CineMol />
     },
-    {
-        name: "Biosynfoni", 
-        description: "Predict biosynthetic class", 
-        logo: "/widgets/biosynfoni.svg",
-        links: [
-            { icon: <FiGithub />, name: "GitHub", url: "https://github.com/lucinamay/biosynfoni"},
-        ],
-        path: "/biosynfoni",
-        component: <Biosynfoni />
-    },
-    { 
-        name: "PIKAChU", 
-        description: "Draw 2D structural formula", 
-        logo: "/widgets/moltools.svg",
-        links: [
-            { icon: <FiGithub />, name: "GitHub", url: "https://github.com/BTheDragonMaster/pikachu"},
-            { icon: <FiPaperclip />, name: "Paper", url: "https://jcheminf.biomedcentral.com/articles/10.1186/s13321-022-00616-5"}
-        ],
-        path: "/pikachu",
-        component: <PIKAChU /> 
-    },
+    // {
+    //     name: "Biosynfoni", 
+    //     description: "Predict biosynthetic class", 
+    //     logo: "/widgets/biosynfoni.svg",
+    //     links: [
+    //         { icon: <FiGithub />, name: "GitHub", url: "https://github.com/lucinamay/biosynfoni"},
+    //     ],
+    //     path: "/biosynfoni",
+    //     component: <Biosynfoni />
+    // },
+    // { 
+    //     name: "PIKAChU", 
+    //     description: "Draw 2D structural formula", 
+    //     logo: "/widgets/moltools.svg",
+    //     links: [
+    //         { icon: <FiGithub />, name: "GitHub", url: "https://github.com/BTheDragonMaster/pikachu"},
+    //         { icon: <FiPaperclip />, name: "Paper", url: "https://jcheminf.biomedcentral.com/articles/10.1186/s13321-022-00616-5"}
+    //     ],
+    //     path: "/pikachu",
+    //     component: <PIKAChU /> 
+    // },
 ];
 
 function AppRoutes () {

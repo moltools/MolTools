@@ -10,13 +10,13 @@ from .common import Status, ResponseData
 from biosynfoni import overlapped_fp, get_highlight_mapping
 
 # Load the predictor. If it fails, set it to None.
-try:
-    absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    PREDICTOR = joblib.load(os.path.join(absolute_path, "models/model.pkl"))
-    PREDICTOR.set_params(n_jobs=1)
-except Exception as e:
-    print(e)
-    PREDICTOR = None
+# try:
+#     absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+#     PREDICTOR = joblib.load(os.path.join(absolute_path, "models/model.pkl"))
+#     PREDICTOR.set_params(n_jobs=1)
+# except Exception as e:
+#     print(e)
+PREDICTOR = None
 
 blueprint_predict_biosynthetic_class = Blueprint("predict_biosynthetic_class", __name__)
 @blueprint_predict_biosynthetic_class.route("/api/predict_biosynthetic_class", methods=["POST"])
