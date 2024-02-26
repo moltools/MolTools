@@ -13,43 +13,43 @@ const reorder = (list, startIndex, endIndex) => {
 
 const grid = 8;
 
-const getItemStyle = (isDragging, draggableStyle, itemName, itemType) => ({
-    userSelect: "none",
-    display: "flex", // Use flexbox for centering
-    justifyContent: "center", // Center horizontally
-    alignItems: "center", // Center vertically
-    minWidth: 100,
-    maxWidth: 100,
-    minHeight: 50,
-    maxHeight: 50,
-    margin: `0 ${grid / 2}px ${grid}px 0`, // Add margin on all sides
-    background:
-        // isDragging ? "lightgreen"
-        itemName === "PKUnit" ? "#D3D3D3"
-        : itemName === "NRPUnit" ? "#708090"
-        : "gray",
-    borderRadius: "4px", // Add border radius for a rounded appearance
-    boxShadow: isDragging
-        ? "0 4px 8px rgba(0, 0, 0, 0.2)" // Add shadow when dragging
-        : "0 2px 4px rgba(0, 0, 0, 0.1)", // Slight shadow when not dragging
-    ...draggableStyle,
-});
+// const getItemStyle = (isDragging, draggableStyle, itemName, itemType) => ({
+//     userSelect: "none",
+//     display: "flex", // Use flexbox for centering
+//     justifyContent: "center", // Center horizontally
+//     alignItems: "center", // Center vertically
+//     minWidth: 100,
+//     maxWidth: 100,
+//     minHeight: 50,
+//     maxHeight: 50,
+//     margin: `0 ${grid / 2}px ${grid}px 0`, // Add margin on all sides
+//     background:
+//         // isDragging ? "lightgreen"
+//         itemName === "PKUnit" ? "#D3D3D3"
+//         : itemName === "NRPUnit" ? "#708090"
+//         : "gray",
+//     borderRadius: "4px", // Add border radius for a rounded appearance
+//     boxShadow: isDragging
+//         ? "0 4px 8px rgba(0, 0, 0, 0.2)" // Add shadow when dragging
+//         : "0 2px 4px rgba(0, 0, 0, 0.1)", // Slight shadow when not dragging
+//     ...draggableStyle,
+// });
 
 
-const getListStyle = (isDraggingOver, itemCount) => ({
-    // background: isDraggingOver ? "#F5C900" : "#928E95",
-    minHeight: "60px",
-    padding: grid,
-    display: "flex",
-    justifyContent: "center", // Center items horizontally
-    alignItems: "center", // Center items vertically
-    overflowX: "auto",
-    width: "100%",
-    transition: "background-color 0.3s ease-in-out",
-    overflowY: "hidden",
-    borderRadius: "3px", // Add border radius for a rounded appearance
-    height: itemCount * (50 + grid) + 2 * grid, // Height based on number of items
-});
+// const getListStyle = (isDraggingOver, itemCount) => ({
+//     // background: isDraggingOver ? "#F5C900" : "#928E95",
+//     minHeight: "60px",
+//     padding: grid,
+//     display: "flex",
+//     justifyContent: "center", // Center items horizontally
+//     alignItems: "center", // Center items vertically
+//     overflowX: "auto",
+//     width: "100%",
+//     transition: "background-color 0.3s ease-in-out",
+//     overflowY: "hidden",
+//     borderRadius: "3px", // Add border radius for a rounded appearance
+//     height: itemCount * (50 + grid) + 2 * grid, // Height based on number of items
+// });
 
 const QueryDesigner = () => {
     const [items, setItems] = useState([]);
@@ -156,9 +156,8 @@ const QueryDesigner = () => {
                         </div>
                     </div>
                 </div>
-                <div className="control">
+                {/* <div className="control">
                     <div className="panel" style={{marginBottom: "10px"}}>
-                        {/* <h3>Toolbar</h3> */}
                         <div className="panel-block">
                             <div className="field has-addons">
                                 <div className="control">
@@ -183,10 +182,9 @@ const QueryDesigner = () => {
                             </div>
                         </div>
                     </div>
-                </div>
-                <div className="control">
+                </div> */}
+                {/* <div className="control">
                     <div className="panel" style={{marginBottom: "10px"}}>
-                        {/* <h3>Toolbar</h3> */}
                         <div className="panel-block">
                             <div className="field has-addons">
                                 <div className="control">
@@ -199,7 +197,6 @@ const QueryDesigner = () => {
                                     >
                                         Add wild card
                                     </button>
-                                    {/* // get field for min and max length */}
                                     <div className="control">
                                         <input 
                                             className="input" 
@@ -223,9 +220,7 @@ const QueryDesigner = () => {
                             <label className="checkbox">
                             <input 
                                 type="checkbox" 
-                                // checked={pksOptions.KRAccessory}
                                 checked={true}
-                                // onChange={() => handlePkOptionsChange('KRAccessory')}
                             />
                             Could be any amino acid
                             </label>
@@ -234,18 +229,15 @@ const QueryDesigner = () => {
                             <label className="checkbox">
                             <input 
                                 type="checkbox" 
-                                // checked={pksOptions.DHAccessory}
                                 checked={true}
-                                // onChange={() => handlePkOptionsChange('DHAccessory')}
                             />
                             Could be any polyketide synthase domain
                             </label>
                         </div>
                     </div>
-                </div>
+                </div> */}
                 <div className="control">
                     <div className="panel" style={{marginBottom: "10px"}}>
-                        {/* <h3>Toolbar</h3> */}
                         <div className="panel-block">
                             <div className="field has-addons">
                                 <div className="control">
@@ -264,16 +256,11 @@ const QueryDesigner = () => {
                 </div>
                 <div className="control">
                     <div className="panel" style={{marginBottom: "10px"}}>
-                        {/* <h3>Toolbar</h3> */}
                         <div className="panel-block">
                             <div className="field has-addons">
                                 <div className="control">
                                     <button 
                                         className="button is-link is-light" 
-                                        // onClick={() => {
-                                        //     embedSeq();
-                                        // }}
-                                        // disabled={isLoading || monomerGraphData.nodes.length === 0}
                                         disabled = {!pksConfigValid}
                                         onClick = {() => {
                                             if (pksOptions.KRAccessory === false && pksOptions.DHAccessory === false && pksOptions.ERAccessory === false) {
@@ -333,96 +320,50 @@ const QueryDesigner = () => {
     return (
         <div className="container">
             <Toolbar />
-            <div className="columns is-full">
-                {/* <div style={{width: "90%"}}> */}
-                <div>
-                    {/* <div>
-                        <SmilesDrawerComponent smiles={smiles} />
-                    </div> */}
-                    <div>
-                        <DragDropContext onDragEnd={onDragEnd}>
-                            <Droppable droppableId="droppable" direction="horizontal">
-                                {(provided, snapshot) => (
-                                    <div
-                                        ref={provided.innerRef}
-                                        style={getListStyle(snapshot.isDraggingOver)}
-                                        {...provided.droppableProps}
-                                    >
-                                        {items.map((item, index) => (
-                                            <Draggable
-                                                key={item.id} 
-                                                draggableId={item.id}
-                                                index={index}
-                                            >
-                                                {(provided, snapshot) => (
-                                                    <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                        // style={getItemStyle(
-                                                        //     snapshot.isDragging,
-                                                        //     provided.draggableProps.style,
-                                                        //     item.name,
-                                                        //     item.type
-                                                        // )}
-                                                    >
-                                                        <div
-                                                            style={{
-                                                                display: "flex",
-                                                                // justifyContent: "space-between",
-                                                                justifyContent: "center",
-                                                                alignItems: "center",
-                                                                padding: "10px",
-                                                                borderRadius: "4px",
-                                                                borderStyle: "solid",
-                                                                borderColor: "black",
-                                                                width: "100%",
-                                                                backgroundColor: "grey"
-                                                            }}
-                                                        >
-                                                            {item.content}
-                                                            {/* <div 
-                                                                style={{
-                                                                    display: "flex",
-                                                                    justifyContent: "center",
-                                                                    alignItems: "center",
-                                                                    width: "100%",
-                                                                    marginLeft: "15px",
-                                                                }}
-                                                            >
-                                                                {item.content}
-                                                            </div>
-                                                            <button
-                                                                style={{ 
-                                                                    // position: "absolute",
-                                                                    // marginLeft: "70px",
-                                                                    marginBottom: "30px",
-                                                                    fontSize: "8px",
-                                                                    cursor: "pointer",
-                                                                    minWidth: "10px",
-                                                                    maxWidth: "10px",
-                                                                    minHeight: "12px",
-                                                                    maxHeight: "12px",
-                                                                    borderRadius: "50%",
-                                                                    border: "none",
-                                                                    background: "#e74b3c",
-                                                                    
-                                                                    marginRight: "5px", 
-                                                                }}
-                                                                onClick={() => handleDelete(index)}
-                                                            >
-                                                                {""}
-                                                            </button> */}
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
-                                    </div>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
+            <div className="column is-full">
+                <div className="control">
+                    <div className="panel" style={{marginBottom: "10px"}}>
+                        <div className="panel-block">
+                            <div className="field has-addons">
+                                <div className="column is-full">
+                                <div className="control">
+                                    <DragDropContext onDragEnd={onDragEnd}>
+                                        <Droppable droppableId="droppable">
+                                            {(provided, snapshot) => (
+                                                <div ref={provided.innerRef} {...provided.droppableProps}>
+                                                    {items.map((item, index) => (
+                                                        <Draggable key={item.id} draggableId={item.id} index={index}>
+                                                            {(provided, snapshot) => (
+                                                                <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
+                                                                    <div className="panel" style={{marginBottom: "10px"}}>
+                                                                        <div className="panel-block">
+                                                                            <div className="field has-addons">
+                                                                                <div className="control">
+                                                                                    <button
+                                                                                        className="button is-danger is-light"
+                                                                                        onClick={() => {
+                                                                                            handleDelete(index);
+                                                                                        }}
+                                                                                    >
+                                                                                        Delete
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </Draggable>
+                                                    ))}
+                                                    {provided.placeholder}
+                                                </div>
+                                            )}
+                                        </Droppable>
+                                    </DragDropContext>  
+                                </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
