@@ -63,14 +63,83 @@ const Modal = ({ children, closeModal, modalState, title }) => {
     );
 }
 
+const ParseProtoCluster = () => {
+    return (
+        <div className="column is-full">
+            Not implemented yet
+        </div>
+    );
+};
+
+const QueryBuilder = () => {
+    const [queryItems, setQueryItems] = useState([]);
+  
+    const handleAddItem = () => {
+      setQueryItems([...queryItems, 'New Item']);
+    };
+  
+    const handleRemoveItem = (index) => {
+      const updatedQueryItems = [...queryItems];
+      updatedQueryItems.splice(index, 1);
+      setQueryItems(updatedQueryItems);
+    };
+  
+    const handleDragStart = (event, index) => {
+      event.dataTransfer.setData('index', index.toString());
+    };
+  
+    const handleDrop = (event) => {
+      const indexFrom = parseInt(event.dataTransfer.getData('index'));
+      const indexTo = parseInt(event.target.dataset.index);
+  
+      const updatedQueryItems = [...queryItems];
+      const [removed] = updatedQueryItems.splice(indexFrom, 1);
+      updatedQueryItems.splice(indexTo, 0, removed);
+      setQueryItems(updatedQueryItems);
+    };
+  
+    return (
+      <div>
+        <div className="panel">
+          <div className="panel-heading">
+            <button className="button is-primary" onClick={handleAddItem}>Add Item</button>
+          </div>
+        </div>
+        <div className="field">
+          {queryItems.map((item, index) => (
+            <div
+              key={index}
+              data-index={index}
+              className="query-item"
+              draggable
+              onDragStart={(event) => handleDragStart(event, index)}
+              onDrop={handleDrop}
+              onDragOver={(event) => event.preventDefault()}
+            >
+              <div className="panel">
+                <div className="panel-block">
+                  <div>{item}</div>
+                  <button className="button is-danger" onClick={() => handleRemoveItem(index)}>Remove</button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+};
+
 const ParseMolecule = () => {
     const [smiles, setSmiles] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [moleculeGraphData, setMoleculeGraphData] = useState({nodes: [], links: []});
-    const [monomerGraphData, setMonomerGraphData] = useState({nodes: [], links: []});
-    const [monomerGraphEdges, setMonomerGraphEdges] = useState([]);
-    const [primarySequence, setPrimarySequence] = useState([]);
-    const [selectedAtomIds, setSelectedAtomIds] = useState([]);
+    // const [moleculeGraphData, setMoleculeGraphData] = useState({nodes: [], links: []});
+    // const [monomerGraphData, setMonomerGraphData] = useState({nodes: [], links: []});
+    // const [monomerGraphEdges, setMonomerGraphEdges] = useState([]);
+    // const [primarySequence, setPrimarySequence] = useState([]);
+    // const [selectedAtomIds, setSelectedAtomIds] = useState([]);
+
+    const [results, setResults] = useState([]);
+    const [selectedResult, setSelectedResult] = useState(null);
 
     const [modalActive, setModalActive] = useState(false);
     const [matches, setMatches] = useState([]);
@@ -90,12 +159,15 @@ const ParseMolecule = () => {
 
     const parseMolecule = async () => {
         setIsLoading(true);
-        setMoleculeGraphData({nodes: [], links: []});
-        setMonomerGraphData({nodes: [], links: []});
-        setMonomerGraphEdges([]);
-        setPrimarySequence([]);
-        setSelectedAtomIds([]);
+        // setMoleculeGraphData({nodes: [], links: []});
+        // setMonomerGraphData({nodes: [], links: []});
+        // setMonomerGraphEdges([]);
+        // setPrimarySequence([]);
+        // setSelectedAtomIds([]);
         setMatches([]);
+        setResults([]);
+        setSelectedResult(null);
+
         try {
             const response = await fetch("/api/parse_retromol", {
                 method: "POST",
@@ -111,10 +183,12 @@ const ParseMolecule = () => {
             
             if (json.status === "success") {
                 toast.success(json.message);
-                if (json.payload.molecule_graph_data) setMoleculeGraphData(json.payload.molecule_graph_data);
-                if (json.payload.monomer_graph_data) setMonomerGraphData(json.payload.monomer_graph_data);
-                if (json.payload.primary_seq_monomer_ids) setMonomerGraphEdges(json.payload.primary_seq_monomer_ids);
-                if (json.payload.primary_seq) setPrimarySequence(json.payload.primary_seq);
+                console.log(json.payload);
+                // if (json.payload.molecule_graph_data) setMoleculeGraphData(json.payload.molecule_graph_data);
+                // if (json.payload.monomer_graph_data) setMonomerGraphData(json.payload.monomer_graph_data);
+                // if (json.payload.primary_seq_monomer_ids) setMonomerGraphEdges(json.payload.primary_seq_monomer_ids);
+                // if (json.payload.primary_seq) setPrimarySequence(json.payload.primary_seq);
+                if (json.payload.sequences) setResults(json.payload.sequences);
             } else if (json.status === "warning") {
                 toast.warn(json.message);
             } else if (json.status === "failure") {
@@ -126,36 +200,36 @@ const ParseMolecule = () => {
         setIsLoading(false);
     };
 
-    const embedSeq = async () => {
-        setIsLoading(true);
-        try {
-            const response = await fetch("/api/embed_retromol", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ "primary_seq": primarySequence })
-            });
+    // const embedSeq = async () => {
+    //     setIsLoading(true);
+    //     try {
+    //         const response = await fetch("/api/embed_retromol", {
+    //             method: "POST",
+    //             headers: {"Content-Type": "application/json"},
+    //             body: JSON.stringify({ "primary_seq": primarySequence })
+    //         });
 
-            if (!response.ok) {
-                throw new Error("Network response was not ok!");
-            };
+    //         if (!response.ok) {
+    //             throw new Error("Network response was not ok!");
+    //         };
 
-            const json = await response.json();
+    //         const json = await response.json();
 
-            if (json.status === "success") {
-                toast.success(json.message);
-                if (json.payload.matches) setMatches(json.payload.matches);
-                // console.log(json.payload.matches);
-                toggleModal();
-            } else if (json.status === "warning") {
-                toast.warn(json.message);
-            } else if (json.status === "failure") {
-                toast.error(json.message);
-            };
-        } catch (error) {
-            toast.error(error.message);
-        }
-        setIsLoading(false);
-    };
+    //         if (json.status === "success") {
+    //             toast.success(json.message);
+    //             if (json.payload.matches) setMatches(json.payload.matches);
+    //             // console.log(json.payload.matches);
+    //             toggleModal();
+    //         } else if (json.status === "warning") {
+    //             toast.warn(json.message);
+    //         } else if (json.status === "failure") {
+    //             toast.error(json.message);
+    //         };
+    //     } catch (error) {
+    //         toast.error(error.message);
+    //     }
+    //     setIsLoading(false);
+    // };
 
     // Load example -- sets the SMILES input to a default value
     const loadExample = () => {
@@ -164,12 +238,14 @@ const ParseMolecule = () => {
 
     const clear = () => {
         setSmiles("");
-        setMoleculeGraphData({nodes: [], links: []});
-        setMonomerGraphData({nodes: [], links: []});
-        setMonomerGraphEdges([]);
-        setPrimarySequence([]);
-        setSelectedAtomIds([]);
+        // setMoleculeGraphData({nodes: [], links: []});
+        // setMonomerGraphData({nodes: [], links: []});
+        // setMonomerGraphEdges([]);
+        // setPrimarySequence([]);
+        // setSelectedAtomIds([]);
         setMatches([]);
+        setResults([]);
+        setSelectedResult(null);
     };
 
     // const columnsContainer = document.getElementById("content-space");
@@ -182,7 +258,10 @@ const ParseMolecule = () => {
     return (
         <div id="content-space" className="column is-full">
             <Modal closeModal={toggleModal} modalState={modalActive} title="Embedding results">
-                {primarySequence.length > 0 && (
+                <div>
+                    Nothing to see here...
+                </div>
+                {/* {primarySequence.length > 0 && (
                     <div>
                         <div className="columns">
                             <div className="column">
@@ -216,39 +295,84 @@ const ParseMolecule = () => {
                             </div>
                         </div>
                     </div>
-                )}
+                )} */}
             </Modal>
-            <div className="field">
-                <div 
-                    className="control"
-                >
-                    <input className="input" value={smiles} type="text" placeholder="Enter SMILES" onChange={(e) => setSmiles(e.target.value)} disabled={isLoading} />
-                </div>
-            </div>
-            <div className="control">
-                <div className="panel" style={{marginBottom: "10px"}}>
+            <div className="control" style={{border: "1px solid #dbdbdb", borderRadius: "5px", marginBottom: "10px"}}>
+                <div className="panel">
+                    <div className="panel-heading">
+                        <div className="title is-5">Input</div>
+                    </div>
+                    <div className="panel-block">
+                        <div className="field" style={{width: "100%"}}>
+                            <div 
+                                className="control"
+                            >
+                                <input className="input" value={smiles} type="text" placeholder="Enter SMILES" onChange={(e) => setSmiles(e.target.value)} disabled={isLoading} />
+                            </div>
+                        </div>
+                    </div>
                     <div className="panel-block">
                         <div className="field has-addons">
                             <div className="control">
                                 <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={loadExample} disabled={isLoading}>Load example</button>
                                 <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={parseMolecule} disabled={isLoading}>Parse molecule</button>
-                                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={clear} disabled={isLoading}>Clear results</button>
+                                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={clear} disabled={isLoading}>Clear</button>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div className="control">
-                <div className="panel" style={{marginBottom: "10px"}}>
+            <div className="control" style={{border: "1px solid #dbdbdb", borderRadius: "5px", marginBottom: "10px"}}>
+                <div className="panel">
+                    <div className="panel-heading">
+                        <div className="title is-5">Results</div>
+                    </div>
+                    <div className="panel-block">
+                        <div class={`dropdown ${results.length > 0 ? "is-hoverable" : ""}`}>
+                            <div class="dropdown-trigger">
+                                <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
+                                <span>{results.length > 0 ? "Select result" : "No results found"}</span>
+                                <span class="icon is-small">
+                                    {results.length > 0 ? <i class="fas fa-angle-down" aria-hidden="true"></i> : <i class="fas fa-times" aria-hidden="true"></i>}
+                                </span>
+                                </button>
+                            </div>
+                            <div class="dropdown-menu" id="dropdown-menu" role="menu">
+                                <div class="dropdown-content">
+                                {results.map((result, index) => (
+                                    <a class="dropdown-item" key={index} onClick={() => setSelectedResult(result)}>
+                                        {"Sequence " + (index + 1)}
+                                    </a>
+                                ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {selectedResult && (
+                        <div className="panel-block">
+                            <div className="content">
+                                {Object.keys(selectedResult).length > 0 && (
+                                    <div>
+                                        <pre>{JSON.stringify(selectedResult, null, 2)}</pre>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
                     <div className="panel-block">
                         <div className="field has-addons">
                         <div className="control">
                             <button 
                                 className="button is-link is-light" 
                                 onClick={() => {
-                                    embedSeq();
+                                    if (selectedResult) {
+                                        toast.warn("Not implemented yet!");
+                                    } else {
+                                        toast.warn("Select a result first!");
+                                    }
                                 }}
-                                disabled={isLoading || monomerGraphData.nodes.length === 0}
+                                // disabled={isLoading || monomerGraphData.nodes.length === 0}
+                                disabled={isLoading || results.length === 0}
                             >
                                 Match against database
                             </button>
@@ -262,7 +386,7 @@ const ParseMolecule = () => {
                             checked={matchOptions.matchMolecules} 
                             onChange={() => handleOptionChange('matchMolecules')}
                         />
-                        Match against molecules
+                        Match against parsed molecules
                         </label>
                     </div>
                     <div className="panel-block">
@@ -271,12 +395,13 @@ const ParseMolecule = () => {
                             type="checkbox" 
                             checked={matchOptions.matchProtoClusters} 
                             onChange={() => handleOptionChange('matchProtoClusters')}
+                            disabled={true}
                         />
-                        Match against proto-clusters
+                        Match against parsed proto-clusters
                         </label>
                     </div>
                 </div>
-            </div>
+            {/* </div>
                 <div id="columns" className="columns">
                     <div id="left-column" className="column has-text-centered">
                         <div className="control">
@@ -407,75 +532,9 @@ const ParseMolecule = () => {
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </div> */}
                 </div>
         </div>
-    );
-};
-
-const ParseProtoCluster = () => {
-    return (
-        <div className="column is-full">
-            Not implemented yet
-        </div>
-    );
-};
-
-const QueryBuilder = () => {
-    const [queryItems, setQueryItems] = useState([]);
-  
-    const handleAddItem = () => {
-      setQueryItems([...queryItems, 'New Item']);
-    };
-  
-    const handleRemoveItem = (index) => {
-      const updatedQueryItems = [...queryItems];
-      updatedQueryItems.splice(index, 1);
-      setQueryItems(updatedQueryItems);
-    };
-  
-    const handleDragStart = (event, index) => {
-      event.dataTransfer.setData('index', index.toString());
-    };
-  
-    const handleDrop = (event) => {
-      const indexFrom = parseInt(event.dataTransfer.getData('index'));
-      const indexTo = parseInt(event.target.dataset.index);
-  
-      const updatedQueryItems = [...queryItems];
-      const [removed] = updatedQueryItems.splice(indexFrom, 1);
-      updatedQueryItems.splice(indexTo, 0, removed);
-      setQueryItems(updatedQueryItems);
-    };
-  
-    return (
-      <div>
-        <div className="panel">
-          <div className="panel-heading">
-            <button className="button is-primary" onClick={handleAddItem}>Add Item</button>
-          </div>
-        </div>
-        <div className="field">
-          {queryItems.map((item, index) => (
-            <div
-              key={index}
-              data-index={index}
-              className="query-item"
-              draggable
-              onDragStart={(event) => handleDragStart(event, index)}
-              onDrop={handleDrop}
-              onDragOver={(event) => event.preventDefault()}
-            >
-              <div className="panel">
-                <div className="panel-block">
-                  <div>{item}</div>
-                  <button className="button is-danger" onClick={() => handleRemoveItem(index)}>Remove</button>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
     );
 };
 
