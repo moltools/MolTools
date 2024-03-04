@@ -5,7 +5,7 @@ from routes.pikachu import blueprint_draw_smiles_with_pikachu
 from routes.chemistry import blueprint_draw_smiles
 from routes.biosynfoni import blueprint_predict_biosynthetic_class
 from routes.cinemol import blueprint_draw_model, blueprint_fetch_cinemol_version
-from routes.retromol import blueprint_parse_retromol, blueprint_embed_retromol
+from routes.retromol import blueprint_parse_retromol, blueprint_embed_retromol, blueprint_find_matches, blueprint_query_database 
 
 app = Flask(__name__)
 app.register_blueprint(blueprint_ping_server)
@@ -17,6 +17,8 @@ app.register_blueprint(blueprint_draw_model)
 app.register_blueprint(blueprint_fetch_cinemol_version)
 app.register_blueprint(blueprint_parse_retromol)
 app.register_blueprint(blueprint_embed_retromol)
+app.register_blueprint(blueprint_find_matches)
+app.register_blueprint(blueprint_query_database)
 
 @app.errorhandler(404)
 def not_found(e) -> Response:

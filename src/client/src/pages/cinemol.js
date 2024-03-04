@@ -307,130 +307,129 @@ const CineMol = () => {
     }, [sdfString, style, look, includeHydrogens, resolution, rotationX, rotationY, rotationZ, width, height]);
 
     return (
-        <div class="columns is-fullheight">
+        <div className="columns is-fullheight">
             {isLoading && <div 
-                class="column is-loading" 
+                className="column is-loading" 
                 style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", zIndex:999, position: "absolute", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}
             />}
             <div 
-                class="column is-narrow is-3is-sidebar-menu is-fullheight"
+                className="column is-narrow is-3is-sidebar-menu is-fullheight"
                 style={{ backgroundColor: "#d3d3d3", minWidth: "275px"}}
             >
                 <section className="hero is-fullheight" style={{marginTop: "-4rem", paddingTop: "4rem"}}>
-                <aside class="menu" style={{ marginTop: "1.5rem", marginLeft: "1.5rem" }}>
-                    <p class="menu-label">
+                <aside className="menu" style={{ marginTop: "1.5rem", marginLeft: "1.5rem" }}>
+                    <p className="menu-label">
                         General
                     </p>
-                    <ul class="menu-list">
+                    <ul className="menu-list">
                         <li onClick={handleUploadSdfFile} disabled={isLoading}><a>Upload SDF</a></li>
                         <li onClick={handleDownloadSvgString} disabled={isLoading}><a>Download SVG</a></li>
                         <li onClick={ () => setSdfString(exampleSdfString) } disabled={isLoading}><a>Load Example</a></li>
                         <li onClick={handleReset} disabled={isLoading}><a>Reset</a></li>
                     </ul>
-                    <p class="menu-label">
+                    <p className="menu-label">
                         Settings
                     </p>
-                    <ul class="menu-list">
+                    <ul className="menu-list">
                         <li onClick={handleToggleStyle} disabled={isLoading}><a>Toggle Style: {style}</a></li>
                         <li onClick={handleToggleLook} disabled={isLoading}><a>Toggle Look: {look}</a></li>
                         <li onClick={ () => setIncludeHydrogens(!includeHydrogens) } disabled={isLoading}><a>Toggle Hydrogens: {includeHydrogens ? "true" : "false"}</a></li>
                         <li onClick={handleToggleMode} disabled={isLoading}><a>Toggle Background: {mode}</a></li>
                     </ul>
-                    <ul class="menu-list">
+                    <ul className="menu-list">
                         
-                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p class="control">
-                                <button class="button">
+                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p className="control">
+                                <button className="button">
                                     <span className="has-text-left" style={{"width": "100px"}}>Width: {width}</span>
                                 </button>
                             </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (width >= 100) { setWidth(width - 50) } } }>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (width >= 100) { setWidth(width - 50) } } }>
                                     <span>-</span>
                                 </button>
                             </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (width < 1000) { setWidth(width + 50) } } }>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (width < 1000) { setWidth(width + 50) } } }>
                                     <span>+</span>
                                 </button>
                             </p>
                         </div>
-                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p class="control">
-                                <button class="button">
+                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p className="control">
+                                <button className="button">
                                     <span className="has-text-left" style={{"width": "100px"}}>Height: {height}</span>
                                 </button>
                             </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (height >= 100) { setHeight(height - 50) } } }>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (height >= 100) { setHeight(height - 50) } } }>
                                     <span>-</span>
                                 </button>
                             </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (height < 1000) { setHeight(height + 50) } } }>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (height < 1000) { setHeight(height + 50) } } }>
                                     <span>+</span>
                                 </button>
                             </p>
                         </div>
-                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p class="control">
-                                <button class="button">
+                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p className="control">
+                                <button className="button">
                                     <span className="has-text-left" style={{"width": "100px"}}>Rotation X: {rotationX}</span>
                                 </button>
                             </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationX > 0) { setRotationX(Math.round((rotationX - Math.PI / 12) * 10) / 10) } } }>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationX > 0) { setRotationX(Math.round((rotationX - Math.PI / 12) * 10) / 10) } } }>
                                     <span>-</span>
                                 </button>
                             </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationX < 2 * Math.PI) { setRotationX(Math.round((rotationX + Math.PI / 12) * 10) / 10) } } }>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationX < 2 * Math.PI) { setRotationX(Math.round((rotationX + Math.PI / 12) * 10) / 10) } } }>
                                     <span>+</span>
                                 </button>
                             </p>
                         </div>
-                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p class="control">
-                                <button class="button">
+                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p className="control">
+                                <button className="button">
                                     <span className="has-text-left" style={{"width": "100px"}}>Rotation Y: {rotationY}</span>
                                 </button>
                             </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationY > 0) { setRotationY(Math.round((rotationY - Math.PI / 12) * 10) / 10) } } }>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationY > 0) { setRotationY(Math.round((rotationY - Math.PI / 12) * 10) / 10) } } }>
                                     <span>-</span>
                                 </button>
                             </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationY < 2 * Math.PI) { setRotationY(Math.round((rotationY + Math.PI / 12) * 10) / 10) } } }>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationY < 2 * Math.PI) { setRotationY(Math.round((rotationY + Math.PI / 12) * 10) / 10) } } }>
                                     <span>+</span>
                                 </button>
                             </p>
                         </div>
-                        <div class="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p class="control">
-                                <button class="button">
+                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p className="control">
+                                <button className="button">
                                     <span className="has-text-left" style={{"width": "100px"}}>Rotation Z: {rotationZ}</span>
                                 </button>
                             </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationZ > 0) { setRotationZ(Math.round((rotationZ - Math.PI / 12) * 10) / 10) } } }>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationZ > 0) { setRotationZ(Math.round((rotationZ - Math.PI / 12) * 10) / 10) } } }>
                                     <span>-</span>
                                 </button>
                             </p>
-                            <p class="control">
-                                <button class="button" disabled={isLoading} onClick={ () => { if (rotationZ < 2 * Math.PI) { setRotationZ(Math.round((rotationZ + Math.PI / 12) * 10) / 10) } } }>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationZ < 2 * Math.PI) { setRotationZ(Math.round((rotationZ + Math.PI / 12) * 10) / 10) } } }>
                                     <span>+</span>
                                 </button>
                             </p>
                         </div>
                     </ul>
                     <hr />
-                    <p class="menu-label
-                    ">
+                    <p className="menu-label">
                         Information
                     </p>
                     <ul 
-                        class="menu-list" 
+                        className="menu-list" 
                         onClick={ () => window.open("https://github.com/moltools/CineMol", "_blank") }
                     >
                         <li><a>Version: {version}</a></li>
@@ -439,7 +438,7 @@ const CineMol = () => {
                 </aside>
                 </section>
             </div>
-            <div class="column is-main-content" style={{ backgroundColor: mode === "dark" ? "#000" : "#f5f5f5" }}>
+            <div className="column is-main-content" style={{ backgroundColor: mode === "dark" ? "#000" : "#f5f5f5" }}>
                 <div dangerouslySetInnerHTML={{ __html: svgString }} />
             </div>
         </div> 

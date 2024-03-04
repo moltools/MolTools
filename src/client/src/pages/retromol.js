@@ -1,7 +1,8 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { ForceGraph2D } from "react-force-graph";
-import QueryDesigner from "../components/QueryDesigner";
+import { v4 as uuidv4 } from "uuid";
+import MatchBuilder from "../components/MatchBuilder";
+import QueryBuilder from "../components/QueryBuilder";
 
 const Overview = () => {
     return (
@@ -31,12 +32,6 @@ const Overview = () => {
     );
 };
 
-function isListInListOfLists(list, listOfLists) {
-    return listOfLists.some(subList => {
-        return subList[0] === list[0] && subList[1] === list[1];
-    });
-};
-
 const Modal = ({ children, closeModal, modalState, title }) => {
     if(!modalState) {
       return null;
@@ -45,7 +40,7 @@ const Modal = ({ children, closeModal, modalState, title }) => {
     return(
       <div className="modal is-active">
         <div className="modal-background" onClick={closeModal} />
-        <div className="modal-card" style={{borderRadius: "10px"}}>
+        <div className="modal-card" style={{borderRadius: "10px", width: "90%", height: "90%", paddingTop: "50px"}}>
           <header className="modal-card-head">
             <p className="modal-card-title">{title}</p>
             <button className="delete" onClick={closeModal} />
@@ -55,9 +50,6 @@ const Modal = ({ children, closeModal, modalState, title }) => {
               {children}
             </div>
           </section>
-          {/* <footer className="modal-card-foot">
-            <a className="button" onClick={closeModal}>Cancel</a>
-          </footer> */}
         </div>
       </div>
     );
@@ -71,75 +63,137 @@ const ParseProtoCluster = () => {
     );
 };
 
-const QueryBuilder = () => {
-    const [queryItems, setQueryItems] = useState([]);
-  
-    const handleAddItem = () => {
-      setQueryItems([...queryItems, 'New Item']);
-    };
-  
-    const handleRemoveItem = (index) => {
-      const updatedQueryItems = [...queryItems];
-      updatedQueryItems.splice(index, 1);
-      setQueryItems(updatedQueryItems);
-    };
-  
-    const handleDragStart = (event, index) => {
-      event.dataTransfer.setData('index', index.toString());
-    };
-  
-    const handleDrop = (event) => {
-      const indexFrom = parseInt(event.dataTransfer.getData('index'));
-      const indexTo = parseInt(event.target.dataset.index);
-  
-      const updatedQueryItems = [...queryItems];
-      const [removed] = updatedQueryItems.splice(indexFrom, 1);
-      updatedQueryItems.splice(indexTo, 0, removed);
-      setQueryItems(updatedQueryItems);
-    };
-  
+const querySubmission = (queryItems, setMatches) => {
     return (
-      <div>
-        <div className="panel">
-          <div className="panel-heading">
-            <button className="button is-primary" onClick={handleAddItem}>Add Item</button>
-          </div>
-        </div>
-        <div className="field">
-          {queryItems.map((item, index) => (
-            <div
-              key={index}
-              data-index={index}
-              className="query-item"
-              draggable
-              onDragStart={(event) => handleDragStart(event, index)}
-              onDrop={handleDrop}
-              onDragOver={(event) => event.preventDefault()}
-            >
-              <div className="panel">
-                <div className="panel-block">
-                  <div>{item}</div>
-                  <button className="button is-danger" onClick={() => handleRemoveItem(index)}>Remove</button>
+        <div>
+            <div className="panel-block">
+                <div className="field has-addons">
+                    <div className="control">
+                        <button 
+                            className="button is-link is-light" 
+                            onClick={() => {
+                                if (queryItems.length > 0) {
+                                    console.log(queryItems)
+                                    setMatches([]);
+                                } else {
+                                    toast.warn("Query is empty!");
+                                }
+                            }}
+                            // disabled={isLoading || monomerGraphData.nodes.length === 0}
+                            // disabled={isLoading || results.length === 0}
+                        >
+                            Match against database
+                        </button>
+                    </div>
                 </div>
-              </div>
             </div>
-          ))}
+            <div className="panel-block">
+                <label className="checkbox">
+                <input 
+                    type="checkbox" 
+                    defaultChecked={true}
+                    // checked={matchOptions.matchMolecules} 
+                    // onChange={() => handleOptionChange('matchMolecules')}
+                />
+                Match against parsed molecules
+                </label>
+            </div>
+            <div className="panel-block">
+                <label className="checkbox">
+                <input 
+                    type="checkbox" 
+                    defaultChecked={false}
+                    // checked={matchOptions.matchProtoClusters} 
+                    // onChange={() => handleOptionChange('matchProtoClusters')}
+                    disabled={true}
+                />
+                Match against parsed proto-clusters
+                </label>
+            </div>
         </div>
-      </div>
+    )
+};
+
+const AlignmentTable = ({ data }) => {
+    // Get the list of identifiers
+    const identifiers = data.map(item => item.identifier);
+
+    // Get the length of the sequences
+    const sequenceLength = data[0].sequence.length;
+
+    // Define colors based on starting characters
+    const getColor = (char) => {
+        if (char.startsWith('AA')) {
+            return '#ed9ea8';
+        } else if (char.startsWith('A')) {
+            return '#209bef';
+        } else if (char.startsWith('B')) {
+            return '#fede57';
+        } else if (char.startsWith('C')) {
+            return '#47c774';
+        } else if (char.startsWith('D')) {
+            return '#ff3960';
+        } else {
+            return 'transparent';
+        }
+    };
+
+    return (
+        <div style={{ overflowX: 'auto', overflowY: 'auto' }}>
+            <table style={{ borderCollapse: 'collapse' }}>
+                <thead>
+                    <tr>
+                        <th>Identifier</th>
+                        {/* Create table headers for each sequence */}
+                        {Array.from(Array(sequenceLength).keys()).map(index => (
+                            // <th key={index}>Module {index + 1}</th>
+                            <th key={index} style={{ textAlign: 'center' }}>
+                                {index + 1}
+                            </th>
+                        ))}
+                        <th style={{ textAlign: 'left' }}>Bioactivity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {/* Iterate over each item in data */}
+                    {data.map(item => (
+                        <tr key={item.identifier}>
+                            <td style={{whiteSpace: "nowrap"}}>
+                                {/* Render link if URL exists, else render plain text */}
+                                {item.url ? (
+                                    <a href={item.url} target="_blank" rel="noopener noreferrer">{item.identifier}</a>
+                                ) : (
+                                    item.identifier
+                                )}
+                            </td>
+                            {/* Render each character in the sequence */}
+                            {item.sequence.map((char, index) => (
+                                <td key={index} style={{ backgroundColor: char === 'GAP' ? 'transparent' : getColor(char), textAlign: 'center' }}>
+                                    {char === 'GAP' || char === '???' ? '' : char}
+                                </td>
+                            ))}
+                            <td style={{ textAlign: "left",whiteSpace: 'nowrap' }}>
+                                {item.bioactivity.length ? item.bioactivity.join(', ') : "N/A"}
+                            </td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
     );
 };
 
 const ParseMolecule = () => {
     const [smiles, setSmiles] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    // const [moleculeGraphData, setMoleculeGraphData] = useState({nodes: [], links: []});
-    // const [monomerGraphData, setMonomerGraphData] = useState({nodes: [], links: []});
-    // const [monomerGraphEdges, setMonomerGraphEdges] = useState([]);
-    // const [primarySequence, setPrimarySequence] = useState([]);
-    // const [selectedAtomIds, setSelectedAtomIds] = useState([]);
+
+    const [inputSmiles, setInputSmiles] = useState("");
+    const [inputSmilesSVG, setInputSmilesSVG] = useState("");
+    const [linearizedSmiles, setLinearizedSmiles] = useState("");
+    const [linearizedSmilesSVG, setLinearizedSmilesSVG] = useState("");
 
     const [results, setResults] = useState([]);
-    const [selectedResult, setSelectedResult] = useState(null);
+    const [selectedResult, setSelectedResult] = useState([]);
 
     const [modalActive, setModalActive] = useState(false);
     const [matches, setMatches] = useState([]);
@@ -149,6 +203,15 @@ const ParseMolecule = () => {
         matchProtoClusters: false
     });
 
+    // when setResults is called, give every item in every seq a unique id
+    const tagResults = (results) => {
+        return results.map((seq) => {
+            return seq.map((item) => {
+                return { ...item, id: uuidv4() };
+            });
+        });
+    };
+
     const handleOptionChange = (option) => {
         setMatchOptions({ ...matchOptions, [option]: !matchOptions[option] });
     };
@@ -157,16 +220,41 @@ const ParseMolecule = () => {
         setModalActive(!modalActive);
     };
 
+    const drawSmiles = async (smiles, setSvgString) => {
+        try {
+            const response = await fetch("/api/draw_smiles", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ "smiles": smiles })
+            });
+
+            if (!response.ok) {
+                throw new Error("Network response was not ok!");
+            };
+
+            const json = await response.json();
+            
+            // Unpack response.
+            if (json.status === "success") {
+                setSvgString(json.payload.svg_string);
+            } else if (json.status === "warning") {
+                toast.warn(json.message);
+            } else if (json.status === "failure") {
+                toast.error(json.message);
+            };
+    
+        } catch (error) {
+            const msg = "Could not draw molecule!";
+            toast.error(msg, { autoClose: true });
+            console.error(error);
+        };
+    };
+
     const parseMolecule = async () => {
         setIsLoading(true);
-        // setMoleculeGraphData({nodes: [], links: []});
-        // setMonomerGraphData({nodes: [], links: []});
-        // setMonomerGraphEdges([]);
-        // setPrimarySequence([]);
-        // setSelectedAtomIds([]);
         setMatches([]);
         setResults([]);
-        setSelectedResult(null);
+        setSelectedResult([]);
 
         try {
             const response = await fetch("/api/parse_retromol", {
@@ -184,11 +272,9 @@ const ParseMolecule = () => {
             if (json.status === "success") {
                 toast.success(json.message);
                 console.log(json.payload);
-                // if (json.payload.molecule_graph_data) setMoleculeGraphData(json.payload.molecule_graph_data);
-                // if (json.payload.monomer_graph_data) setMonomerGraphData(json.payload.monomer_graph_data);
-                // if (json.payload.primary_seq_monomer_ids) setMonomerGraphEdges(json.payload.primary_seq_monomer_ids);
-                // if (json.payload.primary_seq) setPrimarySequence(json.payload.primary_seq);
-                if (json.payload.sequences) setResults(json.payload.sequences);
+                if (json.payload.sequences) setResults(tagResults(json.payload.sequences));
+                if (json.payload.input_smiles) setInputSmiles(json.payload.input_smiles);
+                if (json.payload.linearized_smiles) setLinearizedSmiles(json.payload.linearized_smiles);
             } else if (json.status === "warning") {
                 toast.warn(json.message);
             } else if (json.status === "failure") {
@@ -200,37 +286,6 @@ const ParseMolecule = () => {
         setIsLoading(false);
     };
 
-    // const embedSeq = async () => {
-    //     setIsLoading(true);
-    //     try {
-    //         const response = await fetch("/api/embed_retromol", {
-    //             method: "POST",
-    //             headers: {"Content-Type": "application/json"},
-    //             body: JSON.stringify({ "primary_seq": primarySequence })
-    //         });
-
-    //         if (!response.ok) {
-    //             throw new Error("Network response was not ok!");
-    //         };
-
-    //         const json = await response.json();
-
-    //         if (json.status === "success") {
-    //             toast.success(json.message);
-    //             if (json.payload.matches) setMatches(json.payload.matches);
-    //             // console.log(json.payload.matches);
-    //             toggleModal();
-    //         } else if (json.status === "warning") {
-    //             toast.warn(json.message);
-    //         } else if (json.status === "failure") {
-    //             toast.error(json.message);
-    //         };
-    //     } catch (error) {
-    //         toast.error(error.message);
-    //     }
-    //     setIsLoading(false);
-    // };
-
     // Load example -- sets the SMILES input to a default value
     const loadExample = () => {
         setSmiles("CCC1C(C(C(C(=O)C(CC(C(C(C(C(C(=O)O1)C)OC2CC(C(C(O2)C)O)(C)OC)C)OC3C(C(CC(O3)C)N(C)C)O)(C)O)C)C)O)(C)O");
@@ -238,311 +293,340 @@ const ParseMolecule = () => {
 
     const clear = () => {
         setSmiles("");
-        // setMoleculeGraphData({nodes: [], links: []});
-        // setMonomerGraphData({nodes: [], links: []});
-        // setMonomerGraphEdges([]);
-        // setPrimarySequence([]);
-        // setSelectedAtomIds([]);
         setMatches([]);
         setResults([]);
-        setSelectedResult(null);
+        setSelectedResult([]);
+        setLinearizedSmiles("");
+        setInputSmiles("");
+        setInputSmilesSVG("");
+        setLinearizedSmilesSVG("");
     };
 
-    // const columnsContainer = document.getElementById("content-space");
-    // const width = columnsContainer ? (columnsContainer.clientWidth / 2) - 100 : 0;
-    // const height = 400;
+    const findMatches = async () => {
+        setIsLoading(true);
+        setMatches([]);
+        try {
+            const response = await fetch("/api/find_matches", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ "queryItems": selectedResult })
+            });
 
-    const graphRef = useRef(null);
-    const monomerGraphRef = useRef(null);
+            if (!response.ok) {
+                throw new Error("Network response was not ok!");
+            };
 
-    return (
-        <div id="content-space" className="column is-full">
-            <Modal closeModal={toggleModal} modalState={modalActive} title="Embedding results">
-                <div>
-                    Nothing to see here...
-                </div>
-                {/* {primarySequence.length > 0 && (
-                    <div>
-                        <div className="columns">
-                            <div className="column">
-                                {matches.length > 0 ? (
-                                    <table className="table is-fullwidth">
-                                        <thead>
-                                            <tr>
-                                                <th>Match</th>
-                                                <th>Name</th>
-                                                <th>Distance</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {matches.map((match, index) => (
-                                                // console.log(match),
-                                                <tr key={index}>
-                                                    <td>{match.index + 1}</td>
-                                                    {match.link == null ? (
-                                                        <td>{match.label}</td>
-                                                    ) : (
-                                                        <td><a href={match.link} target="_blank" rel="noreferrer">{match.label}</a></td>
-                                                    )}
-                                                    <td>{match.distance}</td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                ) : (
-                                    <p>No matches found</p>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )} */}
-            </Modal>
-            <div className="control" style={{border: "1px solid #dbdbdb", borderRadius: "5px", marginBottom: "10px"}}>
-                <div className="panel">
-                    <div className="panel-heading">
-                        <div className="title is-5">Input</div>
-                    </div>
-                    <div className="panel-block">
-                        <div className="field" style={{width: "100%"}}>
-                            <div 
-                                className="control"
-                            >
-                                <input className="input" value={smiles} type="text" placeholder="Enter SMILES" onChange={(e) => setSmiles(e.target.value)} disabled={isLoading} />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="panel-block">
-                        <div className="field has-addons">
-                            <div className="control">
-                                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={loadExample} disabled={isLoading}>Load example</button>
-                                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={parseMolecule} disabled={isLoading}>Parse molecule</button>
-                                <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={clear} disabled={isLoading}>Clear</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div className="control" style={{border: "1px solid #dbdbdb", borderRadius: "5px", marginBottom: "10px"}}>
-                <div className="panel">
-                    <div className="panel-heading">
-                        <div className="title is-5">Results</div>
-                    </div>
-                    <div className="panel-block">
-                        <div class={`dropdown ${results.length > 0 ? "is-hoverable" : ""}`}>
-                            <div class="dropdown-trigger">
-                                <button class="button" aria-haspopup="true" aria-controls="dropdown-menu">
-                                <span>{results.length > 0 ? "Select result" : "No results found"}</span>
-                                <span class="icon is-small">
-                                    {results.length > 0 ? <i class="fas fa-angle-down" aria-hidden="true"></i> : <i class="fas fa-times" aria-hidden="true"></i>}
-                                </span>
-                                </button>
-                            </div>
-                            <div class="dropdown-menu" id="dropdown-menu" role="menu">
-                                <div class="dropdown-content">
-                                {results.map((result, index) => (
-                                    <a class="dropdown-item" key={index} onClick={() => setSelectedResult(result)}>
-                                        {"Sequence " + (index + 1)}
-                                    </a>
-                                ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {selectedResult && (
-                        <div className="panel-block">
-                            <div className="content">
-                                {Object.keys(selectedResult).length > 0 && (
-                                    <div>
-                                        <pre>{JSON.stringify(selectedResult, null, 2)}</pre>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
-                    <div className="panel-block">
-                        <div className="field has-addons">
+            const json = await response.json();
+
+            if (json.status === "success") {
+                toast.success(json.message);
+                console.log(json.payload)
+                setMatches(json.payload.matches);
+                toggleModal();
+            } else if (json.status === "warning") {
+                toast.warn(json.message);
+            } else if (json.status === "failure") {
+                toast.error(json.message);
+            };
+        } catch (error) {
+            toast.error(error.message);
+        }
+        setIsLoading(false);
+    };
+
+    const matchSubmission = (queryItems, setMatches) => {
+
+        return (
+            <div>
+                <div className="panel-block">
+                    <div className="field has-addons">
                         <div className="control">
                             <button 
                                 className="button is-link is-light" 
                                 onClick={() => {
-                                    if (selectedResult) {
-                                        toast.warn("Not implemented yet!");
+                                    if (queryItems.length > 0) {
+                                        findMatches();
                                     } else {
-                                        toast.warn("Select a result first!");
+                                        toast.warn("Query is empty!");
                                     }
                                 }}
-                                // disabled={isLoading || monomerGraphData.nodes.length === 0}
-                                disabled={isLoading || results.length === 0}
                             >
                                 Match against database
                             </button>
                         </div>
-                        </div>
-                    </div>
-                    <div className="panel-block">
-                        <label className="checkbox">
-                        <input 
-                            type="checkbox" 
-                            checked={matchOptions.matchMolecules} 
-                            onChange={() => handleOptionChange('matchMolecules')}
-                        />
-                        Match against parsed molecules
-                        </label>
-                    </div>
-                    <div className="panel-block">
-                        <label className="checkbox">
-                        <input 
-                            type="checkbox" 
-                            checked={matchOptions.matchProtoClusters} 
-                            onChange={() => handleOptionChange('matchProtoClusters')}
-                            disabled={true}
-                        />
-                        Match against parsed proto-clusters
-                        </label>
                     </div>
                 </div>
-            {/* </div>
-                <div id="columns" className="columns">
-                    <div id="left-column" className="column has-text-centered">
-                        <div className="control">
-                            <div className="panel" style={{marginBottom: "10px"}}>
-                                <div id="left-panel-block" className="panel-block">
-                                    <div className="field has-addons">
-                                        <div className="control">
-                                        <ForceGraph2D
-                                            ref={graphRef}
-                                            style={{position: "relative"}}
-                                            graphData={moleculeGraphData}
-                                            nodeRelSize={0.3}
-                                            nodeLabel={(node) => `${node.name}`}
-                                            nodeColor={(node) => {
-                                                if (selectedAtomIds.includes(node.id)) {
-                                                    return "orange";
-                                                } else {
-                                                    return node.color;
-                                                }
-                                            }}
-                                            linkLabel={(link) => {
-                                                if (link.bondtype === 1.0) {
-                                                    return "Single";
-                                                } else if (link.bondtype === 2.0) {
-                                                    return "Double";
-                                                } else if (link.bondtype === 3.0) {
-                                                    return "Triple";
-                                                } else {
-                                                    return "Unknown";
-                                                }
-                                            }}
-                                            linkWidth={6}
-                                            width={
-                                                document.getElementById("left-panel-block") ? 
-                                                document.getElementById("left-panel-block").clientWidth - 25 : 
-                                                0
-                                            }
-                                            // width={width}
-                                            height = {
-                                                document.getElementById("left-panel-block") ? 
-                                                document.getElementById("left-panel-block").clientWidth - 25 : 
-                                                0
-                                            }
-                                            // backgroundColor="#f5f5f5"
-                                            backgroundColor="#fff"
-                                            cooldownTicks={0}
-                                            onEngineStop={() => {
-                                                graphRef.current.zoomToFit();
-                                            }}
-                                            enableNodeDrag={false}
-                                            enablePanInteraction={true}
-                                            enableZoomInteraction={false}
-                                        />
-                                        </div>
-                                    </div>
+                <div className="panel-block">
+                    <label className="checkbox">
+                    <input 
+                        type="checkbox" 
+                        defaultChecked={true}
+                        disabled={true}
+                        // checked={matchOptions.matchMolecules} 
+                        // onChange={() => handleOptionChange('matchMolecules')}
+                    />
+                    Match against parsed molecules
+                    </label>
+                </div>
+                <div className="panel-block">
+                    <label className="checkbox">
+                    <input 
+                        type="checkbox" 
+                        defaultChecked={false}
+                        // checked={matchOptions.matchProtoClusters} 
+                        // onChange={() => handleOptionChange('matchProtoClusters')}
+                        disabled={true}
+                    />
+                    Match against parsed proto-clusters
+                    </label>
+                </div>
+            </div>
+        )
+    };
+
+    // on effect when input smiles and linearized smiles change they need to be drawn 
+    useEffect(() => {
+        if (inputSmiles) {
+            drawSmiles(inputSmiles, setInputSmilesSVG);
+            drawSmiles(linearizedSmiles, setLinearizedSmilesSVG);
+        }
+    }, [inputSmiles]);
+
+    // useEffect(() => {
+    //     if (linearizedSmiles) {
+    //         drawSmiles(linearizedSmiles, setLinearizedSmilesSVG);
+    //     }
+    // }, [linearizedSmiles]);
+
+    return (
+        <div>
+            {/* {isLoading &&  <div className="loader" style={{position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "rgba(1, 0, 0, 0.9)", zIndex: "1000"}} />} */}
+            {isLoading && (
+                <div className="loader-overlay" style={{position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000}}>
+                    <div className="loader" style={{position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)"}} />
+                </div>
+            )}
+            <div id="content-space" className="column is-full">
+                <Modal closeModal={toggleModal} modalState={modalActive} title="Matching results">
+                    <div>
+                        {matches.length === 0 ? (
+                            <p>Nothing to see here.</p>
+                        ) : (
+                            <AlignmentTable data={matches} />
+                        )}
+                    </div>
+                </Modal>
+                <div className="control" style={{border: "1px solid #dbdbdb", borderRadius: "5px", marginBottom: "10px"}}>
+                    <div className="panel">
+                        <div className="panel-heading">
+                            <div className="title is-5">Input</div>
+                        </div>
+                        <div className="panel-block">
+                            <div className="field" style={{width: "100%"}}>
+                                <div 
+                                    className="control"
+                                >
+                                    <input className="input" value={smiles} type="text" placeholder="Enter SMILES" onChange={(e) => setSmiles(e.target.value)} disabled={isLoading} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="panel-block">
+                            <div className="field has-addons">
+                                <div className="control">
+                                    <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={loadExample} disabled={isLoading}>Load example</button>
+                                    <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={parseMolecule} disabled={isLoading}>Parse molecule</button>
+                                    <button className="button is-link is-light" style={{marginRight: "5px", marginBottom: "5px"}} onClick={clear} disabled={isLoading}>Clear</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div id="right-column" className="column has-text-centered">
-                        <div className="control">
-                            <div className="panel" style={{marginBottom: "10px"}}>
-                                <div id="right-panel-block" className="panel-block">
-                                    <div className="field has-addons">
-                                        <div className="control">
-                                            <ForceGraph2D
-                                                ref={monomerGraphRef}
-                                                style={{position: "relative"}}
-                                                graphData={monomerGraphData}
-                                                nodeRelSize={0.5}
-                                                nodeLabel={(node) => "Select"}
-                                                onNodeClick={(node) => {
-                                                    setSelectedAtomIds(node.atom_ids);
-                                                }}
-                                                nodeColor={(node) => node.color}
-                                                linkColor={(link) => {
-                                                    if (isListInListOfLists([link.source.id, link.target.id], monomerGraphEdges) || isListInListOfLists([link.target.id, link.source.id], monomerGraphEdges)) {
-                                                        return "rgba(255, 0, 0, 0.5)";
-                                                    };
-                                                }}
-                                                linkWidth={(link) => {
-                                                    if (isListInListOfLists([link.source.id, link.target.id], monomerGraphEdges) || isListInListOfLists([link.target.id, link.source.id], monomerGraphEdges)) {
-                                                        return 5;
-                                                    } else {
-                                                        return 2;
-                                                    }
-                                                }}
-                                                // width={width}
-                                                // height={height}
-                                                width={
-                                                    document.getElementById("right-panel-block") ? 
-                                                    document.getElementById("right-panel-block").clientWidth - 25 : 
-                                                    0
-                                                }
-                                                height = {
-                                                    document.getElementById("right-panel-block") ? 
-                                                    document.getElementById("right-panel-block").clientWidth - 25 : 
-                                                    0
-                                                }
-                                                // backgroundColor="#f5f5f5"
-                                                backgroundColor="#fff"
-                                                cooldownTicks={0}
-                                                onEngineStop={() => {
-                                                    monomerGraphRef.current.zoomToFit();
-                                                }}
-                                                enableNodeDrag={false}
-                                                enablePanInteraction={true}
-                                                enableZoomInteraction={false}
-                                                nodeCanvasObject={(node, ctx, globalScale) => {
-                                                    const label = node.name;
-                                                    const fontSize = 12/globalScale;
-                                                    ctx.font = `${fontSize}px Sans-Serif`;
-                                                    const textWidth = ctx.measureText(label).width;
-                                                    const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.2); // some padding
-
-                                                    // ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-                                                    ctx.fillStyle = "rgba(255, 140, 0, 0.5)";
-                                                    ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, ...bckgDimensions);
-
-                                                    ctx.textAlign = "center";
-                                                    ctx.textBaseline = "middle";
-                                                    ctx.fillStyle = "black";
-                                                    ctx.fillText(label, node.x, node.y);
-                                                }}
-                                            />
-                                        </div>
+                </div>
+                <div className="control" style={{border: "1px solid #dbdbdb", borderRadius: "5px", marginBottom: "10px"}}>
+                    <div className="panel">
+                        <div className="panel-heading">
+                            <div className="title is-5">Results</div>
+                        </div>
+                        <div className="panel-block">
+                            <div>
+                                {results.length === 0 ? (
+                                    <p>No results found.</p>
+                                ) : (
+                                    <div className="field is-grouped is-grouped-multiline" style={{ width: "100%" }}>
+                                        {results.map((result, index) => (
+                                            <div key={index} className="control">
+                                                <div
+                                                    className={`tags has-addons ${selectedResult === result ? 'selected' : ''}`}
+                                                    style={{ marginRight: "5px", cursor: "pointer" }}
+                                                    onClick={() => setSelectedResult(result)}
+                                                >
+                                                    <span className={`tag is-link ${selectedResult === result ? '' : 'is-light'}`}>
+                                                        Result {index + 1}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
-                    </div> */}
+                        <div className="panel-block">
+                            <div>
+                                {results.length === 0 ? (
+                                    <p>No results to draw.</p>
+                                ) : (
+                                    <div className="columns is-centered" style={{margin: "5px", verticalAlign: "middle", textAlign: "center", width: "100%"}}>
+                                        <div className="column has-text-centered is-half">
+                                            {/* <h3 style={{marginBottom: "10px"}}>
+                                                Input molecule
+                                            </h3> */}
+                                            <div style={{width: "50%", margin: "0 auto"}}>
+                                                <div dangerouslySetInnerHTML={{ __html: inputSmilesSVG }} />
+                                            </div>
+                                        </div>
+                                        <div className="column has-text-centered is-half">  
+                                            {/* <h3 style={{marginBottom: "10px"}}>
+                                                Linearized backbone
+                                            </h3> */}
+                                            <div style={{width: "50%", margin: "0 auto"}}>
+                                                <div dangerouslySetInnerHTML={{ __html: linearizedSmilesSVG }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                {selectedResult.length > 0 && 
+                    <MatchBuilder 
+                        queryItems={selectedResult} 
+                        setQueryItems={setSelectedResult} 
+                        submissionElement={matchSubmission(selectedResult, setMatches)}
+                    />}
+            </div>
         </div>
     );
 };
 
 const QueryDatabase = () => {
+    const [queryItems, setQueryItems] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [matches, setMatches] = useState([]);
+
+    const [modalActive, setModalActive] = useState(false);
+
+    const toggleModal = () => {
+        setModalActive(!modalActive);
+    };
+
+
+    const queryDatabase = async () => {
+        setIsLoading(true);
+        setMatches([]);
+        try {
+            const response = await fetch("/api/query_database", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ "queryItems": queryItems })
+            });
+
+            if (!response.ok) {
+                throw new Error("Network response was not ok!");
+            };
+
+            const json = await response.json();
+
+            if (json.status === "success") {
+                toast.success(json.message);
+                console.log(json.payload)
+                setMatches(json.payload.matches);
+                toggleModal();
+            } else if (json.status === "warning") {
+                toast.warn(json.message);
+            } else if (json.status === "failure") {
+                toast.error(json.message);
+            };
+        } catch (error) {
+            toast.error(error.message);
+        }
+        setIsLoading(false);
+    };
+
+    const querySubmission = (queryItems, setQueryMatches) => {
+        return (
+            <div>
+                <div className="panel-block">
+                    <div className="field has-addons">
+                        <div className="control">
+                            <button 
+                                className="button is-link is-light" 
+                                onClick={() => {
+                                    if (queryItems.length > 0) {
+                                        queryDatabase();
+                                    } else {
+                                        toast.warn("Query is empty!");
+                                    }
+                                }}
+                            >
+                                Query against database
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div className="panel-block">
+                    <label className="checkbox">
+                    <input 
+                        type="checkbox" 
+                        defaultChecked={true}
+                        disabled={true}
+                        // checked={matchOptions.matchMolecules} 
+                        // onChange={() => handleOptionChange('matchMolecules')}
+                    />
+                    Query against parsed molecules
+                    </label>
+                </div>
+                <div className="panel-block">
+                    <label className="checkbox">
+                    <input 
+                        type="checkbox" 
+                        defaultChecked={false}
+                        // checked={matchOptions.matchProtoClusters} 
+                        // onChange={() => handleOptionChange('matchProtoClusters')}
+                        disabled={true}
+                    />
+                    Query against parsed proto-clusters
+                    </label>
+                </div>
+            </div>
+        )
+    };
+
     return (
-        <div className="column is-full">
-            {/* <QueryBuilder /> */}
-            <QueryDesigner />
+        <div>
+            {/* {isLoading &&  <div className="loader" style={{position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)", backgroundColor: "rgba(1, 0, 0, 0.9)", zIndex: "1000"}} />} */}
+            {isLoading && (
+                <div className="loader-overlay" style={{position: "fixed", top: 0, left: 0, width: "100%", height: "100%", backgroundColor: "rgba(0, 0, 0, 0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1000}}>
+                    <div className="loader" style={{position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)"}} />
+                </div>
+            )}
+            <div id="content-space" className="column is-full">
+                <Modal closeModal={toggleModal} modalState={modalActive} title="Matching results">
+                    <div>
+                        {matches.length === 0 ? (
+                            <p>Nothing to see here.</p>
+                        ) : (
+                            <AlignmentTable data={matches} />
+                            // <p>Results</p>
+                        )}
+                    </div>
+                </Modal>
+                <div className="control" style={{border: "1px solid #dbdbdb", borderRadius: "5px", marginBottom: "10px"}}></div>
+                <QueryBuilder 
+                    queryItems={queryItems} 
+                    setQueryItems={setQueryItems} 
+                    submissionElement={querySubmission(queryItems, setMatches)}
+                />
+            </div>
         </div>
     );
 }

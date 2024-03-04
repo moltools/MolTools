@@ -83,6 +83,8 @@ def draw_smiles() -> Response:
             if mol is None:
                 raise ValueError()
             
+            # TODO: get highlights
+            
             # Draw the molecule.
             svg_string = mol_to_svg(mol)
             payload = {"svg_string": svg_string}

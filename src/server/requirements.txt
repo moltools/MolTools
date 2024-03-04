@@ -8,6 +8,7 @@ networkx==3.2.1
 numba==0.58.1
 numpy==1.26.3
 scipy==1.11.4
+tqdm
 neo4j
 git+https://github.com/moltools/retromol.git
 git+https://github.com/moltools/cinemol.git
