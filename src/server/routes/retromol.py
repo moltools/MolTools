@@ -15,7 +15,6 @@ from retromol_sequencing.sequencing import parse_modular_natural_product
 from retromol_sequencing.alignment import ModuleSequence, parse_primary_sequence, MultipleSequenceAlignment, PolyketideMotif, PeptideMotif, Gap
 
 from .common import Status, ResponseData
-from .chemistry import draw_smiles
 
 try:
     absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -27,57 +26,13 @@ except Exception as e:
     REACTIONS = []
     MONOMERS = []
 
-from enum import Enum
-
-class Palette(Enum):
-    """
-    Palette of colors for drawing molecules as RGB.
-    """
-    Red         = (230,  25,  75); Blue        = (  0, 130, 200); Green       = ( 60, 180,  75); Maroon      = (128,   0,   0)
-    Brown       = (170, 110,  40); Olive       = (128, 128,   0); Teal        = (  0, 128, 128); Navy        = (  0,   0, 128)
-    Orange      = (245, 130,  48); Yellow      = (255, 225,  25); Lime        = (210, 245,  60); Cyan        = ( 70, 240, 240)
-    Purple      = (145,  30, 180); Magenta     = (240,  50, 230); Pink        = (255, 190, 212); Apricot     = (255, 215, 180)
-    Beige       = (255, 250, 200); Mint        = (170, 255, 195); Lavender    = (220, 190, 255)
-
-    def as_hex(self, alpha: ty.Optional[float] = None) -> str:
-        """
-        Return the hex code of the color with the given alpha value.
-
-        Args:
-            alpha (float): Alpha value of the color, default is None.
-
-        Returns:
-            str: Hex code of the color.
-        """
-        r, g, b = self.value
-        hex_base = "#{:02x}{:02x}{:02x}".format(r, g, b)
-        if alpha is not None:
-            if alpha < 0: alpha = 0.0
-            elif alpha > 1: alpha = 1.0
-            return "{}{:02x}".format(hex_base, int(alpha * 255))
-        else:
-            return hex_base
-
-    def normalize(self, minv: float = 0.0, maxv: float  = 255.0) -> ty.Tuple[float, float, float]:
-        """
-        Normalize the color values to the range [0, 1].
-
-        Args:
-            minv (float, optional): Minimum value of the range. Defaults to 0.0.
-            maxv (float, optional): Maximum value of the range. Defaults to 255.0.
-
-        Returns:
-            ty.Tuple[float, float, float]: Normalized color values.
-        """
-        r, g, b = self.value
-        return (round((r-minv)/(maxv-minv), 3), round((g-minv)/(maxv-minv), 3), round((b-minv)/(maxv-minv), 3))
-
 Record = ty.Tuple[Molecule, ty.List[ReactionRule], ty.List[MolecularPattern]]
 
 blueprint_parse_retromol = Blueprint("parse_retromol", __name__)
 @blueprint_parse_retromol.route("/api/parse_retromol", methods=["POST"])
 def parse_retromol() -> Response:
     data = request.get_json()
+    data = data["data"]
 
     smiles = data.get("smiles", None)
     if smiles is None:
@@ -97,20 +52,6 @@ def parse_retromol() -> Response:
             if props["identity"] is not None:
                 monomer_ids.append(props["reaction_tree_id"])
         subs = [Chem.MolFromSmiles(result.reaction_tree[x]["smiles"]) for x in monomer_ids]
-
-        # highlights
-        # palette = [c for c in Palette]
-        # atoms_to_highlight = []
-        # atom_highlights = {}
-        # for i, sub in enumerate(subs):
-        #     color = palette[i % len(palette)]
-        #     sub_amns = []
-        #     for atom in sub.GetAtoms():
-        #         amn = atom.GetAtomMapNum()
-        #         if amn > 0: sub_amns.append(amn)
-        #     for amn in sub_amns:
-        #         atom_highlights[amn] = color.normalize()
-        # print(atom_highlights)
 
         monomer_amns = set()
         for sub in subs:
@@ -196,6 +137,7 @@ blueprint_find_matches = Blueprint("find_matches", __name__)
 @blueprint_find_matches.route("/api/find_matches", methods=["POST"])
 def find_matches() -> Response:
     data = request.get_json()
+    data = data["data"]
 
     payload = {"matches": []}
 
@@ -204,7 +146,7 @@ def find_matches() -> Response:
         driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
 
         query = [] 
-        for item in data["queryItems"]:
+        for item in data["matchItems"]:
             props = item["properties"]
             props["identifier"] = item["identifier"]
             query.append(props)

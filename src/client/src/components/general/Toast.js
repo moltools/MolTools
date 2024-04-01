@@ -1,9 +1,5 @@
 import { ToastContainer } from "react-toastify";
 
-/**
- * Toast component that displays toast notifications.
- * @returns {JSX.Element} - The rendered Toast component.
- */
 const Toast = () =>  {
     return (
         <ToastContainer
@@ -45,5 +41,4 @@ const Toast = () =>  {
     );
 };
 
-// Export the Toast component as the default export.
 export default Toast;

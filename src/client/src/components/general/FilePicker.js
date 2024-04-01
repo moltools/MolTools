@@ -1,16 +1,6 @@
-import React, { useRef } from 'react';
+import React, { useRef } from "react";
 
-/**
- * FilePickerButton component.
- * 
- * @param {Object} props - The props for the FilePickerButton component.
- * @param {Function} props.onFileSelected - The function to call when a file is selected.
- * @param {string} props.className - The class name to apply to the button.
- */
-function FilePickerButton(props) {
-    // Destructure the props.
-    const { onFileSelected, className } = props;
-
+function FilePickerButton({ onFileSelected, className }) {
     const fileInputRef = useRef(null);
 
     const handleFileSelect = () => {
@@ -55,5 +45,4 @@ function FilePickerButton(props) {
     );
 }
 
-// Export the FilePickerButton component as the default export.
 export default FilePickerButton;

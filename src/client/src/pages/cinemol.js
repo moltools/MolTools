@@ -1,29 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { 
-    BsArrowRepeat,
-    BsBrushFill, 
-    BsChevronDoubleLeft, 
-    BsChevronDoubleRight, 
-    BsCircleHalf, 
-    BsDropletFill, 
-    BsEyeFill, 
-    BsFillCloudDownloadFill,
-    BsFillCloudUploadFill, 
-    BsFillDatabaseFill,
-    BsFillLightningFill, 
-    BsGithub, 
-    BsGlobe2
-} from "react-icons/bs";
 
-// =====================================================================================================================
-// Example SDF string.
-// =====================================================================================================================
-
-/**
- * Example SDF string for Penicillin G.
- * @type {string}
- */
+// Example SDF string for penicillin G.
 const exampleSdfString = `5904
   -OEChem-12182318453D
 
@@ -120,7 +98,6 @@ const CineMol = () => {
     const [version, setVersion] = useState("0.0.0");                    // Version of the CineMol component.
     const [mode, setMode] = useState("light");                           // Dark or light background of the molecular model.
     const [svgString, setSvgString] = useState("");                     // SVG representation of the molecular model.
-    const [sidebarOpen, setSideBarOpen] = useState(true);               // Determines if the sidebar is collapsed or not.
     const [isLoading, setIsLoading] = useState(false);                  // App grays out when loading.
     const [initialRender, setInitialRender] = useState(true);           // Initial render of the molecular model.
 
@@ -337,7 +314,23 @@ const CineMol = () => {
                         <li onClick={handleToggleMode} disabled={isLoading}><a>Toggle Background: {mode}</a></li>
                     </ul>
                     <ul className="menu-list">
-                        
+                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
+                            <p className="control">
+                                <button className="button">
+                                    <span className="has-text-left" style={{"width": "100px"}}>Resolution: {resolution}</span>
+                                </button>
+                            </p>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (resolution >= 20) { setResolution(resolution - 10) } } }>
+                                    <span>-</span>
+                                </button>
+                            </p>
+                            <p className="control">
+                                <button className="button" disabled={isLoading} onClick={ () => { if (resolution < 100) { setResolution(resolution + 10) } } }>
+                                    <span>+</span>
+                                </button>
+                            </p>
+                        </div>
                         <div className="field has-addons" style={{"marginBottom": "0px"}}>
                             <p className="control">
                                 <button className="button">
