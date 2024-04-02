@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 
 import AlignmentTable from "./AlignmentTable";
 import LoadingOverlay from "./LoadingOverlay";
+import MatchSubmission from "./MatchSubmission";
 import Modal from "./Modal";
 import QueryBuilder from "./QueryBuilder";
 
@@ -12,6 +13,7 @@ const QueryDatabase = () => {
     const [modalActive, setModalActive] = useState(false);
 
     // Query and result state.
+    const [selectedBioactivityLabels, setSelectedBioactivityLabels] = useState([]);
     const [queryAgainstMolecules, setQueryAgainstMolecules] = useState(true);
     const [queryAgainstProtoClusters, setQueryAgainstProtoClusters] = useState(false);
     const [queryItems, setQueryItems] = useState([]);
@@ -34,6 +36,7 @@ const QueryDatabase = () => {
 
         const data = {
             "queryItems": queryItems,
+            "selectedBioactivityLabels": selectedBioactivityLabels,
             "queryAgainstMolecules": queryAgainstMolecules,
             "queryAgainstProtoClusters": queryAgainstProtoClusters
         };
@@ -67,60 +70,6 @@ const QueryDatabase = () => {
         setIsLoading(false);
     };
 
-    // Query submission element.
-    const querySubmission = (queryItems) => {
-        return (
-            <div>
-                <div className="panel-block">
-                    <div className="column is-full">
-                        <div className="field has-addons">
-                            <div className="control">
-                                <button 
-                                    className="button is-link is-light" 
-                                    onClick={() => {
-                                        if (queryItems.length > 0) {
-                                            queryDatabase();
-                                        } else {
-                                            toast.warn("Query is empty!");
-                                        }
-                                    }}
-                                >
-                                    Query against database
-                                </button>
-                            </div>
-                        </div>
-                        <div className="field has-addons">
-                            <div className="control">
-                                <label className="checkbox">
-                                    <input 
-                                        type="checkbox" 
-                                        defaultChecked={queryAgainstMolecules}
-                                        value={queryAgainstMolecules}
-                                        onChange={() => setQueryAgainstMolecules(!queryAgainstMolecules)}
-                                    />
-                                    Query against parsed molecules
-                                </label>
-                            </div>
-                        </div>
-                        <div className="field has-addons">
-                            <div className="control">
-                                <label className="checkbox">
-                                    <input 
-                                        type="checkbox" 
-                                        defaultChecked={queryAgainstProtoClusters}
-                                        value={queryAgainstProtoClusters}
-                                        onChange={() => setQueryAgainstProtoClusters(!queryAgainstProtoClusters)}
-                                    />
-                                    Query against parsed proto-clusters
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
     return (
         <div>
             {isLoading && <LoadingOverlay />}
@@ -141,7 +90,17 @@ const QueryDatabase = () => {
                 <QueryBuilder 
                     queryItems={queryItems} 
                     setQueryItems={setQueryItems} 
-                    submissionElement={querySubmission(queryItems)}
+                    submissionElement={
+                        <MatchSubmission 
+                            queryItems={queryItems} 
+                            findMatches={queryDatabase} 
+                            matchAgainstMolecules={queryAgainstMolecules} 
+                            setMatchAgainstMolecules={setQueryAgainstMolecules} 
+                            matchAgainstProtoClusters={queryAgainstProtoClusters} 
+                            setMatchAgainstProtoClusters={setQueryAgainstProtoClusters} 
+                            selectedBioactivityLabels={selectedBioactivityLabels}
+                            setSelectedBioactivityLabels={setSelectedBioactivityLabels}
+                        />}
                 />
             </div>
         </div>

@@ -4,6 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import AlignmentTable from "./AlignmentTable";
 import LoadingOverlay from "./LoadingOverlay";
+import MatchSubmission from "./MatchSubmission";
 import Modal from "./Modal";
 import QueryBuilder from "./QueryBuilder";
 import ResultSelector from "./ResultSelector";
@@ -16,6 +17,7 @@ const ParseMolecule = () => {
 
     // Query and result state.
     const [smiles, setSmiles] = useState("");
+    const [selectedBioactivityLabels, setSelectedBioactivityLabels] = useState([]);
     const [matchAgainstMolecules, setMatchAgainstMolecules] = useState(true);
     const [matchAgainstProtoClusters, setMatchAgainstProtoClusters] = useState(false);
     const [results, setResults] = useState([]);
@@ -53,7 +55,12 @@ const ParseMolecule = () => {
         setResults([]);
         setSelectedResult([]);
 
-        const data = { "smiles": smiles };
+        const data = { 
+            "smiles": smiles,
+            "selectedBioactivityLabels": selectedBioactivityLabels,
+            "matchAgainstMolecules": matchAgainstMolecules,
+            "matchAgainstProtoClusters": matchAgainstProtoClusters
+        };
 
         try {
             const response = await fetch("/api/parse_retromol", {
@@ -79,7 +86,8 @@ const ParseMolecule = () => {
             };
         } catch (error) {
             toast.error(error.message);
-        }
+        };
+
         setIsLoading(false);
     };
 
@@ -114,7 +122,6 @@ const ParseMolecule = () => {
 
             if (json.status === "success") {
                 toast.success(json.message);
-                console.log(json.payload)
                 setMatches(json.payload.matches);
                 toggleModal();
             } else if (json.status === "warning") {
@@ -127,60 +134,6 @@ const ParseMolecule = () => {
         }
 
         setIsLoading(false);
-    };
-
-    // Submission element for matching against the database.
-    const matchSubmission = (queryItems) => {
-        return (
-            <div>
-                <div className="panel-block">
-                    <div className="column is-full">
-                        <div className="field has-addons">
-                            <div className="control">
-                                <button 
-                                    className="button is-link is-light" 
-                                    onClick={() => {
-                                        if (queryItems.length > 0) {
-                                            findMatches();
-                                        } else {
-                                            toast.warn("Query is empty!");
-                                        }
-                                    }}
-                                >
-                                    Match against database
-                                </button>
-                            </div>
-                        </div>
-                        <div className="field has-addons">
-                            <div className="control">
-                                <label className="checkbox">
-                                <input 
-                                    type="checkbox" 
-                                    defaultChecked={matchAgainstMolecules}
-                                    value={matchAgainstMolecules}
-                                    onChange={() => setMatchAgainstMolecules(!matchAgainstMolecules)}
-                                />
-                                Match against parsed molecules
-                                </label>
-                            </div>
-                        </div>
-                        <div className="field has-addons">
-                            <div className="control">
-                                <label className="checkbox">
-                                <input 
-                                    type="checkbox" 
-                                    defaultChecked={matchAgainstProtoClusters}
-                                    value={matchAgainstProtoClusters}
-                                    onChange={() => setMatchAgainstProtoClusters(!matchAgainstProtoClusters)}
-                                />
-                                Match against parsed proto-clusters
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )
     };
 
     return (
@@ -215,7 +168,18 @@ const ParseMolecule = () => {
                     <QueryBuilder 
                         queryItems={selectedResult} 
                         setQueryItems={setSelectedResult} 
-                        submissionElement={matchSubmission(selectedResult)}
+                        submissionElement={
+                            <MatchSubmission 
+                                queryItems={selectedResult} 
+                                findMatches={findMatches} 
+                                matchAgainstMolecules={matchAgainstMolecules} 
+                                setMatchAgainstMolecules={setMatchAgainstMolecules} 
+                                matchAgainstProtoClusters={matchAgainstProtoClusters} 
+                                setMatchAgainstProtoClusters={setMatchAgainstProtoClusters}
+                                selectedBioactivityLabels={selectedBioactivityLabels}
+                                setSelectedBioactivityLabels={setSelectedBioactivityLabels}
+                            />
+                        }
                     />}
             </div>
         </div>

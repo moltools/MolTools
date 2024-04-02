@@ -2,7 +2,9 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { FiGithub, FiPaperclip } from "react-icons/fi";
+
 import "./style/main.css";
+import "react-widgets/styles.css";
 
 import Header from "./components/general/Header";
 import Toast from "./components/general/Toast";
@@ -44,7 +46,11 @@ function AppRoutes () {
                 <Route path="/about" element={<About />} />
                 <Route path="/*" element={<div style={{padding: "2rem"}}><h1>404 Not Found</h1></div>} />
                 {widgets.map((widget, index) => (
-                    <Route key={index} path={widget.path} element={widget.component} />
+                    <Route 
+                        key={index} 
+                        path={widget.path} 
+                        element={widget.component} 
+                    />
                 ))}
             </Routes>
         </div>

@@ -1,6 +1,19 @@
 import React from "react";
 
 const AlignmentTable = ({ data }) => {
+
+    // Define a function to handle downloading the results as a JSON file.
+    const handleDownload = () => {
+        const filename = "results.json";
+        const dataJson = JSON.stringify(data, null, 4);
+        const blob = new Blob([dataJson], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.click();
+    };
+
     // Get the length of the sequences by checking the first item in the data array.
     const sequenceLength = data[0].sequence.length;
 
@@ -23,6 +36,13 @@ const AlignmentTable = ({ data }) => {
 
     return (
         <div style={{ overflowX: "auto", overflowY: "auto" }}>
+            <button
+                className="button is-link is-light"
+                style={{ marginBottom: "10px" }}
+                onClick={handleDownload}
+            >
+                Download results
+            </button>
             <table style={{ borderCollapse: "collapse" }}>
                 <thead>
                     <tr>

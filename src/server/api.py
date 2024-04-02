@@ -4,6 +4,7 @@ import neo4j
 from routes.common import Status, ResponseData
 from routes.cinemol import blueprint_draw_model, blueprint_fetch_cinemol_version
 from routes.retromol import (
+    blueprint_bioactivity_labels,
     blueprint_parse_retromol, 
     blueprint_embed_retromol, 
     blueprint_find_matches, 
@@ -13,6 +14,7 @@ from routes.retromol import (
 app = Flask(__name__)
 app.register_blueprint(blueprint_draw_model)
 app.register_blueprint(blueprint_fetch_cinemol_version)
+app.register_blueprint(blueprint_bioactivity_labels)
 app.register_blueprint(blueprint_parse_retromol)
 app.register_blueprint(blueprint_embed_retromol)
 app.register_blueprint(blueprint_find_matches)

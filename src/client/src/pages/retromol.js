@@ -34,7 +34,7 @@ const RetroMol = () => {
                     ))}
                 </ul>
             </div>
-            <div className="container" style={{ padding: "20px" }}>
+            <div style={{ padding: "20px", paddingTop: "0px"}}>
                 {selectedTab === "Overview" && <Overview />}
                 {selectedTab === "Parse molecule" && <ParseMolecule />}
                 {selectedTab === "Parse proto-cluster" && <ParseProtoCluster />}

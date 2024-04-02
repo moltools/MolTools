@@ -28,6 +28,32 @@ except Exception as e:
 
 Record = ty.Tuple[Molecule, ty.List[ReactionRule], ty.List[MolecularPattern]]
 
+blueprint_bioactivity_labels = Blueprint("bioactivity_labels", __name__)
+@blueprint_bioactivity_labels.route("/api/bioactivity_labels", methods=["GET"])
+def bioactivity_labels() -> Response:
+    biaoctivity_labels = []
+
+    driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+
+    with driver.session() as session:
+        query = """
+        MATCH (b:Bioactivity)
+        RETURN b
+        """
+        result = session.run(query)
+
+        bioactivity_labels = []
+        for record in result:
+            bioactivity_labels.append(record["b"]["name"])
+
+    # sort bioactivity labels
+    bioactivity_labels = list(set(bioactivity_labels))
+    bioactivity_labels.sort()
+
+    payload = {"bioactivityLabels": bioactivity_labels}
+    msg = "Successfully retrieved bioactivity labels!"
+    return ResponseData(Status.Success, payload=payload, message=msg).to_dict()
+
 blueprint_parse_retromol = Blueprint("parse_retromol", __name__)
 @blueprint_parse_retromol.route("/api/parse_retromol", methods=["POST"])
 def parse_retromol() -> Response:

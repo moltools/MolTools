@@ -1,8 +1,9 @@
 import React from "react";
 
 const Modal = ({ children, closeModal, modalState, title }) => {
+
     if(!modalState) {
-      return null;
+        return null;
     };
     
     return(
