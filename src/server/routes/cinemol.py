@@ -4,7 +4,7 @@ from cinemol.chemistry import Style, Look, draw_molecule
 from cinemol.version import version
 from flask import Blueprint, Response, request
 
-from common import Status, ResponseData
+from .common import Status, ResponseData
 
 blueprint_draw_model = Blueprint("draw_model", __name__)
 @blueprint_draw_model.route("/api/draw_model", methods=["POST"])

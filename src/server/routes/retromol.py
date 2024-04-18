@@ -20,15 +20,15 @@ from retromol.alignment import (
     parse_primary_sequence,
 )
 
-from common import Status, ResponseData
+from .common import Status, ResponseData
 
 try:
     absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     rules = json.load(open(os.path.join(absolute_path, "data/rules.json"), "r", encoding="utf-8"))
     REACTIONS = parse_reaction_rules(json.dumps(rules["reactions"]))
     MONOMERS = parse_molecular_patterns(json.dumps(rules["monomers"]))
-except Exception as e:
-    print(e)
+except Exception as err:
+    print(err)
     REACTIONS = []
     MONOMERS = []
 
