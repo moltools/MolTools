@@ -5,3 +5,5 @@
 *.joblib
 embedding_identifiers.txt
 *.npy
+
+venv/
