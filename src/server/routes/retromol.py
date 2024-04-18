@@ -1,24 +1,30 @@
-from flask import Blueprint, Response, request 
-import os 
-import json 
+"""This module contains the API endpoints for RetroMol."""
+import os
+import json
 import typing as ty
-
-from tqdm import tqdm
-
-from rdkit import Chem
+from flask import Blueprint, Response, request
 
 import neo4j
+from tqdm import tqdm
+from rdkit import Chem
 
 from retromol.chem import Molecule, MolecularPattern, ReactionRule
 from retromol.parsing import parse_reaction_rules, parse_molecular_patterns, parse_mol
-from retromol_sequencing.sequencing import parse_modular_natural_product
-from retromol_sequencing.alignment import ModuleSequence, parse_primary_sequence, MultipleSequenceAlignment, PolyketideMotif, PeptideMotif, Gap
+from retromol.sequencing import parse_modular_natural_product
+from retromol.alignment import (
+    ModuleSequence,
+    MultipleSequenceAlignment,
+    PolyketideMotif,
+    PeptideMotif,
+    Gap,
+    parse_primary_sequence,
+)
 
-from .common import Status, ResponseData
+from common import Status, ResponseData
 
 try:
     absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    rules = json.load(open(os.path.join(absolute_path, "data/rules.json"), "r"))
+    rules = json.load(open(os.path.join(absolute_path, "data/rules.json"), "r", encoding="utf-8"))
     REACTIONS = parse_reaction_rules(json.dumps(rules["reactions"]))
     MONOMERS = parse_molecular_patterns(json.dumps(rules["monomers"]))
 except Exception as e:
@@ -31,7 +37,12 @@ Record = ty.Tuple[Molecule, ty.List[ReactionRule], ty.List[MolecularPattern]]
 blueprint_bioactivity_labels = Blueprint("bioactivity_labels", __name__)
 @blueprint_bioactivity_labels.route("/api/bioactivity_labels", methods=["GET"])
 def bioactivity_labels() -> Response:
-    biaoctivity_labels = []
+    """API endpoint for retrieving all bioactivity labels.
+    
+    :return: The bioactivity labels.
+    :rtype: ResponseData
+    """
+    bioactivity_labels = []
 
     driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
 
@@ -42,7 +53,6 @@ def bioactivity_labels() -> Response:
         """
         result = session.run(query)
 
-        bioactivity_labels = []
         for record in result:
             bioactivity_labels.append(record["b"]["name"])
 
@@ -57,24 +67,28 @@ def bioactivity_labels() -> Response:
 blueprint_parse_retromol = Blueprint("parse_retromol", __name__)
 @blueprint_parse_retromol.route("/api/parse_retromol", methods=["POST"])
 def parse_retromol() -> Response:
+    """API endpoint for parsing a molecule.
+    
+    :return: The parsed molecule.
+    :rtype: ResponseData
+    """
     data = request.get_json()
     data = data["data"]
 
     smiles = data.get("smiles", None)
     if smiles is None:
         msg = "No SMILES string provided!"
-
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     else:
         mol = Molecule("input", smiles)
         result = parse_mol(mol, REACTIONS, MONOMERS)
 
         input_smiles = Chem.MolToSmiles(result.mol)
 
-        # Get all monomer amns
+        # Get all monomer atom map numbers
         monomer_ids = []
-        for k, props in result.monomer_graph.items():
+        for _, props in result.monomer_graph.items():
             if props["identity"] is not None:
                 monomer_ids.append(props["reaction_tree_id"])
         subs = [Chem.MolFromSmiles(result.reaction_tree[x]["smiles"]) for x in monomer_ids]
@@ -83,16 +97,18 @@ def parse_retromol() -> Response:
         for sub in subs:
             for atom in sub.GetAtoms():
                 amn = atom.GetAtomMapNum()
-                if amn > 0: monomer_amns.add(amn)
-        
-        # filter reaction tree for nodes that contain all amns 
+                if amn > 0:
+                    monomer_amns.add(amn)
+
+        # filter reaction tree for nodes that contain all amns.
         mols = []
         for k, props in result.reaction_tree.items():
             mol = Chem.MolFromSmiles(props["smiles"])
             amns = set()
             for atom in mol.GetAtoms():
                 amn = atom.GetAtomMapNum()
-                if amn > 0: amns.add(amn)
+                if amn > 0:
+                    amns.add(amn)
             if monomer_amns.issubset(amns):
                 mols.append(mol)
 
@@ -105,18 +121,15 @@ def parse_retromol() -> Response:
         min_num_cycles = min([x[1] for x in mols_with_num_cycles])
         mols = [x[0] for x in mols_with_num_cycles if x[1] == min_num_cycles]
         linearized_smiles = Chem.MolToSmiles(mols[0])
-        
-
-
         sequences = parse_modular_natural_product(result)
 
-        # 
+        # Hide atom map numbers.
         input_mol = Chem.MolFromSmiles(input_smiles)
         for atom in input_mol.GetAtoms():
             atom.SetAtomMapNum(0)
         input_smiles = Chem.MolToSmiles(input_mol)
 
-        # 
+        # Hide atom map numbers.
         linearized_mol = Chem.MolFromSmiles(linearized_smiles)
         for atom in linearized_mol.GetAtoms():
             atom.SetAtomMapNum(0)
@@ -130,15 +143,28 @@ def parse_retromol() -> Response:
         message = "Successfully parsed molecule!"
 
         return ResponseData(Status.Success, payload=payload, message=message).to_dict()
-    
+
 blueprint_embed_retromol = Blueprint("embed_retromol", __name__)
 @blueprint_embed_retromol.route("/api/embed_retromol", methods=["POST"])
 def embed_retromol() -> Response:
-    data = request.get_json()
+    """API endpoint for embedding a molecule.
 
+    :return: The embedded molecule.
+    :rtype: ResponseData
+    """
+    _ = request.get_json()
     return ResponseData(Status.Failure, message="Matching not inplemented!").to_dict()
 
 def retrieve_primary_sequence(session: neo4j.Session, identifier: str) -> ty.List[ty.Dict[str, ty.Any]]:
+    """Retrieve the primary sequence of a compound.
+
+    :param session: The Neo4j session.
+    :type session: neo4j.Session
+    :param identifier: The identifier of the compound.
+    :type identifier: str
+    :return: The primary sequence of the compound.
+    :rtype: ty.List[ty.Dict[str, ty.Any]]
+    """
     query = """
     MATCH (:PrimarySequence {identifier: $identifier})-[:START]->(startUnit)
     MATCH s = (startUnit)-[:NEXT*]->(endUnit)
@@ -157,11 +183,16 @@ def retrieve_primary_sequence(session: neo4j.Session, identifier: str) -> ty.Lis
                 props = dict(node.items())
                 seq.append(props)
 
-    return seq 
+    return seq
 
 blueprint_find_matches = Blueprint("find_matches", __name__)
 @blueprint_find_matches.route("/api/find_matches", methods=["POST"])
 def find_matches() -> Response:
+    """API endpoint for finding matches in the database.
+    
+    :return: The matches.
+    :rtype: ResponseData
+    """
     data = request.get_json()
     data = data["data"]
 
@@ -171,7 +202,7 @@ def find_matches() -> Response:
         # driver = neo4j.GraphDatabase.driver("bolt://database:7687")
         driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
 
-        query = [] 
+        query = []
         for item in data["matchItems"]:
             props = item["properties"]
             props["identifier"] = item["identifier"]
@@ -180,7 +211,7 @@ def find_matches() -> Response:
 
         gap_cost = 2
         end_gap_cost = 1
-        
+
         with driver.session() as session:
             query = """
             MATCH (b:PrimarySequence)
@@ -211,14 +242,14 @@ def find_matches() -> Response:
                 else:
                     continue
 
-            # get top 10 sequences and do msa 
+            # get top 10 sequences and do msa.
             msa = MultipleSequenceAlignment([seq_a] + [x[2] for x in top_10], gap_cost, end_gap_cost).get_alignment()
 
             matches = []
             for seq in msa:
 
                 seq_repr = []
-                for x, tag in seq._seq: 
+                for x, _ in seq._seq: 
                     if isinstance(x, PolyketideMotif):
                         x_repr = x.type.name + (str(x.decoration_type) if x.decoration_type is not None else "")
                     elif isinstance(x, PeptideMotif):
@@ -232,7 +263,7 @@ def find_matches() -> Response:
                 if seq.name.startswith("NPA"):
                     url = "https://www.npatlas.org/explore/compounds/" + seq.name
                 else:
-                    url = None 
+                    url = None
 
                 bioactivities = []
                 query = """
@@ -253,15 +284,21 @@ def find_matches() -> Response:
             payload["matches"] = matches
 
         driver.close()
-        
+
         return ResponseData(Status.Success, payload=payload, message="Matching completed!").to_dict()
-    
-    except Exception as e:
-        return ResponseData(Status.Failure, message=f"{e}").to_dict()
-    
+
+    except Exception as err:
+        msg = f"Error: {err}"
+        return ResponseData(Status.Failure, message=msg).to_dict()
+
 blueprint_query_database = Blueprint("query_database", __name__)
 @blueprint_query_database.route("/api/query_database", methods=["POST"])
 def query_database() -> Response:
+    """API endpoint for querying the database.
+    
+    :return: The matches.
+    :rtype: ResponseData
+    """
     data = request.get_json()
 
     payload = {"matches": []}
@@ -272,7 +309,7 @@ def query_database() -> Response:
 
         gap_cost = 2
         end_gap_cost = 1
-        
+
         with driver.session() as session:
             query = """
             MATCH (b:PrimarySequence)-[:START]->(u1)
@@ -302,14 +339,14 @@ def query_database() -> Response:
 
             print(first_10)
 
-            # get top 10 sequences and do msa 
+            # get top 10 sequences and do msa.
             msa = MultipleSequenceAlignment([x[1] for x in first_10], gap_cost, end_gap_cost).get_alignment()
 
             matches = []
             for seq in msa:
 
                 seq_repr = []
-                for x, tag in seq._seq: 
+                for x, tag in seq._seq:
                     if isinstance(x, PolyketideMotif):
                         x_repr = x.type.name + (str(x.decoration_type) if x.decoration_type is not None else "")
                     elif isinstance(x, PeptideMotif):
@@ -323,7 +360,7 @@ def query_database() -> Response:
                 if seq.name.startswith("NPA"):
                     url = "https://www.npatlas.org/explore/compounds/" + seq.name
                 else:
-                    url = None 
+                    url = None
 
                 bioactivities = []
                 query = """
@@ -344,8 +381,9 @@ def query_database() -> Response:
             payload["matches"] = matches
 
         driver.close()
-        
+
         return ResponseData(Status.Success, payload=payload, message="Matching completed!").to_dict()
-    
-    except Exception as e:
-        return ResponseData(Status.Failure, message=f"{e}").to_dict()
+
+    except Exception as err:
+        msg = f"Error: {err}"
+        return ResponseData(Status.Failure, message=msg).to_dict()

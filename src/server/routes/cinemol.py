@@ -1,15 +1,15 @@
+"""This module contains the API endpoints for CineMol."""
 from cinemol.parsers import parse_sdf
 from cinemol.chemistry import Style, Look, draw_molecule
-from cinemol.version import version 
-from flask import Blueprint, Response, request 
+from cinemol.version import version
+from flask import Blueprint, Response, request
 
-from .common import Status, ResponseData
+from common import Status, ResponseData
 
 blueprint_draw_model = Blueprint("draw_model", __name__)
 @blueprint_draw_model.route("/api/draw_model", methods=["POST"])
 def draw_model() -> Response:
-    """
-    API endpoint for drawing a 3D model and returning the SVG string.
+    """API endpoint for drawing a 3D model and returning the SVG string.
 
     :param str smiles: SDF string.
     :return: The SVG string.
@@ -43,9 +43,9 @@ def draw_model() -> Response:
     view_box = data.get("view_box", None)
     if view_box is not None:
         view_box = (
-            float(view_box["min_x"]), 
-            float(view_box["min_y"]), 
-            float(view_box["width"]), 
+            float(view_box["min_x"]),
+            float(view_box["min_y"]),
+            float(view_box["width"]),
             float(view_box["height"])
         )
 
@@ -57,12 +57,12 @@ def draw_model() -> Response:
         window = (int(width), int(height))
     else:
         window = None
-    
+
     # Draw molecule.
     if sdf_str is None:
         msg = "No SDF string provided!"
         return ResponseData(Status.Failure, message=msg).to_dict()
-    
+
     else:
         try:
             # Parse SDF string; return the first molecule, if any.
@@ -70,9 +70,9 @@ def draw_model() -> Response:
 
             # Draw molecule.
             svg = draw_molecule(
-                atoms=atoms, 
-                bonds=bonds, 
-                style=style, 
+                atoms=atoms,
+                bonds=bonds,
+                style=style,
                 look=look,
                 resolution=resolution,
                 window=window,
@@ -85,24 +85,31 @@ def draw_model() -> Response:
                 exclude_atoms=None if include_hydrogens else ["H"],
                 verbose=False
             )
-            
+
             svg_str = svg.to_svg()
-            vb = svg.view_box 
+            vb = svg.view_box
 
             # Return the SVG string.
-            payload = {"svg_string": svg_str, "view_box": {"min_x": vb.min_x, "min_y": vb.min_y, "width": vb.width, "height": vb.height}}
+            payload = {
+                "svg_string": svg_str, 
+                "view_box": {
+                    "min_x": vb.min_x, 
+                    "min_y": vb.min_y, 
+                    "width": vb.width, 
+                    "height": vb.height
+                }
+            }
 
             return ResponseData(Status.Success, payload).to_dict()
-        
+
         except Exception as e:
-            msg = "Failed to parse SDF string!"
+            msg = f"Failed to parse SDF string: {e}"
             return ResponseData(Status.Failure, message=msg).to_dict()
-        
+
 blueprint_fetch_cinemol_version = Blueprint("fetch_cinemol_version", __name__)
 @blueprint_fetch_cinemol_version.route("/api/fetch_cinemol_version", methods=["GET"])
 def fetch_cinemol_version() -> Response:
-    """
-    API endpoint for fetching the version of Cinemol.
+    """API endpoint for fetching the version of Cinemol.
 
     :return: The version of Cinemol.
     :rtype: ResponseData
