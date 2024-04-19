@@ -1,6 +1,7 @@
 import React from "react";
+import { toast } from "react-toastify";
 
-const JobIdInput = ({ jobId, setJobId }) => {
+const JobIdInput = ({ jobId, setJobId, ncbiAccession, setNcbiAccession }) => {
     return (
         <div 
             className="panel-block" 
@@ -8,7 +9,7 @@ const JobIdInput = ({ jobId, setJobId }) => {
         >
             <div className="column is-full">
                 <div className="field is-grouped is-grouped-left">
-                    <div className="control" style={{width: "100%"}}>
+                    <div className="control" style={{ width: "100%" }}>
                         <div className="field">
                             <div className="control">
                                <input
@@ -22,6 +23,21 @@ const JobIdInput = ({ jobId, setJobId }) => {
                        </div>
                     </div>
                 </div>
+                <div className="field is-grouped is-grouped-left">
+                    <div className="control" style={{ width: "100%" }}>
+                        <div className="field">
+                            <div className="control">
+                               <input
+                                   className="input"
+                                   value={ncbiAccession}
+                                   type="text"
+                                   placeholder="Enter NCBI accession"
+                                   onChange={(e) => setNcbiAccession(e.target.value)}
+                               />
+                           </div>
+                       </div>
+                    </div>
+                </div>
             </div>
         </div>
     );
@@ -30,14 +46,16 @@ const JobIdInput = ({ jobId, setJobId }) => {
 const JsonInput = ({ jsonSrc, setJsonSrc }) => {
 
     const handleFileChange = (event) => {
-        const file = event.target.files[0];
-        const reader = new FileReader();
+        // const file = event.target.files[0];
+        // const reader = new FileReader();
 
-        reader.onload = (event) => {
-            setJsonSrc(event.target.result);
-        };
+        // reader.onload = (event) => {
+        //     setJsonSrc(event.target.result);
+        // };
 
-        reader.readAsText(file);
+        // reader.readAsText(file);
+
+        toast.error("JSON input is not supported yet!");
     };
 
     return (
@@ -47,7 +65,10 @@ const JsonInput = ({ jsonSrc, setJsonSrc }) => {
         >
             <div className="column is-full">
                 <div className="field is-grouped is-grouped-left">
-                    <div className="control" style={{width: "100%"}}>
+                    <div 
+                        className="control" 
+                        style={{ width: "100%" }}
+                    >
                         <input
                             type="file"
                             className="button"
@@ -66,6 +87,8 @@ const AntiSmashInput = ({
     setSelectedInputType,
     jobId,
     setJobId,
+    ncbiAccession,
+    setNcbiAccession,
     jsonSrc,
     setJsonSrc,
     parseInput,
@@ -112,7 +135,7 @@ const AntiSmashInput = ({
                                             checked={selectedInputType === "jobId"}
                                             onChange={handleInputTypeChange}
                                         />
-                                        <span style={{marginLeft: "5px"}}>
+                                        <span style={{ marginLeft: "5px" }}>
                                             Job ID
                                         </span>
                                     </label>
@@ -128,7 +151,7 @@ const AntiSmashInput = ({
                                             checked={selectedInputType === "json"}
                                             onChange={handleInputTypeChange}
                                         />
-                                        <span style={{marginLeft: "5px"}}>
+                                        <span style={{ marginLeft: "5px" }}>
                                             JSON
                                         </span>
                                     </label>
@@ -142,6 +165,8 @@ const AntiSmashInput = ({
                         <JobIdInput 
                             jobId={jobId} 
                             setJobId={setJobId} 
+                            ncbiAccession={ncbiAccession}
+                            setNcbiAccession={setNcbiAccession}
                         />
                     ) : (
                         <JsonInput 

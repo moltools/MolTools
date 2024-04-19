@@ -16,7 +16,7 @@ const Overview = () => {
             <br />
             <div>
                 You can use RetroMol from two starting inputs:
-                <ol style={{paddingLeft: "40px"}}>
+                <ol style={{ paddingLeft: "40px" }}>
                     <li>A molecule represented by a SMILES string</li>
                     <li>An output file from <i>antiSMASH</i> containing mined proto-clusters</li>
                 </ol>

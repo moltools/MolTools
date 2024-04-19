@@ -17,9 +17,6 @@ const ParseMolecule = () => {
 
     // Query and result state.
     const [smiles, setSmiles] = useState("");
-    const [selectedBioactivityLabels, setSelectedBioactivityLabels] = useState([]);
-    const [matchAgainstMolecules, setMatchAgainstMolecules] = useState(true);
-    const [matchAgainstProtoClusters, setMatchAgainstProtoClusters] = useState(false);
     const [results, setResults] = useState([]);
     const [selectedResult, setSelectedResult] = useState([]);
     const [matches, setMatches] = useState([]);
@@ -28,7 +25,7 @@ const ParseMolecule = () => {
     const tagResults = (results) => {
         return results.map((seq) => {
             return seq.map((item) => {
-                return { ...item, id: uuidv4() };
+                return [{ ...item, id: uuidv4() }];
             });
         });
     };
@@ -39,10 +36,8 @@ const ParseMolecule = () => {
     };
 
     // Clear the input fields.
-    const handleRefresh = () => {
+    const clearInputResults = () => {
         setSmiles("");
-        setMatchAgainstMolecules(true);
-        setMatchAgainstProtoClusters(false);
         setResults([]);
         setSelectedResult([]);
         setMatches([]);
@@ -55,15 +50,10 @@ const ParseMolecule = () => {
         setResults([]);
         setSelectedResult([]);
 
-        const data = { 
-            "smiles": smiles,
-            "selectedBioactivityLabels": selectedBioactivityLabels,
-            "matchAgainstMolecules": matchAgainstMolecules,
-            "matchAgainstProtoClusters": matchAgainstProtoClusters
-        };
+        const data = { "smiles": smiles };
 
         try {
-            const response = await fetch("/api/parse_retromol", {
+            const response = await fetch("/api/parse_smiles", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ data })
@@ -77,7 +67,6 @@ const ParseMolecule = () => {
             
             if (json.status === "success") {
                 toast.success(json.message);
-                console.log(json.payload);
                 if (json.payload.sequences) setResults(tagResults(json.payload.sequences));
             } else if (json.status === "warning") {
                 toast.warn(json.message);
@@ -87,51 +76,6 @@ const ParseMolecule = () => {
         } catch (error) {
             toast.error(error.message);
         };
-
-        setIsLoading(false);
-    };
-
-    // Query the database.
-    const findMatches = async () => {
-        if (!matchAgainstMolecules && !matchAgainstProtoClusters) {
-            toast.warn("No query target selected!");
-            return;
-        };
-
-        setIsLoading(true);
-        setMatches([]);
-
-        const data = {
-            "matchItems": selectedResult,
-            "matchAgainstMolecules": matchAgainstMolecules,
-            "matchAgainstProtoClusters": matchAgainstProtoClusters
-        };
-
-        try {
-            const response = await fetch("/api/find_matches", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ data })
-            });
-
-            if (!response.ok) {
-                throw new Error("Network response was not ok!");
-            };
-
-            const json = await response.json();
-
-            if (json.status === "success") {
-                toast.success(json.message);
-                setMatches(json.payload.matches);
-                toggleModal();
-            } else if (json.status === "warning") {
-                toast.warn(json.message);
-            } else if (json.status === "failure") {
-                toast.error(json.message);
-            };
-        } catch (error) {
-            toast.error(error.message);
-        }
 
         setIsLoading(false);
     };
@@ -157,7 +101,7 @@ const ParseMolecule = () => {
                     smiles={smiles} 
                     setSmiles={setSmiles} 
                     parseMolecule={parseMolecule} 
-                    handleRefresh={handleRefresh}
+                    handleRefresh={clearInputResults}
                 />
                 <ResultSelector
                     results={results}
@@ -171,13 +115,9 @@ const ParseMolecule = () => {
                         submissionElement={
                             <MatchSubmission 
                                 queryItems={selectedResult} 
-                                findMatches={findMatches} 
-                                matchAgainstMolecules={matchAgainstMolecules} 
-                                setMatchAgainstMolecules={setMatchAgainstMolecules} 
-                                matchAgainstProtoClusters={matchAgainstProtoClusters} 
-                                setMatchAgainstProtoClusters={setMatchAgainstProtoClusters}
-                                selectedBioactivityLabels={selectedBioactivityLabels}
-                                setSelectedBioactivityLabels={setSelectedBioactivityLabels}
+                                setMatches={setMatches}
+                                setIsLoading={setIsLoading}
+                                toggleModal={toggleModal}
                             />
                         }
                     />}

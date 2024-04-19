@@ -1,7 +1,14 @@
 import React from "react";
 import { toast } from "react-toastify";
 
-const IdentityPicker = ({ item, index, queryItems, setQueryItems }) => {
+const IdentityPicker = ({ 
+    item, 
+    itemList, 
+    index, 
+    itemIndex, 
+    queryItems, 
+    setQueryItems 
+}) => {
     return (
         <div 
             className="dropdown is-hoverable" 
@@ -35,10 +42,14 @@ const IdentityPicker = ({ item, index, queryItems, setQueryItems }) => {
                     onClick={() => {
                         const updatedItems = queryItems.map((queryItem, i) => {
                             if (i === index) { 
-                                queryItem.identifier = "any"; 
-                                queryItem.properties = {
-                                    size: null
-                                };
+                                itemList.map((listItem, j) => {
+                                    if (j === itemIndex) {
+                                        listItem.identifier = "any";
+                                        listItem.properties = {
+                                            size: null
+                                        };
+                                    };
+                                });
                             };
                             return queryItem;
                         });
@@ -52,11 +63,15 @@ const IdentityPicker = ({ item, index, queryItems, setQueryItems }) => {
                     onClick={() => {
                         const updatedItems = queryItems.map((queryItem, i) => {
                             if (i === index) { 
-                                queryItem.identifier = "polyketide"; 
-                                queryItem.properties = { 
-                                    accessory_domains: null,
-                                    decoration_type: null
-                                };
+                                itemList.map((listItem, j) => {
+                                    if (j === itemIndex) {
+                                        listItem.identifier = "polyketide";
+                                        listItem.properties = {
+                                            accessory_domains: null,
+                                            decoration_type: null
+                                        };
+                                    };
+                                });
                             };
                             return queryItem;
                         });
@@ -70,11 +85,15 @@ const IdentityPicker = ({ item, index, queryItems, setQueryItems }) => {
                     onClick={() => {
                         const updatedItems = queryItems.map((queryItem, i) => {
                             if (i === index) { 
-                                queryItem.identifier = "peptide"; 
-                                queryItem.properties = {
-                                    classification: null,
-                                    pubchem_cid: null
-                                };
+                                itemList.map((listItem, j) => {
+                                    if (j === itemIndex) {
+                                        listItem.identifier = "peptide";
+                                        listItem.properties = {
+                                            classification: null,
+                                            pubchem_cid: null
+                                        };
+                                    };
+                                });
                             };
                             return queryItem;
                         });
@@ -89,7 +108,14 @@ const IdentityPicker = ({ item, index, queryItems, setQueryItems }) => {
     );
 };
 
-const PolyketideTypePicker = ({ item, index, queryItems, setQueryItems }) => {
+const PolyketideTypePicker = ({ 
+    item, 
+    itemList,
+    index, 
+    itemIndex,
+    queryItems,
+    setQueryItems 
+}) => {
     // General function to handle the accessory domain and decoration type. 
     const itemType = ({ name, accessory_domains, decoration_type }) => {
         return (
@@ -98,11 +124,14 @@ const PolyketideTypePicker = ({ item, index, queryItems, setQueryItems }) => {
                 onClick={() => {
                     const updatedItems = queryItems.map((queryItem, i) => {
                         if (i === index) { 
-                            queryItem.properties.accessory_domains = accessory_domains; 
-
-                            if (decoration_type !== null) {
-                                queryItem.properties.decoration_type = decoration_type;
-                            };
+                            itemList.map((listItem, j) => {
+                                if (j === itemIndex) {
+                                    listItem.properties.accessory_domains = accessory_domains;
+                                    if (decoration_type !== null) {
+                                        listItem.properties.decoration_type = decoration_type;
+                                    };
+                                };
+                            });
                         }
                         return queryItem;
                     });
@@ -145,7 +174,14 @@ const PolyketideTypePicker = ({ item, index, queryItems, setQueryItems }) => {
     );
 };
 
-const PolyketideDecorationTypePicker = ({ item, index, queryItems, setQueryItems }) => {
+const PolyketideDecorationTypePicker = ({ 
+    item, 
+    itemList,
+    index, 
+    itemIndex,
+    queryItems, 
+    setQueryItems 
+}) => {
     // General function to handle the accessory domain and decoration type.
     const itemType = ({ name, decoration_type }) => {
         return (
@@ -154,7 +190,11 @@ const PolyketideDecorationTypePicker = ({ item, index, queryItems, setQueryItems
                 onClick={() => {
                         const updatedItems = queryItems.map((queryItem, i) => { 
                             if (i === index) { 
-                                queryItem.properties.decoration_type = decoration_type; 
+                                itemList.map((listItem, j) => {
+                                    if (j === itemIndex) {
+                                        listItem.properties.decoration_type = decoration_type;
+                                    };
+                                });
                             }; 
                             
                             return queryItem;
@@ -170,9 +210,16 @@ const PolyketideDecorationTypePicker = ({ item, index, queryItems, setQueryItems
     };
 
     return (
-        <div className="dropdown is-hoverable" style={{marginRight: "5px"}}>
+        <div 
+            className="dropdown is-hoverable" 
+            style={{ marginRight: "5px" }}
+        >
             <div className="dropdown-trigger">
-                <button className="button" aria-haspopup="true" aria-controls="dropdown-menu">
+                <button 
+                    className="button" 
+                    aria-haspopup="true" 
+                    aria-controls="dropdown-menu"
+                >
                 <span>
                     {
                         item.properties.decoration_type === null ? "Any" :
@@ -180,19 +227,37 @@ const PolyketideDecorationTypePicker = ({ item, index, queryItems, setQueryItems
                     }
                 </span>
                 <span className="icon is-small">
-                    <i className="fas fa-angle-down" aria-hidden="true"></i>
+                    <i 
+                        className="fas fa-angle-down" 
+                        aria-hidden="true"
+                    ></i>
                 </span>
                 </button>
             </div>
-            <div className="dropdown-menu" id="dropdown-menu" role="menu">
-                <div className="dropdown-content" style={{height: "auto", maxHeight: "200px", overflowY: "auto"}}>
+            <div 
+                className="dropdown-menu" 
+                id="dropdown-menu" 
+                role="menu"
+            >
+                <div 
+                    className="dropdown-content" 
+                    style={{
+                        height: "auto", 
+                        maxHeight: "200px", 
+                        overflowY: "auto"
+                    }}
+                >
                     <a
                         className="dropdown-item"
                         onClick={() => {
                             const updatedItems = queryItems.map((queryItem, i) => {
                                 if (i === index) {
-                                    queryItem.properties.decoration_type = null;
-                                }
+                                    itemList.map((listItem, j) => {
+                                        if (j === itemIndex) {
+                                            listItem.properties.decoration_type = null;
+                                        };
+                                    });
+                                };
                                 return queryItem;
                             });
                             setQueryItems(updatedItems);
@@ -218,7 +283,14 @@ const PolyketideDecorationTypePicker = ({ item, index, queryItems, setQueryItems
     );
 };
 
-const PolyketideAny = ({ item, index, queryItems, setQueryItems }) => {
+const PolyketideAny = ({ 
+    item, 
+    itemList,
+    index, 
+    itemIndex,
+    queryItems, 
+    setQueryItems 
+}) => {
     return (
         <div>
             <div 
@@ -237,17 +309,21 @@ const PolyketideAny = ({ item, index, queryItems, setQueryItems }) => {
 
                             const updatedItems = queryItems.map((queryItem, i) => {
                                 if (i === index) {
-                                    // Check if the value is not an empty string and is a valid integer
-                                    const parsedValue = parseInt(value);
+                                    itemList.map((listItem, j) => {
+                                        if (j === itemIndex) {
+                                            // Check if the value is not an empty string and is a valid integer
+                                            const parsedValue = parseInt(value);
 
-                                    if (!isNaN(parsedValue)) { 
-                                        // Check if the parsed value is a valid number.
-                                        queryItem.properties.size = parsedValue;
-                                    } else {
-                                        // Set to null if the value is not a valid integer.
-                                        queryItem.properties.size = null; 
-                                        toast.error("Please enter a valid integer as length!");
-                                    };
+                                            if (!isNaN(parsedValue)) { 
+                                                // Check if the parsed value is a valid number.
+                                                listItem.properties.size = parsedValue;
+                                            } else {
+                                                // Set to null if the value is not a valid integer.
+                                                listItem.properties.size = null; 
+                                                toast.error("Please enter a valid integer as length!");
+                                            };
+                                        };
+                                    });
                                 };
 
                                 return queryItem;
@@ -263,8 +339,11 @@ const PolyketideAny = ({ item, index, queryItems, setQueryItems }) => {
                     onClick={() => {
                         const updatedItems = queryItems.map((queryItem, i) => {
                             if (i === index) { 
-                                // Set to null.
-                                queryItem.properties.size = null; 
+                                itemList.map((listItem, j) => {
+                                    if (j === itemIndex) {
+                                        listItem.properties.size = null;
+                                    };
+                                });
                             };
 
                             return queryItem;
@@ -279,7 +358,14 @@ const PolyketideAny = ({ item, index, queryItems, setQueryItems }) => {
     );
 };
 
-const PeptideTypePicker = ({ item, index, queryItems, setQueryItems }) => {
+const PeptideTypePicker = ({ 
+    item, 
+    itemList,
+    index, 
+    itemIndex,
+    queryItems, 
+    setQueryItems 
+}) => {
     // General function to handle the accessory domain and decoration type.
     const itemType = ({ name, classification }) => {
         return (
@@ -288,7 +374,11 @@ const PeptideTypePicker = ({ item, index, queryItems, setQueryItems }) => {
                 onClick={() => { 
                     const updatedItems = queryItems.map((queryItem, i) => { 
                         if (i === index) { 
-                            queryItem.properties.classification = "polar and charged"; 
+                            itemList.map((listItem, j) => {
+                                if (j === itemIndex) {
+                                    listItem.properties.classification = classification;
+                                };
+                            });
                         };
                         
                         return queryItem; 
@@ -345,8 +435,12 @@ const PeptideTypePicker = ({ item, index, queryItems, setQueryItems }) => {
                         onClick={() => {
                             const updatedItems = queryItems.map((queryItem, i) => {
                                 if (i === index) { 
-                                    queryItem.properties.classification = null; 
-                                    queryItem.properties.pubchem_cid = null;
+                                    itemList.map((listItem, j) => {
+                                        if (j === itemIndex) {
+                                            listItem.properties.classification = null;
+                                            listItem.properties.pubchem_cid = null;
+                                        };
+                                    });
                                 };
 
                                 return queryItem;
@@ -370,7 +464,15 @@ const PeptideTypePicker = ({ item, index, queryItems, setQueryItems }) => {
     );
 };
 
-const QueryItem = ({ item, index, queryItems, setQueryItems, handleDelete }) => {
+const QueryItem = ({ 
+    itemList, 
+    index, 
+    queryItems, 
+    setQueryItems, 
+    handleDelete,
+    handleDeleteItemFromList,
+    handleAddItemToList
+}) => {
     return (
         <div 
             className="panel" 
@@ -398,51 +500,99 @@ const QueryItem = ({ item, index, queryItems, setQueryItems, handleDelete }) => 
                 </div>
             </div>
             <div className="panel-block">
-                <div className="field has-addons">
-                    <IdentityPicker 
-                        item={item} 
-                        index={index} 
-                        queryItems={queryItems} 
-                        setQueryItems={setQueryItems}
-                    />
-                    {item.identifier === "polyketide" ? (
-                        <PolyketideTypePicker
-                            item={item}
-                            index={index}
-                            queryItems={queryItems}
-                            setQueryItems={setQueryItems}
-                        />
-                    ) : <div></div>}
-                    {item.identifier === "polyketide" ? (
-                        <PolyketideDecorationTypePicker
-                            item={item}
-                            index={index}
-                            queryItems={queryItems}
-                            setQueryItems={setQueryItems}
-                        />
-                    ) : <div></div>}
-                    {item.identifier === "any" ? (
-                        <PolyketideAny
-                            item={item}
-                            index={index}
-                            queryItems={queryItems}
-                            setQueryItems={setQueryItems}
-                        />
-                    ) : <div></div>}
-                    {item.identifier === "peptide" ? (
-                        <PeptideTypePicker
-                            item={item}
-                            index={index}
-                            queryItems={queryItems}
-                            setQueryItems={setQueryItems}
-                        />
-                    ) : <div></div>}
-                    <button
-                        className="button is-danger is-light"
-                        onClick={() => {handleDelete(index);}}
+                <div className="field is-grouped is-grouped-left">
+                    <div 
+                        className="buttons" 
+                        style={{ margin: "10px" }}
                     >
-                        Delete
-                    </button>
+                        <button 
+                            className="button is-primary is-light"
+                            onClick={() => {handleAddItemToList(index);}}
+                        >
+                            Add option
+                        </button>
+                        <button
+                            className="button is-danger is-light"
+                            onClick={() => {handleDelete(index);}}
+                        >
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div className="panel-block">
+                <div className="column is-full">
+                    {itemList.map((item, itemIndex) => (
+                        <div 
+                            key={itemIndex} 
+                            className="field has-addons" 
+                            style={{ margin: "10px" }}
+                        >
+                            <div 
+                                className="button" 
+                                onClick={() => {handleDeleteItemFromList(index, itemIndex);}}
+                                style={{ pointer: "cursor" }}
+                            >
+                                <i className="fas fa-trash" />
+                            </div>
+                            <span style={{ margin: "10px" }}>
+                                {itemIndex + 1}
+                            </span>
+                            <IdentityPicker 
+                                item={item} 
+                                itemList={itemList}
+                                index={index} 
+                                itemIndex={itemIndex}
+                                queryItems={queryItems} 
+                                setQueryItems={setQueryItems}
+                            />
+                            {item.identifier === "polyketide" ? (
+                                <PolyketideTypePicker
+                                    item={item}
+                                    itemList={itemList}
+                                    index={index}
+                                    itemIndex={itemIndex}
+                                    queryItems={queryItems}
+                                    setQueryItems={setQueryItems}
+                                />
+                            ) : <div></div>}
+                            {item.identifier === "polyketide" ? (
+                                <PolyketideDecorationTypePicker
+                                    item={item}
+                                    itemList={itemList}
+                                    index={index}
+                                    itemIndex={itemIndex}
+                                    queryItems={queryItems}
+                                    setQueryItems={setQueryItems}
+                                />
+                            ) : <div></div>}
+                            {/* {item.identifier === "any" ? (
+                                <PolyketideAny
+                                    item={item}
+                                    itemList={itemList}
+                                    index={index}
+                                    itemIndex={itemIndex}
+                                    queryItems={queryItems}
+                                    setQueryItems={setQueryItems}
+                                />
+                            ) : <div></div>} */}
+                            {item.identifier === "peptide" ? (
+                                <PeptideTypePicker
+                                    item={item}
+                                    itemList={itemList}
+                                    index={index}
+                                    itemIndex={itemIndex}
+                                    queryItems={queryItems}
+                                    setQueryItems={setQueryItems}
+                                />
+                            ) : <div></div>}
+                            {itemIndex < itemList.length - 1 && (
+                                <span style={{ margin: "10px" }}>
+                                    or
+                                </span>
+                            )}
+                        </div>
+                    ))}
                 </div>
             </div>
         </div>

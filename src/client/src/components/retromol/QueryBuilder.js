@@ -16,6 +16,18 @@ const reorder = (list, startIndex, endIndex) => {
 const QueryBuilder = ({ queryItems, setQueryItems, submissionElement }) => {  
     // Add a new wildcard item to the list of query items.
     const handleAddWildcardItem = () => {
+        const newItem = [{
+            id: uuidv4(),
+            identifier: "any",
+            properties: {
+                size: null
+            }
+        }];
+        setQueryItems([newItem, ...queryItems]);
+    };
+
+    // Add a new wildcard item to the query item list.
+    const handleAddWildcardItemToList = (listIndex) => {
         const newItem = {
             id: uuidv4(),
             identifier: "any",
@@ -23,17 +35,22 @@ const QueryBuilder = ({ queryItems, setQueryItems, submissionElement }) => {
                 size: null
             }
         };
-        setQueryItems([newItem, ...queryItems]);
+        setQueryItems(queryItems.map((itemList, index) => index === listIndex ? [...itemList, newItem] : itemList));
     };
 
     // Delete an item from the list of query items.
     const handleDelete = index => {
         try {
-            const updatedItems = queryItems.filter((item, i) => i !== index);
+            const updatedItems = queryItems.filter((_, i) => i !== index);
             setQueryItems(updatedItems);
         } catch (error) {
             console.error("Error while deleting:", error);
         };
+    };
+
+    // Delete an item from the query item list.
+    const handleDeleteItemFromList = (listIndex, itemIndex) => {
+        setQueryItems(queryItems.map((itemList, index) => index === listIndex ? itemList.filter((_, i) => i !== itemIndex) : itemList));
     };
 
     // Reorder the list of query items after drag and drop.
@@ -72,7 +89,10 @@ const QueryBuilder = ({ queryItems, setQueryItems, submissionElement }) => {
 
                 <div className="panel-block">
                     <div className="field has-addons">
-                        <div className="control" style={{ margin: "10px" }}>
+                        <div 
+                            className="control" 
+                            style={{ margin: "10px" }}
+                        >
                             <button 
                                 className="button is-link is-light" 
                                 onClick={handleAddWildcardItem} 
@@ -97,10 +117,10 @@ const QueryBuilder = ({ queryItems, setQueryItems, submissionElement }) => {
                                             ref={provided.innerRef} 
                                             {...provided.droppableProps}
                                         >
-                                            {queryItems.map((item, index) => (
+                                            {queryItems.map((itemList, index) => (
                                                 <Draggable 
-                                                    key={item.id} 
-                                                    draggableId={item.id} 
+                                                    key={itemList[0]?.id} 
+                                                    draggableId={itemList[0]?.id} 
                                                     index={index}
                                                 >
                                                     {(provided, _) => (
@@ -110,11 +130,13 @@ const QueryBuilder = ({ queryItems, setQueryItems, submissionElement }) => {
                                                             {...provided.dragHandleProps}
                                                         >
                                                             <QueryItem
-                                                                item={item}
+                                                                itemList={itemList}
                                                                 index={index}
                                                                 queryItems={queryItems}
                                                                 setQueryItems={setQueryItems}
                                                                 handleDelete={handleDelete}
+                                                                handleDeleteItemFromList={handleDeleteItemFromList}
+                                                                handleAddItemToList={handleAddWildcardItemToList}
                                                             />
                                                         </div>
                                                     )}

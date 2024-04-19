@@ -13,61 +13,12 @@ const QueryDatabase = () => {
     const [modalActive, setModalActive] = useState(false);
 
     // Query and result state.
-    const [selectedBioactivityLabels, setSelectedBioactivityLabels] = useState([]);
-    const [queryAgainstMolecules, setQueryAgainstMolecules] = useState(true);
-    const [queryAgainstProtoClusters, setQueryAgainstProtoClusters] = useState(false);
     const [queryItems, setQueryItems] = useState([]);
     const [matches, setMatches] = useState([]);
 
     // Toggle the results modal.
     const toggleModal = () => {
         setModalActive(!modalActive);
-    };
-
-    // Query the database.
-    const queryDatabase = async () => {
-        if (!queryAgainstMolecules && !queryAgainstProtoClusters) {
-            toast.warn("No query target selected!");
-            return;
-        };
-
-        setIsLoading(true);
-        setMatches([]);
-
-        const data = {
-            "queryItems": queryItems,
-            "selectedBioactivityLabels": selectedBioactivityLabels,
-            "queryAgainstMolecules": queryAgainstMolecules,
-            "queryAgainstProtoClusters": queryAgainstProtoClusters
-        };
-
-        try {
-            const response = await fetch("/api/query_database", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ data })
-            });
-
-            if (!response.ok) {
-                throw new Error("Network response was not ok!");
-            };
-
-            const json = await response.json();
-
-            if (json.status === "success") {
-                toast.success(json.message);
-                console.log(json.payload)
-                setMatches(json.payload.matches);
-                toggleModal();
-            } else if (json.status === "warning") {
-                toast.warn(json.message);
-            } else if (json.status === "failure") {
-                toast.error(json.message);
-            };
-        } catch (error) {
-            toast.error(error.message);
-        }
-        setIsLoading(false);
     };
 
     return (
@@ -93,13 +44,9 @@ const QueryDatabase = () => {
                     submissionElement={
                         <MatchSubmission 
                             queryItems={queryItems} 
-                            findMatches={queryDatabase} 
-                            matchAgainstMolecules={queryAgainstMolecules} 
-                            setMatchAgainstMolecules={setQueryAgainstMolecules} 
-                            matchAgainstProtoClusters={queryAgainstProtoClusters} 
-                            setMatchAgainstProtoClusters={setQueryAgainstProtoClusters} 
-                            selectedBioactivityLabels={selectedBioactivityLabels}
-                            setSelectedBioactivityLabels={setSelectedBioactivityLabels}
+                            setMatches={setMatches}
+                            setIsLoading={setIsLoading}
+                            toggleModal={toggleModal}
                         />}
                 />
             </div>

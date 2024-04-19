@@ -24,10 +24,8 @@ const ParseProtoCluster = () => {
 
     // Query and result state.
     const [jobId, setJobId] = useState("");
+    const [ncbiAccession, setNcbiAccession] = useState("");
     const [jsonSrc, setJsonSrc] = useState("");
-    const [selectedBioactivityLabels, setSelectedBioactivityLabels] = useState([]);
-    const [matchAgainstMolecules, setMatchAgainstMolecules] = useState(true);
-    const [matchAgainstProtoClusters, setMatchAgainstProtoClusters] = useState(false);
     const [results, setResults] = useState([]);
     const [selectedResult, setSelectedResult] = useState([]);
     const [matches, setMatches] = useState([]); 
@@ -49,6 +47,7 @@ const ParseProtoCluster = () => {
     // Clear the input fields.
     const handleRefresh = () => {
         setJobId("");
+        setNcbiAccession("");
         setJsonSrc("");
     };
 
@@ -65,7 +64,13 @@ const ParseProtoCluster = () => {
                 setIsLoading(false);
                 return;
             };
+            if (ncbiAccession === "") {
+                toast.warn("NCBI accession is empty!");
+                setIsLoading(false);
+                return;
+            };
         };
+
 
         if (selectedInputType === "json") {
             if (jsonSrc === "") {
@@ -78,14 +83,12 @@ const ParseProtoCluster = () => {
         const data = {
             "selectedInputType": selectedInputType,
             "jobId": jobId,
-            "jsonSrc": jsonSrc,
-            "selectedBioactivityLabels": selectedBioactivityLabels,
-            "matchAgainstMolecules": matchAgainstMolecules,
-            "matchAgainstProtoClusters": matchAgainstProtoClusters
+            "ncbiAccession": ncbiAccession,
+            "jsonSrc": jsonSrc
         };
 
         try {
-            const response = await fetch("/api/parse_protocluster", {
+            const response = await fetch("/api/parse_proto_cluster", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ data })
@@ -108,52 +111,6 @@ const ParseProtoCluster = () => {
         } catch (error) {
             toast.error(error.message);
         };
-
-        setIsLoading(false);
-    };
-
-    // Query the database.
-    const findMatches = async () => {
-        if (!matchAgainstMolecules && !matchAgainstProtoClusters) {
-            toast.warn("No query target selected!");
-            return;
-        };
-
-        setIsLoading(true);
-        setMatches([]);
-
-        const data = {
-            "matchItems": selectedResult,
-            "matchAgainstMolecules": matchAgainstMolecules,
-            "matchAgainstProtoClusters": matchAgainstProtoClusters
-        };
-
-        try {
-            const response = await fetch("/api/find_matches", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ data })
-            });
-
-            if (!response.ok) {
-                throw new Error("Network response was not ok!");
-            };
-
-            const json = await response.json();
-
-            if (json.status === "success") {
-                toast.success(json.message);
-                console.log(json.payload)
-                setMatches(json.payload.matches);
-                toggleModal();
-            } else if (json.status === "warning") {
-                toast.warn(json.message);
-            } else if (json.status === "failure") {
-                toast.error(json.message);
-            };
-        } catch (error) {
-            toast.error(error.message);
-        }
 
         setIsLoading(false);
     };
@@ -181,6 +138,8 @@ const ParseProtoCluster = () => {
                     setSelectedInputType={setSelectedInputType}
                     jobId={jobId}
                     setJobId={setJobId}
+                    ncbiAccession={ncbiAccession}
+                    setNcbiAccession={setNcbiAccession}
                     jsonSrc={jsonSrc}
                     setJsonSrc={setJsonSrc}
                     parseInput={parseInput}
@@ -198,13 +157,9 @@ const ParseProtoCluster = () => {
                         submissionElement={
                             <MatchSubmission 
                                 queryItems={selectedResult} 
-                                findMatches={findMatches}
-                                matchAgainstMolecules={matchAgainstMolecules}
-                                setMatchAgainstMolecules={setMatchAgainstMolecules}
-                                matchAgainstProtoClusters={matchAgainstProtoClusters}
-                                setMatchAgainstProtoClusters={setMatchAgainstProtoClusters}
-                                selectedBioactivityLabels={selectedBioactivityLabels}
-                                setSelectedBioactivityLabels={setSelectedBioactivityLabels}
+                                setMatches={setMatches}
+                                setIsLoading={setIsLoading}
+                                toggleModal={toggleModal}
                             />
                         }
                     />}

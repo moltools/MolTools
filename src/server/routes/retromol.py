@@ -2,11 +2,9 @@
 import os
 import json
 import typing as ty
-from flask import Blueprint, Response, request
 
 import neo4j
-from tqdm import tqdm
-from rdkit import Chem
+from flask import Blueprint, Response, request
 
 from retromol.chem import Molecule, MolecularPattern, ReactionRule
 from retromol.parsing import parse_reaction_rules, parse_molecular_patterns, parse_mol
@@ -27,12 +25,17 @@ try:
     rules = json.load(open(os.path.join(absolute_path, "data/rules.json"), "r", encoding="utf-8"))
     REACTIONS = parse_reaction_rules(json.dumps(rules["reactions"]))
     MONOMERS = parse_molecular_patterns(json.dumps(rules["monomers"]))
-except Exception as err:
-    print(err)
+except Exception:
     REACTIONS = []
     MONOMERS = []
 
 Record = ty.Tuple[Molecule, ty.List[ReactionRule], ty.List[MolecularPattern]]
+
+# ======================================================================================================================
+#
+# Retrieving data from the database.
+#
+# ======================================================================================================================
 
 blueprint_bioactivity_labels = Blueprint("bioactivity_labels", __name__)
 @blueprint_bioactivity_labels.route("/api/bioactivity_labels", methods=["GET"])
@@ -42,34 +45,37 @@ def bioactivity_labels() -> Response:
     :return: The bioactivity labels.
     :rtype: ResponseData
     """
-    bioactivity_labels = []
-
     driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
 
+    # Retrieve all bioactivity labels.
+    labels = []
     with driver.session() as session:
         query = """
         MATCH (b:Bioactivity)
         RETURN b
         """
         result = session.run(query)
-
         for record in result:
-            bioactivity_labels.append(record["b"]["name"])
+            labels.append(record["b"]["name"])
 
-    # sort bioactivity labels
-    bioactivity_labels = list(set(bioactivity_labels))
-    bioactivity_labels.sort()
+    labels = list(set(labels))
+    labels.sort()
+    payload = {"bioactivityLabels": labels}
+    message = "Successfully retrieved bioactivity labels!"
+    return ResponseData(Status.Success, payload=payload, message=message).to_dict()
 
-    payload = {"bioactivityLabels": bioactivity_labels}
-    msg = "Successfully retrieved bioactivity labels!"
-    return ResponseData(Status.Success, payload=payload, message=msg).to_dict()
+# ======================================================================================================================
+#
+# Parsing a SMILES string.
+#
+# ======================================================================================================================
 
-blueprint_parse_retromol = Blueprint("parse_retromol", __name__)
-@blueprint_parse_retromol.route("/api/parse_retromol", methods=["POST"])
-def parse_retromol() -> Response:
-    """API endpoint for parsing a molecule.
+blueprint_parse_smiles = Blueprint("parse_smiles", __name__)
+@blueprint_parse_smiles.route("/api/parse_smiles", methods=["POST"])
+def parse_smiles() -> Response:
+    """API endpoint for parsing a SMILES string.
     
-    :return: The parsed molecule.
+    :return: Parsed biosynthetic fingerprints.
     :rtype: ResponseData
     """
     data = request.get_json()
@@ -77,83 +83,50 @@ def parse_retromol() -> Response:
 
     smiles = data.get("smiles", None)
     if smiles is None:
-        msg = "No SMILES string provided!"
-        return ResponseData(Status.Failure, message=msg).to_dict()
-
+        message = "No SMILES string provided!"
+        return ResponseData(Status.Failure, message=message).to_dict()
     else:
         mol = Molecule("input", smiles)
         result = parse_mol(mol, REACTIONS, MONOMERS)
-
-        input_smiles = Chem.MolToSmiles(result.mol)
-
-        # Get all monomer atom map numbers
-        monomer_ids = []
-        for _, props in result.monomer_graph.items():
-            if props["identity"] is not None:
-                monomer_ids.append(props["reaction_tree_id"])
-        subs = [Chem.MolFromSmiles(result.reaction_tree[x]["smiles"]) for x in monomer_ids]
-
-        monomer_amns = set()
-        for sub in subs:
-            for atom in sub.GetAtoms():
-                amn = atom.GetAtomMapNum()
-                if amn > 0:
-                    monomer_amns.add(amn)
-
-        # filter reaction tree for nodes that contain all amns.
-        mols = []
-        for k, props in result.reaction_tree.items():
-            mol = Chem.MolFromSmiles(props["smiles"])
-            amns = set()
-            for atom in mol.GetAtoms():
-                amn = atom.GetAtomMapNum()
-                if amn > 0:
-                    amns.add(amn)
-            if monomer_amns.issubset(amns):
-                mols.append(mol)
-
-        # get num of cycles in mol, keep ones with smallest num of cycles
-        mols_with_num_cycles = []
-        for mol in mols:
-            ssr = Chem.GetSymmSSSR(mol)
-            num_cycles = len(ssr)
-            mols_with_num_cycles.append((mol, num_cycles))
-        min_num_cycles = min([x[1] for x in mols_with_num_cycles])
-        mols = [x[0] for x in mols_with_num_cycles if x[1] == min_num_cycles]
-        linearized_smiles = Chem.MolToSmiles(mols[0])
         sequences = parse_modular_natural_product(result)
-
-        # Hide atom map numbers.
-        input_mol = Chem.MolFromSmiles(input_smiles)
-        for atom in input_mol.GetAtoms():
-            atom.SetAtomMapNum(0)
-        input_smiles = Chem.MolToSmiles(input_mol)
-
-        # Hide atom map numbers.
-        linearized_mol = Chem.MolFromSmiles(linearized_smiles)
-        for atom in linearized_mol.GetAtoms():
-            atom.SetAtomMapNum(0)
-        linearized_smiles = Chem.MolToSmiles(linearized_mol)
-
-        payload = {
-            "sequences": sequences,
-            "input_smiles": input_smiles,
-            "linearized_smiles": linearized_smiles
-        }
+        payload = {"sequences": sequences}
         message = "Successfully parsed molecule!"
-
         return ResponseData(Status.Success, payload=payload, message=message).to_dict()
 
-blueprint_embed_retromol = Blueprint("embed_retromol", __name__)
-@blueprint_embed_retromol.route("/api/embed_retromol", methods=["POST"])
-def embed_retromol() -> Response:
-    """API endpoint for embedding a molecule.
+# ======================================================================================================================
+#
+# Parsing a proto-cluster.
+#
+# ======================================================================================================================
 
-    :return: The embedded molecule.
+blueprint_parse_proto_cluster = Blueprint("parse_proto_cluster", __name__)
+@blueprint_parse_proto_cluster.route("/api/parse_proto_cluster", methods=["POST"])
+def parse_proto_cluster() -> Response:
+    """API endpoint for parsing a proto=cluster.
+    
+    :return: Parsed biosynthetic fingerprints.
     :rtype: ResponseData
     """
-    _ = request.get_json()
-    return ResponseData(Status.Failure, message="Matching not inplemented!").to_dict()
+    data = request.get_json()
+    data = data["data"]
+
+    try:
+        selected_input_type = data["selectedInputType"] # jobId or jsonSrc
+        job_id = data["jobId"]
+        ncbiAccession = data["ncbiAccession"]
+        jsonSrc = data["jsonSrc"]
+    except KeyError as err:
+        message = f"Key not present in submission: {err}"
+        return ResponseData(Status.Failure, message=message).to_dict()
+
+    message = "This endpoint is not implemented yet!"
+    return ResponseData(Status.Warning, message=message).to_dict()
+
+# ======================================================================================================================
+#
+# Matching and querying the database with a primary sequence.
+#
+# ======================================================================================================================
 
 def retrieve_primary_sequence(session: neo4j.Session, identifier: str) -> ty.List[ty.Dict[str, ty.Any]]:
     """Retrieve the primary sequence of a compound.
@@ -185,9 +158,284 @@ def retrieve_primary_sequence(session: neo4j.Session, identifier: str) -> ty.Lis
 
     return seq
 
-blueprint_find_matches = Blueprint("find_matches", __name__)
-@blueprint_find_matches.route("/api/find_matches", methods=["POST"])
-def find_matches() -> Response:
+def match_exact(
+    session: neo4j.Session,
+    match_items: ty.List[ty.Dict[str, ty.Any]],
+    top_n: int,
+    match_against_molecules: bool,
+    match_against_proto_clusters: bool,
+    selected_bioactivity_labels: ty.List[str],
+    gap_cost: int,
+    end_gap_cost: int
+) -> ty.Tuple[ty.List[ModuleSequence], ty.Dict[str, ty.List[str]]]:
+    """Match the primary sequence exactly against the database.
+    
+    :param session: The Neo4j session.
+    :type session: neo4j.Session
+    :param match_items: The items to match against.
+    :type match_items: ty.List[ty.Dict[str, ty.Any]]
+    :param top_n: The number of top matches to return.
+    :type top_n: int
+    :param match_against_molecules: Whether to match against molecules.
+    :type match_against_molecules: bool
+    :param match_against_proto_clusters: Whether to match against proto-clusters.
+    :type match_against_proto_clusters: bool
+    :param selected_bioactivity_labels: The selected bioactivity labels.
+    :type selected_bioactivity_labels: ty.List[str]
+    :param gap_cost: The gap cost.
+    :type gap_cost: int
+    :param end_gap_cost: The end gap cost.
+    :type end_gap_cost: int
+    :return: The top sequences and their bioactivities.
+    :rtype: ty.Tuple[ty.List[ModuleSequence], ty.Dict[str, ty.List[str]]]
+    :raises ValueError: If no matches are found.
+    """
+    # Make sure the query is non-ambiguous.
+    assert all([len(x) == 1 for x in match_items]), "Query is too ambiguous for exact matching!"
+
+    # Exact matching.
+    query = []
+    for items in match_items:
+        item = items[0]
+        props = item["properties"]
+        props["identifier"] = item["identifier"]
+        query.append(props)
+    seq_a = ModuleSequence("Query", parse_primary_sequence(query))
+
+    # Retrieve all primary sequences, or only those coming from molecules or proto-clusters.
+    if match_against_molecules and match_against_proto_clusters:
+        result = session.run("""
+            MATCH (b:PrimarySequence)
+            WHERE (b)<-[:HAS_PRIMARY_SEQUENCE]-(:Compound) 
+            OR (b)<-[:HAS_PRIMARY_SEQUENCE]-(:ProtoCluster)
+            RETURN b""",
+            fetch_size=1
+        )
+    elif match_against_molecules:
+        result = session.run("MATCH (:Compound)-[:HAS_PRIMARY_SEQUENCE]->(b:PrimarySequence) RETURN b", fetch_size=1)
+    elif match_against_proto_clusters:
+        result = session.run(
+            "MATCH (:ProtoCluster)-[:HAS_PRIMARY_SEQUENCE]->(b:PrimarySequence) RETURN b", 
+            fetch_size=1
+    )
+    else:
+        raise ValueError("No database to match against!")
+
+    top = []
+    for record in result: # Loop over all primary sequences in the database.
+        id_b = record["b"]["identifier"]
+
+        # Get bioactivity labels for id_b.
+        bioactivities = []
+        query = "MATCH (c:Compound {identifier: $identifier})-[:HAS_BIOACTIVITY]->(b:Bioactivity) RETURN b"
+        result = session.run(query, identifier=id_b)
+        for record in result:
+            bioactivities.append(record["b"]["name"])
+
+        # If selected bioactivity labels is empty, we are not going to filter by bioactivity.
+        if len(selected_bioactivity_labels) != 0:
+            if not all([x in bioactivities for x in selected_bioactivity_labels]):
+                continue
+
+        # Retrieve primary sequence.
+        seq_b = retrieve_primary_sequence(session, id_b)
+
+        # If the sequence is not empty, do the alignment and get the score.
+        if len(seq_b) != 0:
+            seq_b = ModuleSequence(id_b, parse_primary_sequence(seq_b))
+            score = seq_a.optimal_alignment(seq_b, gap_cost, end_gap_cost).score
+
+            # Keep top_n best scores.
+            if len(top) < top_n:
+                top.append((id_b, score, seq_b, bioactivities))
+                top.sort(key=lambda x: x[1], reverse=True)
+            else:
+                if score > top[-1][1]:
+                    top.pop()
+                    top.append((id_b, score, seq_b, bioactivities))
+                    top.sort(key=lambda x: x[1], reverse=True)
+        else:
+            continue
+
+    # Check if top is empty.
+    if len(top) == 0:
+        raise ValueError("No matches found!")
+
+    # Compile the bioactivities.
+    bioactivites = {x[0]: x[3] for x in top}
+
+    # Sort top on name.
+    top.sort(key=lambda x: x[0]) # Exact organization of MSA is sensitive to order...
+
+    # Compile the alignment.
+    seqs = [seq_a] + [x[2] for x in top]
+
+    return seqs, bioactivites
+
+def match_pattern(
+    session: neo4j.Session,
+    match_items: ty.List[ty.Dict[str, ty.Any]],
+    top_n: int,
+    match_against_molecules: bool,
+    match_against_proto_clusters: bool,
+    selected_bioactivity_labels: ty.List[str],
+    has_no_leading_modules: bool,
+    has_no_trailing_modules: bool
+) -> ty.Tuple[ty.List[ModuleSequence], ty.Dict[str, ty.List[str]]]:
+    """Match the primary sequence pattern against the database.
+    
+    :param session: The Neo4j session.
+    :type session: neo4j.Session
+    :param match_items: The items to match against.
+    :type match_items: ty.List[ty.Dict[str, ty.Any]]
+    :param top_n: The number of top matches to return.
+    :type top_n: int
+    :param match_against_molecules: Whether to match against molecules.
+    :type match_against_molecules: bool
+    :param match_against_proto_clusters: Whether to match against proto-clusters.
+    :type match_against_proto_clusters: bool
+    :param selected_bioactivity_labels: The selected bioactivity labels.
+    :type selected_bioactivity_labels: ty.List[str]
+    :param has_no_leading_modules: Whether the sequence has no leading modules.
+    :type has_no_leading_modules: bool
+    :param has_no_trailing_modules: Whether the sequence has no trailing modules.
+    :type has_no_trailing_modules: bool
+    :return: The top sequences and their bioactivities.
+    :rtype: ty.Tuple[ty.List[ModuleSequence], ty.Dict[str, ty.List[str]]]
+    :raises ValueError: If no matches are found.
+    """
+    def compile_path_query(has_leading_modules: bool) -> str:
+        """Compile the path query.
+        
+        :param has_leading_modules: Whether the sequence has leading modules.
+        :type has_leading_modules: bool
+        :return: The compiled path query.
+        :rtype: str
+        """
+        query = []
+
+        if has_leading_modules:
+            module_range = range(2, len(match_items) + 1)
+        else:
+            module_range = range(1, len(match_items))
+
+        for i in module_range:
+            query.append(f"(u{i})-[:NEXT]->")
+
+        if has_leading_modules:
+            query.append(f"(u{len(match_items) + 1})")
+        else:
+            query.append(f"(u{len(match_items)})")
+
+        query = "".join(query)
+
+        return query
+
+    def match_item_to_query(index: int, match_item: ty.Dict[str, ty.Any]) -> str:
+        """Convert a match item to a query.
+        
+        :param index: The index of the match item.
+        :type index: int
+        :param match_item: The match item.
+        :type match_item: ty.Dict[str, ty.Any]
+        :return: The query addendum.
+        :rtype: str
+        """
+        subqueries = []
+        for option in match_item:
+            if option["identifier"] == "polyketide":
+                domains = option["properties"]["accessory_domains"]
+                decoration = option["properties"]["decoration_type"]
+                subquery = \
+                    (f"(u{index}.identifier = 'polyketide'") + \
+                    (f" AND u{index}.accessory_domains = {domains}" if domains else "") + \
+                    (f" AND u{index}.decoration_type = '{decoration}')" if decoration is not None else ")")
+                subqueries.append(subquery)
+            elif option["identifier"] == "peptide":
+                classification = option["properties"]["classification"]
+                subquery = \
+                    (f" (u{index}.identifier = 'peptide'") + \
+                    (f" AND u{index}.classification = '{classification}')" if classification else ")")
+                subqueries.append(subquery)
+            else:
+                pass
+
+        subquery = " OR ".join(subqueries)
+        return " AND (" + subquery + ")" if subquery != "" else ""
+
+    if has_no_leading_modules:
+        query = "MATCH (b:PrimarySequence)-[:START]->(u1) MATCH path = " + compile_path_query(False)
+    else:
+        query = "MATCH (b:PrimarySequence)-[:START]->(u1) MATCH path = (u1)-[:NEXT*]->" + compile_path_query(True)
+
+    # Retrieve all primary sequences, or only those coming from molecules or proto-clusters.
+    if match_against_molecules and match_against_proto_clusters:
+        query  += " WHERE ((b)<-[:HAS_PRIMARY_SEQUENCE]-(:Compound) OR (b)<-[:HAS_PRIMARY_SEQUENCE]-(:ProtoCluster))"
+    elif match_against_molecules:
+        query  += " WHERE ((b)<-[:HAS_PRIMARY_SEQUENCE]-(:Compound))"
+    elif match_against_proto_clusters:
+        query  += " WHERE ((b)<-[:HAS_PRIMARY_SEQUENCE]-(:ProtoCluster))"
+    else:
+        raise ValueError("No database to match against!")
+
+    if has_no_leading_modules and has_no_trailing_modules:
+        query += f" AND (NOT ()-[:NEXT]->(u1) AND NOT (u{len(match_items)})-[:NEXT]->())"
+    elif has_no_leading_modules:
+        query += " AND NOT ()-[:NEXT]->(u1)"
+    elif has_no_trailing_modules:
+        query += f" AND NOT (u{len(match_items) + 1})-[:NEXT]->()"
+
+    for i, match_item in enumerate(match_items):
+        if has_no_leading_modules:
+            index = i + 1
+        else:
+            index = i + 2
+
+        query_addendum = match_item_to_query(index, match_item)
+        if query_addendum != "":
+            query += query_addendum
+
+    query += " RETURN DISTINCT b"
+
+    print(query)
+
+    result = session.run(query, fetch_size=1)
+
+    top = []
+    for record in result:
+        id_b = record["b"]["identifier"]
+
+        # Get bioactivity labels for id_b.
+        bioactivities = []
+        query = "MATCH (c:Compound {identifier: $identifier})-[:HAS_BIOACTIVITY]->(b:Bioactivity) RETURN b"
+        result = session.run(query, identifier=id_b)
+        for record in result:
+            bioactivities.append(record["b"]["name"])
+
+        # If selected bioactivity labels is empty, we are not going to filter by bioactivity.
+        if len(selected_bioactivity_labels) != 0:
+            if not all([x in bioactivities for x in selected_bioactivity_labels]):
+                continue
+
+        seq_b = retrieve_primary_sequence(session, id_b)
+        if len(seq_b) != 0:
+            seq_b = ModuleSequence(id_b, parse_primary_sequence(seq_b))
+            top.append((id_b, seq_b, bioactivities))
+        if len(top) >= top_n: # Returns first top_n matches found.
+            break
+
+    # Check if top is empty.
+    if len(top) == 0:
+        raise ValueError("No matches found!")
+
+    # Compile the bioactivities.
+    bioactivites = {x[0]: x[2] for x in top}
+
+    return [x[1] for x in top], bioactivites
+
+blueprint_match_database = Blueprint("match_database", __name__)
+@blueprint_match_database.route("/api/match_database", methods=["POST"])
+def match_database() -> Response:
     """API endpoint for finding matches in the database.
     
     :return: The matches.
@@ -196,194 +444,116 @@ def find_matches() -> Response:
     data = request.get_json()
     data = data["data"]
 
-    payload = {"matches": []}
+    # Unpack data.
+    try:
+        match_items = data["matchItems"]
+        exact_matching = data["ambiguousNotAllowed"]
+        selected_bioactivity_labels = data["selectedBioactivityLabels"]
+        match_against_molecules = data["matchAgainstMolecules"]
+        match_against_proto_clusters = data["matchAgainstProtoClusters"]
+        top_n = data["numMatchesToReturn"]
+        has_no_leading_modules = data["hasNoLeadingModules"]
+        has_no_trailing_modules = data["hasNoTrailingModules"]
+    except KeyError as err:
+        message = f"Key not present in submission: {err}"
+        return ResponseData(Status.Failure, message=message).to_dict()
 
+    # Mount driver.
     try:
         # driver = neo4j.GraphDatabase.driver("bolt://database:7687")
         driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+    except Exception as err:
+        message = f"Could not mount neo4j driver: {err}"
+        return ResponseData(Status.Failure, message=message).to_dict()
 
-        query = []
-        for item in data["matchItems"]:
-            props = item["properties"]
-            props["identifier"] = item["identifier"]
-            query.append(props)
-        seq_a = ModuleSequence("Query", parse_primary_sequence(query))
-
+    # Mount driver and perform matching.
+    with driver.session() as session:
+        # Set gap costs for pairwise alignment and multiple sequence alignment.
         gap_cost = 2
         end_gap_cost = 1
 
-        with driver.session() as session:
-            query = """
-            MATCH (b:PrimarySequence)
-            RETURN b
-            """
-            result = session.run(query, fetch_size=1)
+        if exact_matching:
+            # Exact matching was picked.
+            try:
+                seqs, bioactivities = match_exact(
+                    session,
+                    match_items,
+                    top_n,
+                    match_against_molecules,
+                    match_against_proto_clusters,
+                    selected_bioactivity_labels,
+                    gap_cost,
+                    end_gap_cost
+                )
+                assert len(seqs) != 0, "No matches found!"
+                msa = MultipleSequenceAlignment(seqs, gap_cost, end_gap_cost).get_alignment()
+            except Exception as err:
+                message = f"Error during exact matching: {err}"
+                return ResponseData(Status.Failure, message=message).to_dict()
+        else:
+            # Querying was picked.
+            try:
+                seqs, bioactivities = match_pattern(
+                    session,
+                    match_items,
+                    top_n,
+                    match_against_molecules,
+                    match_against_proto_clusters,
+                    selected_bioactivity_labels,
+                    has_no_leading_modules,
+                    has_no_trailing_modules
+                )
+                assert len(seqs) != 0, "No matches found!"
+                msa = MultipleSequenceAlignment(seqs, gap_cost, end_gap_cost).get_alignment()
+            except Exception as err:
+                message = f"Error during querying: {err}"
+                return ResponseData(Status.Failure, message=message).to_dict()
 
-            top_10 = []
-            for record in tqdm(result):
+        # Compile matches.
+        matches = []
+        for seq in msa:
 
-                id_b = record["b"]["identifier"]
-                seq_b = retrieve_primary_sequence(session, id_b)
-
-                if len(seq_b) != 0:
-                    seq_b = ModuleSequence(id_b, parse_primary_sequence(seq_b))
-                    score = seq_a.optimal_alignment(seq_b, gap_cost, end_gap_cost).score
-
-                    # Keep 10 best scores.
-                    if len(top_10) < 50:
-                        top_10.append((id_b, score, seq_b))
-                        top_10.sort(key=lambda x: x[1], reverse=True)
-                    else:
-                        if score > top_10[-1][1]:
-                            top_10.pop()
-                            top_10.append((id_b, score, seq_b))
-                            top_10.sort(key=lambda x: x[1], reverse=True)
-
-                else:
-                    continue
-
-            # get top 10 sequences and do msa.
-            msa = MultipleSequenceAlignment([seq_a] + [x[2] for x in top_10], gap_cost, end_gap_cost).get_alignment()
-
-            matches = []
-            for seq in msa:
-
+            # Compile sequence representation.
+            try:
                 seq_repr = []
-                for x, _ in seq._seq: 
+                for x, _ in seq._seq:
                     if isinstance(x, PolyketideMotif):
                         x_repr = x.type.name + (str(x.decoration_type) if x.decoration_type is not None else "")
                     elif isinstance(x, PeptideMotif):
                         x_repr = "AA" + str(x.type.value)
-                    elif isinstance(x, Gap):
+                    elif x is Gap:
                         x_repr = "GAP"
                     else:
                         x_repr = "???"
                     seq_repr.append(x_repr)
+            except Exception as err:
+                message = f"Error during constructing sequence representation: {err}"
+                return ResponseData(Status.Failure, message=message).to_dict()
 
+            # Compile URL.
+            try:
                 if seq.name.startswith("NPA"):
                     url = "https://www.npatlas.org/explore/compounds/" + seq.name
                 else:
                     url = None
+            except Exception as err:
+                message = f"Error during constructing URL: {err}"
+                return ResponseData(Status.Failure, message=message).to_dict()
 
-                bioactivities = []
-                query = """
-                MATCH (c:Compound {identifier: $identifier})-[:HAS_BIOACTIVITY]->(b:Bioactivity)
-                RETURN b
-                """
-                result = session.run(query, identifier=seq.name)
-                for record in result:
-                    bioactivities.append(record["b"]["name"])
-
+            # Compile result for this sequence.
+            try:
                 matches.append({
                     "identifier": seq.name,
-                    "bioactivity": list(set(bioactivities)),
+                    "bioactivity": list(set(bioactivities[seq.name])) if seq.name != "Query" else [],
                     "sequence": seq_repr,
                     "url": url
                 })
+            except Exception as err:
+                message = f"Error during compiling result: {err}"
+                return ResponseData(Status.Failure, message=message).to_dict()
 
-            payload["matches"] = matches
-
-        driver.close()
-
-        return ResponseData(Status.Success, payload=payload, message="Matching completed!").to_dict()
-
-    except Exception as err:
-        msg = f"Error: {err}"
-        return ResponseData(Status.Failure, message=msg).to_dict()
-
-blueprint_query_database = Blueprint("query_database", __name__)
-@blueprint_query_database.route("/api/query_database", methods=["POST"])
-def query_database() -> Response:
-    """API endpoint for querying the database.
-    
-    :return: The matches.
-    :rtype: ResponseData
-    """
-    data = request.get_json()
-
-    payload = {"matches": []}
-
-    try:
-        # driver = neo4j.GraphDatabase.driver("bolt://database:7687")
-        driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
-
-        gap_cost = 2
-        end_gap_cost = 1
-
-        with driver.session() as session:
-            query = """
-            MATCH (b:PrimarySequence)-[:START]->(u1)
-            MATCH path = (u1)-[:NEXT*]->(u2)-[:NEXT]->(u3)-[:NEXT]->(u4)-[:NEXT]->(u5)
-            WHERE
-            (u2.identifier = 'polyketide' AND u2.accessory_domains = ['KR', 'DH'] AND u2.decoration_type = '4') AND
-            (u3.identifier = 'polyketide' AND u3.accessory_domains = ['KR', 'DH'] AND u3.decoration_type = '1') AND
-            (u4.identifier = 'polyketide' AND u4.accessory_domains = ['KR']) AND
-            (u5.identifier = 'polyketide' AND u5.accessory_domains = ['KR', 'DH'] AND u5.decoration_type = '1')
-            AND NOT (u5)-[:NEXT]->()
-            RETURN DISTINCT b
-            """
-            result = session.run(query, fetch_size=1)
-
-            first_10 = []
-            for record in tqdm(result):
-
-                id_b = record["b"]["identifier"]
-                seq_b = retrieve_primary_sequence(session, id_b)
-
-                if len(seq_b) != 0:
-                    seq_b = ModuleSequence(id_b, parse_primary_sequence(seq_b))
-                    first_10.append((id_b, seq_b))
-
-                else:
-                    continue
-
-            print(first_10)
-
-            # get top 10 sequences and do msa.
-            msa = MultipleSequenceAlignment([x[1] for x in first_10], gap_cost, end_gap_cost).get_alignment()
-
-            matches = []
-            for seq in msa:
-
-                seq_repr = []
-                for x, tag in seq._seq:
-                    if isinstance(x, PolyketideMotif):
-                        x_repr = x.type.name + (str(x.decoration_type) if x.decoration_type is not None else "")
-                    elif isinstance(x, PeptideMotif):
-                        x_repr = "AA" + str(x.type.value)
-                    elif isinstance(x, Gap):
-                        x_repr = "GAP"
-                    else:
-                        x_repr = "???"
-                    seq_repr.append(x_repr)
-
-                if seq.name.startswith("NPA"):
-                    url = "https://www.npatlas.org/explore/compounds/" + seq.name
-                else:
-                    url = None
-
-                bioactivities = []
-                query = """
-                MATCH (c:Compound {identifier: $identifier})-[:HAS_BIOACTIVITY]->(b:Bioactivity)
-                RETURN b
-                """
-                result = session.run(query, identifier=seq.name)
-                for record in result:
-                    bioactivities.append(record["b"]["name"])
-
-                matches.append({
-                    "identifier": seq.name,
-                    "bioactivity": list(set(bioactivities)),
-                    "sequence": seq_repr,
-                    "url": url
-                })
-
-            payload["matches"] = matches
-
-        driver.close()
-
-        return ResponseData(Status.Success, payload=payload, message="Matching completed!").to_dict()
-
-    except Exception as err:
-        msg = f"Error: {err}"
-        return ResponseData(Status.Failure, message=msg).to_dict()
+    return ResponseData(
+        Status.Success,
+        payload={"matches": matches},
+        message="Matching completed!"
+    ).to_dict()

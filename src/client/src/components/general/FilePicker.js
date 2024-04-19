@@ -40,7 +40,12 @@ function FilePickerButton({ onFileSelected, className }) {
                 style={{ display: 'none' }}
                 onChange={handleInputChange}
             />
-            <button className={className} onClick={handleFileSelect}>Select File</button>
+            <button 
+                className={className} 
+                onClick={handleFileSelect}
+            >
+                Select File
+            </button>
         </div>
     );
 }

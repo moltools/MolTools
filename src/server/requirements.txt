@@ -24,7 +24,7 @@ pyparsing==3.1.2
 python-dateutil==2.9.0.post0
 pytz==2024.1
 rdkit==2023.9.5
-retromol @ git+https://github.com/moltools/retromol.git
+retromol @ git+https://github.com/moltools/retromol.git@main
 scikit-learn==1.4.2
 scipy==1.13.0
 six==1.16.0

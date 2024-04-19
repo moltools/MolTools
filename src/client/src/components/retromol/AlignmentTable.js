@@ -29,6 +29,8 @@ const AlignmentTable = ({ data }) => {
             return "#47c774";
         } else if (char.startsWith("D")) {
             return "#ff3960";
+        } else if (char === "???") {
+            return "#ccc";
         } else {
             return "transparent";
         }
@@ -73,7 +75,7 @@ const AlignmentTable = ({ data }) => {
                     {data.map(item => (
                         <tr key={item.identifier}>
 
-                            <td style={{whiteSpace: "nowrap"}}>
+                            <td style={{ whiteSpace: "nowrap" }}>
                                 {/* Render link if URL exists, else render plain text. */}
                                 {item.url ? (
                                     <a 
@@ -97,7 +99,7 @@ const AlignmentTable = ({ data }) => {
                                         textAlign: "center"
                                     }}
                                 >
-                                    {char === "GAP" || char === "???" ? "" : char}
+                                    {char === "GAP" ? "" : char}
                                 </td>
                             ))}
 
