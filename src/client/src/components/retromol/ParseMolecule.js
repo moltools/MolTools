@@ -17,6 +17,7 @@ const ParseMolecule = () => {
 
     // Query and result state.
     const [smiles, setSmiles] = useState("");
+    const [linearizedSmiles, setLinearizedSmiles] = useState("");
     const [results, setResults] = useState([]);
     const [selectedResult, setSelectedResult] = useState([]);
     const [matches, setMatches] = useState([]);
@@ -38,6 +39,7 @@ const ParseMolecule = () => {
     // Clear the input fields.
     const clearInputResults = () => {
         setSmiles("");
+        setLinearizedSmiles("");
         setResults([]);
         setSelectedResult([]);
         setMatches([]);
@@ -67,7 +69,10 @@ const ParseMolecule = () => {
             
             if (json.status === "success") {
                 toast.success(json.message);
-                if (json.payload.sequences) setResults(tagResults(json.payload.sequences));
+                if (json.payload.sequences) {
+                    setResults(tagResults(json.payload.sequences));
+                    setLinearizedSmiles(json.payload.linearized);
+                };
             } else if (json.status === "warning") {
                 toast.warn(json.message);
             } else if (json.status === "failure") {
@@ -107,6 +112,7 @@ const ParseMolecule = () => {
                     results={results}
                     selectedResult={selectedResult}
                     setSelectedResult={setSelectedResult}
+                    linearizedSmiles={linearizedSmiles}
                 />
                 {selectedResult.length > 0 && 
                     <QueryBuilder 

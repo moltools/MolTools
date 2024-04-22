@@ -1,6 +1,49 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { toast } from "react-toastify";
 
-const ResultSelector = ({ results, selectedResult, setSelectedResult }) => {
+const ResultSelector = ({ 
+    results, 
+    selectedResult, 
+    setSelectedResult,
+    linearizedSmiles
+}) => {
+    const [linearizedSvg, setLinearizedSvg] = useState("");
+
+    // Fetch the SVG representation of the linearized SMILES string.
+    const drawSmiles = async () => {
+        if (linearizedSmiles === "") { return; }
+
+        const data = { 
+            "smiles": linearizedSmiles,
+            "height": 240,
+            "width": 240
+        };
+
+        try {
+            const response = await fetch("/api/smiles_to_svg", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ "data": data })
+            });
+
+            if (!response.ok) { 
+                throw new Error("Network response was not ok!"); 
+            };
+
+            const json = await response.json();
+            if (json.status === "success") { 
+                setLinearizedSvg(json.payload.svg); 
+            };
+        } catch (error) {
+            toast.error(error.message);
+        };
+    };
+
+    // When the linearized SMILES string changes, fetch the SVG representation.
+    useEffect(() => {
+        drawSmiles();
+    }, [linearizedSmiles]);
+    
     return (
         <div 
             className="control" 
@@ -16,6 +59,19 @@ const ResultSelector = ({ results, selectedResult, setSelectedResult }) => {
                         Results
                     </div>
                 </div>
+                {linearizedSmiles && (
+                    <div 
+                    className="panel-block" 
+                    style={{ 
+                        padding: "10px", 
+                        height: "250px",
+                        display: "flex",
+                        justifyContent: "left",
+                        }}
+                    >
+                        <div dangerouslySetInnerHTML={{ __html: linearizedSvg }} />
+                    </div>
+                )}
                 <div className="panel-block">
                     <div>
                         {results.length === 0 ? (

@@ -4,6 +4,7 @@ from flask import Flask, Response
 import neo4j
 
 from routes.common import Status, ResponseData
+from routes.chem import blueprint_smiles_to_svg
 from routes.cinemol import blueprint_draw_model, blueprint_fetch_cinemol_version
 from routes.retromol import (
     blueprint_bioactivity_labels,
@@ -13,6 +14,7 @@ from routes.retromol import (
 )
 
 app = Flask(__name__)
+app.register_blueprint(blueprint_smiles_to_svg)
 app.register_blueprint(blueprint_draw_model)
 app.register_blueprint(blueprint_fetch_cinemol_version)
 app.register_blueprint(blueprint_bioactivity_labels)

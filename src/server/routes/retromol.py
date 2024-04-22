@@ -5,9 +5,10 @@ import typing as ty
 
 import neo4j
 from flask import Blueprint, Response, request
+from rdkit import Chem
 
 from retromol.chem import Molecule, MolecularPattern, ReactionRule
-from retromol.parsing import parse_reaction_rules, parse_molecular_patterns, parse_mol
+from retromol.parsing import Result, parse_reaction_rules, parse_molecular_patterns, parse_mol
 from retromol.sequencing import parse_modular_natural_product
 from retromol.alignment import (
     ModuleSequence,
@@ -70,6 +71,60 @@ def bioactivity_labels() -> Response:
 #
 # ======================================================================================================================
 
+def get_linearized_input(result: Result) -> ty.List[str]:
+    """Get the linearized input from a record.
+    
+    :param result: The result.
+    :type result: Result
+    :return: The linearized input.
+    :rtype: ty.List[str]
+    """
+    input_smiles = Chem.MolToSmiles(result.mol)
+
+    # Get all monomer AMNS.
+    monomer_ids = []
+    for k, props in result.monomer_graph.items():
+        if props["identity"] is not None:
+            monomer_ids.append(props["reaction_tree_id"])
+    subs = [Chem.MolFromSmiles(result.reaction_tree[x]["smiles"]) for x in monomer_ids]
+
+    monomer_amns = set()
+    for sub in subs:
+        for atom in sub.GetAtoms():
+            amn = atom.GetAtomMapNum()
+            if amn > 0:
+                monomer_amns.add(amn)
+
+    # Filter reaction tree for nodes that contain all AMNS.
+    mols = []
+    for k, props in result.reaction_tree.items():
+        mol = Chem.MolFromSmiles(props["smiles"])
+        amns = set()
+        for atom in mol.GetAtoms():
+            amn = atom.GetAtomMapNum()
+            if amn > 0: amns.add(amn)
+        if monomer_amns.issubset(amns):
+            mols.append(mol)
+
+    # Get num of cycles in mol, keep ones with smallest num of cycles.
+    mols_with_num_cycles = []
+    for mol in mols:
+        ssr = Chem.GetSymmSSSR(mol)
+        num_cycles = len(ssr)
+        mols_with_num_cycles.append((mol, num_cycles))
+    min_num_cycles = min([x[1] for x in mols_with_num_cycles])
+    mols = [x[0] for x in mols_with_num_cycles if x[1] == min_num_cycles]
+
+    # Pick the first one and set all AMNS to 0.
+    linearized_mol = mols[0]
+    for atom in linearized_mol.GetAtoms():
+        atom.SetAtomMapNum(0)
+
+    # Convert to SMILES.
+    linearized_smiles = Chem.MolToSmiles(linearized_mol)
+
+    return linearized_smiles
+
 blueprint_parse_smiles = Blueprint("parse_smiles", __name__)
 @blueprint_parse_smiles.route("/api/parse_smiles", methods=["POST"])
 def parse_smiles() -> Response:
@@ -88,8 +143,23 @@ def parse_smiles() -> Response:
     else:
         mol = Molecule("input", smiles)
         result = parse_mol(mol, REACTIONS, MONOMERS)
-        sequences = parse_modular_natural_product(result)
-        payload = {"sequences": sequences}
+
+        try:
+            linearized = get_linearized_input(result)
+        except Exception as err:
+            message = f"Error during retrieval of linearized product: {err}"
+            return ResponseData(Status.Failure, message=message).to_dict()
+
+        try:
+            sequences = parse_modular_natural_product(result)
+        except Exception as err:
+            message = f"Error during retrieval of primary sequence: {err}"
+            return ResponseData(Status.Failure, message=message).to_dict()
+
+        payload = {
+            "linearized": linearized,
+            "sequences": sequences
+        }
         message = "Successfully parsed molecule!"
         return ResponseData(Status.Success, payload=payload, message=message).to_dict()
 
@@ -102,7 +172,7 @@ def parse_smiles() -> Response:
 blueprint_parse_proto_cluster = Blueprint("parse_proto_cluster", __name__)
 @blueprint_parse_proto_cluster.route("/api/parse_proto_cluster", methods=["POST"])
 def parse_proto_cluster() -> Response:
-    """API endpoint for parsing a proto=cluster.
+    """API endpoint for parsing a proto-cluster.
     
     :return: Parsed biosynthetic fingerprints.
     :rtype: ResponseData
@@ -161,12 +231,15 @@ def retrieve_primary_sequence(session: neo4j.Session, identifier: str) -> ty.Lis
 def match_exact(
     session: neo4j.Session,
     match_items: ty.List[ty.Dict[str, ty.Any]],
+    pairwise_algorithm: str,
     top_n: int,
     match_against_molecules: bool,
     match_against_proto_clusters: bool,
     selected_bioactivity_labels: ty.List[str],
     gap_cost: int,
-    end_gap_cost: int
+    end_gap_cost: int,
+    min_match_length: int,
+    max_match_length: int
 ) -> ty.Tuple[ty.List[ModuleSequence], ty.Dict[str, ty.List[str]]]:
     """Match the primary sequence exactly against the database.
     
@@ -174,6 +247,8 @@ def match_exact(
     :type session: neo4j.Session
     :param match_items: The items to match against.
     :type match_items: ty.List[ty.Dict[str, ty.Any]]
+    :param pairwise_algorithm: The pairwise algorithm to use.
+    :type pairwise_algorithm: str
     :param top_n: The number of top matches to return.
     :type top_n: int
     :param match_against_molecules: Whether to match against molecules.
@@ -186,6 +261,10 @@ def match_exact(
     :type gap_cost: int
     :param end_gap_cost: The end gap cost.
     :type end_gap_cost: int
+    :param min_match_length: The minimum match length.
+    :type min_match_length: int
+    :param max_match_length: The maximum match length.
+    :type max_match_length: int
     :return: The top sequences and their bioactivities.
     :rtype: ty.Tuple[ty.List[ModuleSequence], ty.Dict[str, ty.List[str]]]
     :raises ValueError: If no matches are found.
@@ -240,10 +319,19 @@ def match_exact(
         # Retrieve primary sequence.
         seq_b = retrieve_primary_sequence(session, id_b)
 
+        if len(seq_b) < min_match_length or len(seq_b) > max_match_length:
+            continue
+
         # If the sequence is not empty, do the alignment and get the score.
         if len(seq_b) != 0:
             seq_b = ModuleSequence(id_b, parse_primary_sequence(seq_b))
-            score = seq_a.optimal_alignment(seq_b, gap_cost, end_gap_cost).score
+
+            if pairwise_algorithm == "global":
+                score = seq_a.optimal_alignment(seq_b, gap_cost, end_gap_cost).score
+            elif pairwise_algorithm == "local":
+                raise NotImplementedError("Local alignment not implemented yet!")
+            else:
+                raise ValueError("Invalid pairwise algorithm!")
 
             # Keep top_n best scores.
             if len(top) < top_n:
@@ -280,7 +368,9 @@ def match_pattern(
     match_against_proto_clusters: bool,
     selected_bioactivity_labels: ty.List[str],
     has_no_leading_modules: bool,
-    has_no_trailing_modules: bool
+    has_no_trailing_modules: bool,
+    min_match_length: int,
+    max_match_length: int
 ) -> ty.Tuple[ty.List[ModuleSequence], ty.Dict[str, ty.List[str]]]:
     """Match the primary sequence pattern against the database.
     
@@ -300,6 +390,10 @@ def match_pattern(
     :type has_no_leading_modules: bool
     :param has_no_trailing_modules: Whether the sequence has no trailing modules.
     :type has_no_trailing_modules: bool
+    :param min_match_length: The minimum match length.
+    :type min_match_length: int
+    :param max_match_length: The maximum match length.
+    :type max_match_length: int
     :return: The top sequences and their bioactivities.
     :rtype: ty.Tuple[ty.List[ModuleSequence], ty.Dict[str, ty.List[str]]]
     :raises ValueError: If no matches are found.
@@ -364,9 +458,18 @@ def match_pattern(
         return " AND (" + subquery + ")" if subquery != "" else ""
 
     if has_no_leading_modules:
-        query = "MATCH (b:PrimarySequence)-[:START]->(u1) MATCH path = " + compile_path_query(False)
+        query = (
+            "MATCH (b:PrimarySequence)-[:START]->(u1)"
+            " MATCH seq = (u1)-[:NEXT*]->(seqEnd)"
+            " MATCH path = " + compile_path_query(False)
+        )
     else:
-        query = "MATCH (b:PrimarySequence)-[:START]->(u1) MATCH path = (u1)-[:NEXT*]->" + compile_path_query(True)
+        # Any number of leading modules.
+        query = (
+            "MATCH (b:PrimarySequence)-[:START]->(u1)"
+            " MATCH seq = (u1)-[:NEXT*]->(seqEnd)"
+            " MATCH path = (u1)-[:NEXT*]->" + compile_path_query(True)
+        )
 
     # Retrieve all primary sequences, or only those coming from molecules or proto-clusters.
     if match_against_molecules and match_against_proto_clusters:
@@ -395,11 +498,16 @@ def match_pattern(
         if query_addendum != "":
             query += query_addendum
 
+    query += (
+        f" AND (length(seq) >= {min_match_length - 1}"
+        f" AND length(seq) <= {max_match_length - 1}"
+        f" AND NOT (seqEnd)-[:NEXT]->())"
+    )
+
     query += " RETURN DISTINCT b"
+    result = session.run(query, fetch_size=1)
 
     print(query)
-
-    result = session.run(query, fetch_size=1)
 
     top = []
     for record in result:
@@ -447,13 +555,18 @@ def match_database() -> Response:
     # Unpack data.
     try:
         match_items = data["matchItems"]
-        exact_matching = data["ambiguousNotAllowed"]
+        match_type = data["selectedMatchType"]
+        pairwise_algorithm = data["selectedPairwiseAlgorithm"]
+        gap_penalty = data["gapPenalty"]
+        end_gap_penalty = data["endGapPenalty"]
         selected_bioactivity_labels = data["selectedBioactivityLabels"]
         match_against_molecules = data["matchAgainstMolecules"]
         match_against_proto_clusters = data["matchAgainstProtoClusters"]
         top_n = data["numMatchesToReturn"]
         has_no_leading_modules = data["hasNoLeadingModules"]
         has_no_trailing_modules = data["hasNoTrailingModules"]
+        min_match_length = data["minMatchLength"]
+        max_match_length = data["maxMatchLength"]
     except KeyError as err:
         message = f"Key not present in submission: {err}"
         return ResponseData(Status.Failure, message=message).to_dict()
@@ -468,29 +581,28 @@ def match_database() -> Response:
 
     # Mount driver and perform matching.
     with driver.session() as session:
-        # Set gap costs for pairwise alignment and multiple sequence alignment.
-        gap_cost = 2
-        end_gap_cost = 1
-
-        if exact_matching:
+        if match_type == "pairwise":
             # Exact matching was picked.
             try:
                 seqs, bioactivities = match_exact(
                     session,
                     match_items,
+                    pairwise_algorithm,
                     top_n,
                     match_against_molecules,
                     match_against_proto_clusters,
                     selected_bioactivity_labels,
-                    gap_cost,
-                    end_gap_cost
+                    gap_penalty,
+                    end_gap_penalty,
+                    min_match_length,
+                    max_match_length
                 )
                 assert len(seqs) != 0, "No matches found!"
-                msa = MultipleSequenceAlignment(seqs, gap_cost, end_gap_cost).get_alignment()
+                msa = MultipleSequenceAlignment(seqs, gap_penalty, end_gap_penalty).get_alignment()
             except Exception as err:
                 message = f"Error during exact matching: {err}"
                 return ResponseData(Status.Failure, message=message).to_dict()
-        else:
+        elif match_type == "query":
             # Querying was picked.
             try:
                 seqs, bioactivities = match_pattern(
@@ -501,13 +613,19 @@ def match_database() -> Response:
                     match_against_proto_clusters,
                     selected_bioactivity_labels,
                     has_no_leading_modules,
-                    has_no_trailing_modules
+                    has_no_trailing_modules,
+                    min_match_length,
+                    max_match_length
                 )
                 assert len(seqs) != 0, "No matches found!"
-                msa = MultipleSequenceAlignment(seqs, gap_cost, end_gap_cost).get_alignment()
+                msa = MultipleSequenceAlignment(seqs, gap_penalty, end_gap_penalty).get_alignment()
             except Exception as err:
                 message = f"Error during querying: {err}"
                 return ResponseData(Status.Failure, message=message).to_dict()
+
+        else:
+            message = f"Invalid match type: {match_type}"
+            return ResponseData(Status.Failure, message=message).to_dict()
 
         # Compile matches.
         matches = []
