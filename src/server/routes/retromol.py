@@ -49,7 +49,7 @@ def bioactivity_labels() -> Response:
     :return: The bioactivity labels.
     :rtype: ResponseData
     """
-    driver = neo4j.GraphDatabase.driver("bolt://database:7687", auth=("neo4j", "password"))
+    driver = neo4j.GraphDatabase.driver("bolt://database:7687")
     # driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
 
     # Retrieve all bioactivity labels.
@@ -626,7 +626,7 @@ def match_database() -> Response:
 
     # Mount driver.
     try:
-        driver = neo4j.GraphDatabase.driver("bolt://database:7687", auth=("neo4j", "password"))
+        driver = neo4j.GraphDatabase.driver("bolt://database:7687")
         # driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
     except Exception as err:
         message = f"Could not mount neo4j driver: {err}"

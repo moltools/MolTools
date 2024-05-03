@@ -27,8 +27,8 @@ services:
       context: . 
       dockerfile: Dockerfile.database
     image: neo4j:5.16.0
-    # environment:
-    #   - NEO4J_AUTH=none
+    environment:
+      - NEO4J_AUTH=none
     ports:
       - "${BROWSER_PORT}:7474"
       - "${DATABASE_PORT}:7687"
