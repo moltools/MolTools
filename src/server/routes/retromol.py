@@ -1,15 +1,17 @@
 """This module contains the API endpoints for RetroMol."""
 import os
 import json
+import re
 import typing as ty
 
 import neo4j
 from flask import Blueprint, Response, request
 from rdkit import Chem
 
+from tqdm import tqdm
+
 from retromol.chem import Molecule, MolecularPattern, ReactionRule
 from retromol.parsing import Result, parse_reaction_rules, parse_molecular_patterns, parse_mol
-from retromol.sequencing import parse_modular_natural_product
 from retromol.alignment import (
     ModuleSequence,
     MultipleSequenceAlignment,
@@ -23,9 +25,10 @@ from .common import Status, ResponseData
 
 try:
     absolute_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    rules = json.load(open(os.path.join(absolute_path, "data/rules.json"), "r", encoding="utf-8"))
-    REACTIONS = parse_reaction_rules(json.dumps(rules["reactions"]))
-    MONOMERS = parse_molecular_patterns(json.dumps(rules["monomers"]))
+    monomers = json.load(open(os.path.join(absolute_path, "data/monomers.json"), "r", encoding="utf-8"))
+    reactions = json.load(open(os.path.join(absolute_path, "data/reactions.json"), "r", encoding="utf-8"))
+    REACTIONS = parse_reaction_rules(reactions)
+    MONOMERS = parse_molecular_patterns(monomers)
 except Exception:
     REACTIONS = []
     MONOMERS = []
@@ -71,60 +74,6 @@ def bioactivity_labels() -> Response:
 #
 # ======================================================================================================================
 
-def get_linearized_input(result: Result) -> ty.List[str]:
-    """Get the linearized input from a record.
-    
-    :param result: The result.
-    :type result: Result
-    :return: The linearized input.
-    :rtype: ty.List[str]
-    """
-    input_smiles = Chem.MolToSmiles(result.mol)
-
-    # Get all monomer AMNS.
-    monomer_ids = []
-    for k, props in result.monomer_graph.items():
-        if props["identity"] is not None:
-            monomer_ids.append(props["reaction_tree_id"])
-    subs = [Chem.MolFromSmiles(result.reaction_tree[x]["smiles"]) for x in monomer_ids]
-
-    monomer_amns = set()
-    for sub in subs:
-        for atom in sub.GetAtoms():
-            amn = atom.GetAtomMapNum()
-            if amn > 0:
-                monomer_amns.add(amn)
-
-    # Filter reaction tree for nodes that contain all AMNS.
-    mols = []
-    for k, props in result.reaction_tree.items():
-        mol = Chem.MolFromSmiles(props["smiles"])
-        amns = set()
-        for atom in mol.GetAtoms():
-            amn = atom.GetAtomMapNum()
-            if amn > 0: amns.add(amn)
-        if monomer_amns.issubset(amns):
-            mols.append(mol)
-
-    # Get num of cycles in mol, keep ones with smallest num of cycles.
-    mols_with_num_cycles = []
-    for mol in mols:
-        ssr = Chem.GetSymmSSSR(mol)
-        num_cycles = len(ssr)
-        mols_with_num_cycles.append((mol, num_cycles))
-    min_num_cycles = min([x[1] for x in mols_with_num_cycles])
-    mols = [x[0] for x in mols_with_num_cycles if x[1] == min_num_cycles]
-
-    # Pick the first one and set all AMNS to 0.
-    linearized_mol = mols[0]
-    for atom in linearized_mol.GetAtoms():
-        atom.SetAtomMapNum(0)
-
-    # Convert to SMILES.
-    linearized_smiles = Chem.MolToSmiles(linearized_mol)
-
-    return linearized_smiles
-
 blueprint_parse_smiles = Blueprint("parse_smiles", __name__)
 @blueprint_parse_smiles.route("/api/parse_smiles", methods=["POST"])
 def parse_smiles() -> Response:
@@ -143,18 +92,55 @@ def parse_smiles() -> Response:
     else:
         mol = Molecule("input", smiles)
         result = parse_mol(mol, REACTIONS, MONOMERS)
+        sequences = []
+        for record in result.sequences:
+            mol = Chem.MolFromSmiles(record["smiles"])
+            for atom in mol.GetAtoms():
+                atom.SetAtomMapNum(0)
+                atom.SetIsotope(0) 
+            linearized = Chem.MolToSmiles(mol) # TODO: only returns last one now...
 
-        try:
-            linearized = get_linearized_input(result)
-        except Exception as err:
-            message = f"Error during retrieval of linearized product: {err}"
-            return ResponseData(Status.Failure, message=message).to_dict()
+            motif_code = record["motif_code"]
+            new_motif_code = []
+            for item in motif_code:
 
-        try:
-            sequences = parse_modular_natural_product(result)
-        except Exception as err:
-            message = f"Error during retrieval of primary sequence: {err}"
-            return ResponseData(Status.Failure, message=message).to_dict()
+                if match := re.match(r"polyketide\|([A-D])(\d{1,2})", item):
+                    identifier = "polyketide"
+                    pks_type_src = match.group(1)
+                    decoration_type = int(match.group(2))
+
+                    if pks_type_src == "B":
+                        accessory_domains = ["KR"]
+                    elif pks_type_src == "C":
+                        accessory_domains = ["KR", "DH"]
+                    elif pks_type_src == "D":
+                        accessory_domains = ["KR", "DH", "ER"]
+                    else:
+                        accessory_domains = []
+
+                    new_motif_code.append(dict(
+                        identifier=identifier,
+                        properties=dict(
+                            decoration_type=decoration_type,
+                            accessory_domains=accessory_domains
+                        )
+                    ))
+
+                elif match := re.match(r"peptide\|(\w+)\|(.+)", item):
+                    identifier = "peptide"
+                    cid = match.group(1)
+
+                    new_motif_code.append(dict(
+                        identifier=identifier,
+                        properties=dict(
+                            classification="any"
+                        )
+                    ))
+                
+                else:
+                    raise ValueError(f"Invalid motif code: {item}")
+
+            sequences.append(new_motif_code)
 
         payload = {
             "linearized": linearized,
@@ -162,6 +148,8 @@ def parse_smiles() -> Response:
         }
         message = "Successfully parsed molecule!"
         return ResponseData(Status.Success, payload=payload, message=message).to_dict()
+
+    return ResponseData(Status.Warning, message="This endpoint is not implemented yet!").to_dict()
 
 # ======================================================================================================================
 #
@@ -277,8 +265,41 @@ def match_exact(
     for items in match_items:
         item = items[0]
         props = item["properties"]
-        props["identifier"] = item["identifier"]
-        query.append(props)
+        identifier = item["identifier"]
+
+        if identifier == "polyketide":
+            if len(props["accessory_domains"]) == 0:
+                pks_type = "A"
+            elif set(props["accessory_domains"]) == {"KR"}:
+                pks_type = "B"
+            elif set(props["accessory_domains"]) == {"KR", "DH"}:
+                pks_type = "C"
+            elif set(props["accessory_domains"]) == {"KR", "DH", "ER"}:
+                pks_type = "D"
+            else:
+                print(props["accessory_domains"])
+                raise ValueError("Invalid accessory domains for matching!")
+        
+            decoration_type = props["decoration_type"]
+
+            if decoration_type is None:
+                raise ValueError("Decoration type cannot be None when matching!")
+            
+            motif_code = f"polyketide|{pks_type}{decoration_type}"
+            query.append(motif_code)
+
+        elif identifier == "peptide":
+            classification = props["classification"]
+
+            if classification is None or classification == "any":
+                raise ValueError("Classification cannot be 'any' when matching!")
+
+            motif_code = f"peptide|pubchem|{classification}"
+            query.append(motif_code)
+
+        else:
+            raise ValueError(f"Invalid identifier '{identifier}' for matching!")
+
     seq_a = ModuleSequence("Query", parse_primary_sequence(query))
 
     # Retrieve all primary sequences, or only those coming from molecules or proto-clusters.
@@ -301,7 +322,7 @@ def match_exact(
         raise ValueError("No database to match against!")
 
     top = []
-    for record in result: # Loop over all primary sequences in the database.
+    for record in tqdm(result): # Loop over all primary sequences in the database.
         id_b = record["b"]["identifier"]
 
         # Get bioactivity labels for id_b.
@@ -324,6 +345,16 @@ def match_exact(
 
         # If the sequence is not empty, do the alignment and get the score.
         if len(seq_b) != 0:
+            new_seq_b = []
+            for item in seq_b:
+                if item["identifier"] == "polyketide":
+                    new_seq_b.append(f"polyketide|{item['accessory_domains']}{item['decoration_type']}")
+                elif item["identifier"] == "peptide":
+                    new_seq_b.append(f"peptide|item{'source'}|{item['cid']}")
+                else:
+                    raise ValueError("Invalid identifier for matching!")
+            seq_b = new_seq_b
+
             seq_b = ModuleSequence(id_b, parse_primary_sequence(seq_b))
 
             if pairwise_algorithm == "global":
@@ -439,10 +470,21 @@ def match_pattern(
         for option in match_item:
             if option["identifier"] == "polyketide":
                 domains = option["properties"]["accessory_domains"]
+                if len(domains) == 0:
+                    domains = "A"
+                elif set(domains) == {"KR"}:
+                    domains = "B"
+                elif set(domains) == {"KR", "DH"}:
+                    domains = "C"
+                elif set(domains) == {"KR", "DH", "ER"}:
+                    domains = "D"
+                else:
+                    domains = None
+
                 decoration = option["properties"]["decoration_type"]
                 subquery = \
                     (f"(u{index}.identifier = 'polyketide'") + \
-                    (f" AND u{index}.accessory_domains = {domains}" if domains else "") + \
+                    (f" AND u{index}.accessory_domains = '{domains}'" if domains else "") + \
                     (f" AND u{index}.decoration_type = '{decoration}')" if decoration is not None else ")")
                 subqueries.append(subquery)
             elif option["identifier"] == "peptide":
@@ -527,6 +569,16 @@ def match_pattern(
 
         seq_b = retrieve_primary_sequence(session, id_b)
         if len(seq_b) != 0:
+            new_seq_b = []
+            for item in seq_b:
+                if item["identifier"] == "polyketide":
+                    new_seq_b.append(f"polyketide|{item['accessory_domains']}{item['decoration_type']}")
+                elif item["identifier"] == "peptide":
+                    new_seq_b.append(f"peptide|item{'source'}|{item['cid']}")
+                else:
+                    raise ValueError("Invalid identifier for matching!")
+            seq_b = new_seq_b
+
             seq_b = ModuleSequence(id_b, parse_primary_sequence(seq_b))
             top.append((id_b, seq_b, bioactivities))
         if len(top) >= top_n: # Returns first top_n matches found.
@@ -634,11 +686,11 @@ def match_database() -> Response:
             # Compile sequence representation.
             try:
                 seq_repr = []
-                for x, _ in seq._seq:
+                for x, _ in seq.seq:
                     if isinstance(x, PolyketideMotif):
                         x_repr = x.type.name + (str(x.decoration_type) if x.decoration_type is not None else "")
                     elif isinstance(x, PeptideMotif):
-                        x_repr = "AA" + str(x.type.value)
+                        x_repr = f"AA:{x.cid}"
                     elif x is Gap:
                         x_repr = "GAP"
                     else:

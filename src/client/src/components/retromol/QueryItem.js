@@ -451,13 +451,13 @@ const PeptideTypePicker = ({
                     >
                         Any
                     </a>
-                    {itemType({ name: "Polar and charged", classification: "polar and charged" })}
+                    {/* {itemType({ name: "Polar and charged", classification: "polar and charged" })}
                     {itemType({ name: "Small hydrophobic", classification: "small hydrophobic" })}
                     {itemType({ name: "Small non-hydrophobic", classification: "small non-hydrophobic" })}
                     {itemType({ name: "Tiny", classification: "tiny" })}
                     {itemType({ name: "Bulky", classification: "bulky" })}
                     {itemType({ name: "Cyclic aliphatic", classification: "cyclic aliphatic" })}
-                    {itemType({ name: "Cysteine-like", classification: "cysteine-like" })}
+                    {itemType({ name: "Cysteine-like", classification: "cysteine-like" })} */}
                 </div>
             </div>
         </div>
