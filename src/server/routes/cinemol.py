@@ -1,7 +1,7 @@
 """This module contains the API endpoints for CineMol."""
 from cinemol.parsers import parse_sdf
-from cinemol.chemistry import Style, Look, draw_molecule
-from cinemol.version import version
+from cinemol.api import Style, Look, draw_molecule
+# from cinemol.version import version
 from flask import Blueprint, Response, request
 
 from .common import Status, ResponseData
@@ -115,7 +115,7 @@ def fetch_cinemol_version() -> Response:
     :rtype: ResponseData
     """
     # Get version.
-    payload = {"version": version}
+    payload = {"version": "0.1.0-dev"}
 
     # Return the version.
     msg = "Successfully fetched Cinemol version!"

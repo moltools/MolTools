@@ -1,5 +1,5 @@
 blinker==1.7.0
-CineMol @ git+https://github.com/moltools/cinemol.git@main
+CineMol @ git+https://github.com/moltools/cinemol.git@dev
 click==8.1.7
 contourpy==1.2.1
 cycler==0.12.1
