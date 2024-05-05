@@ -1,7 +1,7 @@
 """This module contains the API endpoints for CineMol."""
 from cinemol.parsers import parse_sdf
 from cinemol.api import Style, Look, draw_molecule
-# from cinemol.version import version
+from cinemol.version import get_version
 from flask import Blueprint, Response, request
 
 from .common import Status, ResponseData
@@ -23,15 +23,15 @@ def draw_model() -> Response:
 
     # Get parameters.
     style = {
-        "space-filling":    Style.SpaceFilling,
-        "ball-and-stick":   Style.BallAndStick,
-        "tube":             Style.Tube,
-        "wireframe":        Style.Wireframe
+        "space-filling":    Style.SPACEFILLING,
+        "ball-and-stick":   Style.BALL_AND_STICK,
+        "tube":             Style.TUBE,
+        "wireframe":        Style.WIREFRAME
     }[data.get("style", "tube")]
 
     look = {
-        "cartoon":           Look.Cartoon,
-        "glossy":            Look.Glossy,           
+        "cartoon":           Look.CARTOON,
+        "glossy":            Look.GLOSSY,           
     }[data.get("look", "glossy")]
 
     include_hydrogens = data.get("include_hydrogens", False)
@@ -114,10 +114,16 @@ def fetch_cinemol_version() -> Response:
     :return: The version of Cinemol.
     :rtype: ResponseData
     """
-    # Get version.
-    payload = {"version": "0.1.0-dev"}
+    try:
+        # Get version.
+        version = get_version()
 
-    # Return the version.
-    msg = "Successfully fetched Cinemol version!"
+        # Return the version.
+        payload = {"version": version}
 
-    return ResponseData(Status.Success, payload, msg).to_dict()
+        msg = "Successfully fetched Cinemol version!"
+        return ResponseData(Status.Success, payload, msg).to_dict()
+
+    except Exception as e:
+        msg = f"Failed to fetch Cinemol version: {e}"
+        return ResponseData(Status.Failure, message=msg).to_dict()
