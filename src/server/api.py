@@ -60,8 +60,8 @@ def ping_database() -> Response:
     :rtype: Response
     """
     try:
-        # driver = neo4j.GraphDatabase.driver("bolt://database:7687")
-        driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+        driver = neo4j.GraphDatabase.driver("bolt://database:7687")
+        # driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
 
         with driver.session() as session:
             result = session.run("MATCH (n) RETURN count(n) AS count")

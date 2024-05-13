@@ -122,7 +122,7 @@
     },
     {
         "name": "polyketide|C2",
-        "pattern": "[OH][S][CH1]=[C]([CH3])[C](=[O])[OH]"
+        "pattern": "[OH][S][CH1,C&D2]=[C,C&D3]([CH3])[C](=[O])[OH]"
     },
     {
         "name": "polyketide|C4",
@@ -131,6 +131,10 @@
     {
         "name": "polyketide|C6",
         "pattern": "[OH][S][C]([CH3])=[CH1][C](=[O])[OH]"
+    },
+    {
+        "name": "polyketide|C13",
+        "pattern": "[OH][S][CH1]=[C]([CH0]#[N])[C](=[O])[OH]"
     },
     {
         "name": "polyketide|D1",
@@ -171,6 +175,10 @@
     {
         "name": "polyketide|D11",
         "pattern": "[OH][S][CH2][C](=[O])[C](=[O])[OH]"
+    },
+    {
+        "name": "polyketide|D11",
+        "pattern": "[OH][S][CH1]=[C]([OH])[C](=[O])[OH]"
     },
     {
         "name": "polyketide|D12",

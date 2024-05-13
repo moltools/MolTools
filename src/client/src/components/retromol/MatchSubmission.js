@@ -343,7 +343,6 @@ const MatchSubmission = ({
                                 defaultChecked={matchAgainstProtoClusters}
                                 value={matchAgainstProtoClusters}
                                 onChange={() => setMatchAgainstProtoClusters(!matchAgainstProtoClusters)}
-                                disabled={true}
                             />
                             Include parsed proto-clusters in search space
                             </label>

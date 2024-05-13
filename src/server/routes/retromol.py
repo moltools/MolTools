@@ -49,8 +49,8 @@ def bioactivity_labels() -> Response:
     :return: The bioactivity labels.
     :rtype: ResponseData
     """
-    # driver = neo4j.GraphDatabase.driver("bolt://database:7687")
-    driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+    driver = neo4j.GraphDatabase.driver("bolt://database:7687")
+    # driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
 
     # Retrieve all bioactivity labels.
     labels = []
@@ -93,6 +93,12 @@ def parse_smiles() -> Response:
     else:
         mol = Molecule("input", smiles)
         result = parse_mol(mol, REACTIONS, MONOMERS)
+
+        print(result.success)
+        print(result.sequences)
+
+        linearized = None
+
         sequences = []
         for record in result.sequences:
             mol = Chem.MolFromSmiles(record["smiles"])
@@ -142,6 +148,12 @@ def parse_smiles() -> Response:
                     raise ValueError(f"Invalid motif code: {item}")
 
             sequences.append(new_motif_code)
+
+        if linearized is None:
+            for atom in result.mol.GetAtoms():
+                atom.SetAtomMapNum(0)
+                atom.SetIsotope(0)
+            linearized = Chem.MolToSmiles(result.mol)
 
         payload = {
             "linearized": linearized,
@@ -323,7 +335,13 @@ def match_exact(
         raise ValueError("No database to match against!")
 
     top = []
+    parsed = 0
     for record in tqdm(result): # Loop over all primary sequences in the database.
+
+        parsed += 1
+        if parsed % 100 == 0:
+            print(f"Parsed {parsed} records.", end="\r")
+
         id_b = record["b"]["identifier"]
 
         # Get bioactivity labels for id_b.
@@ -626,8 +644,8 @@ def match_database() -> Response:
 
     # Mount driver.
     try:
-        # driver = neo4j.GraphDatabase.driver("bolt://database:7687")
-        driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+        driver = neo4j.GraphDatabase.driver("bolt://database:7687")
+        # driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
     except Exception as err:
         message = f"Could not mount neo4j driver: {err}"
         return ResponseData(Status.Failure, message=message).to_dict()
