@@ -1,6 +1,6 @@
---extra-index-url https://test.pypi.org/simple/
+# --extra-index-url https://test.pypi.org/simple/
 blinker==1.7.0
-cinemol==0.0.1.dev0
+cinemol==0.0.1
 click==8.1.7
 contourpy==1.2.1
 cycler==0.12.1

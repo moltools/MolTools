@@ -81,9 +81,7 @@ def draw_model() -> Response:
                 rotation_over_y_axis=rotation_y,
                 rotation_over_z_axis=rotation_z,
                 scale=1.0,
-                focal_length=100.0,
                 exclude_atoms=None if include_hydrogens else ["H"],
-                verbose=False
             )
 
             svg_str = svg.to_svg()
