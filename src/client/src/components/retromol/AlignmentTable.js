@@ -86,7 +86,13 @@ const AlignmentTable = ({ data }) => {
                                         {item.identifier}
                                     </a>
                                 ) : (
-                                    item.identifier
+                                    <a
+                                        href={`https://pubchem.ncbi.nlm.nih.gov/#query=${item.identifier}`} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                    >
+                                        {item.identifier}
+                                    </a>
                                 )}
                             </td>
 

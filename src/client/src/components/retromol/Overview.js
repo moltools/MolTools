@@ -2,7 +2,7 @@ import React from "react";
 
 const Overview = () => {
     return (
-        <div> 
+        <div style={{ margin: "15px" }}> 
             <h1 className="title">
                 RetroMol
             </h1>

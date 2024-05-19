@@ -8,12 +8,14 @@ import MatchSubmission from "./MatchSubmission";
 import Modal from "./Modal";
 import QueryBuilder from "./QueryBuilder";
 import ResultSelector from "./ResultSelector";
+import ReviewSubmission from "./ReviewSubmission";
 import SmilesInput from "./SmilesInput";
 
 const ParseMolecule = () => {
     // Page state.
     const [isLoading, setIsLoading] = useState(false);
     const [modalActive, setModalActive] = useState(false);
+    const [reviewModalActive, setReviewModalActive] = useState(false);
 
     // Query and result state.
     const [smiles, setSmiles] = useState("");
@@ -34,6 +36,11 @@ const ParseMolecule = () => {
     // Toggle the results modal.
     const toggleModal = () => {
         setModalActive(!modalActive);
+    };
+
+    // Toggle the review modal.
+    const toggleReviewModal = () => {
+        setReviewModalActive(!reviewModalActive);
     };
 
     // Clear the input fields.
@@ -102,11 +109,21 @@ const ParseMolecule = () => {
                         )}
                     </div>
                 </Modal>
+                <Modal
+                    closeModal={toggleReviewModal}
+                    modalState={reviewModalActive}
+                    title="Submit for review"
+                >
+                    <div>
+                        <ReviewSubmission smiles={smiles} toggleModal={toggleReviewModal} />
+                    </div>
+                </Modal>
                 <SmilesInput 
                     smiles={smiles} 
                     setSmiles={setSmiles} 
                     parseMolecule={parseMolecule} 
                     handleRefresh={clearInputResults}
+                    toggleReviewModal={toggleReviewModal}
                 />
                 <ResultSelector
                     results={results}

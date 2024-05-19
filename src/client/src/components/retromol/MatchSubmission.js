@@ -17,9 +17,11 @@ const MatchSubmission = ({
     const [hasNoLeadingModules, setHasNoLeadingModules] = useState(false);
     const [hasNoTrailingModules, setHasNoTrailingModules] = useState(false);
     const [allBioactivityLabels, setAllBioactivityLabels] = useState([]);
+    const [allProducingOrganisms, setAllProducingOrganisms] = useState([]);
     const [matchAgainstMolecules, setMatchAgainstMolecules] = useState(true);
     const [matchAgainstProtoClusters, setMatchAgainstProtoClusters] = useState(false);
     const [selectedBioactivityLabels, setSelectedBioactivityLabels] = useState([]);
+    const [selectedProducingOrganisms, setSelectedProducingOrganisms] = useState([]);
     const [minMatchLength, setMinMatchLength] = useState(1);
     const [maxMatchLength, setMaxMatchLength] = useState(100);
     const [numMatchesToReturn, setNumMatchesToReturn] = useState(50);
@@ -42,6 +44,7 @@ const MatchSubmission = ({
             "hasNoLeadingModules": hasNoLeadingModules,
             "hasNoTrailingModules": hasNoTrailingModules,
             "selectedBioactivityLabels": selectedBioactivityLabels,
+            "selectedProducingOrganisms": selectedProducingOrganisms,
             "matchAgainstMolecules": matchAgainstMolecules,
             "matchAgainstProtoClusters": matchAgainstProtoClusters,
             "minMatchLength": minMatchLength, 
@@ -102,8 +105,34 @@ const MatchSubmission = ({
         };
     };
 
+    const fetchProducingOrganisms = async () => {
+        try {
+            const response = await fetch("/api/producing_organisms", {
+                method: "GET",
+                headers: { "Content-Type": "application/json" }
+            });
+
+            if (!response.ok) {
+                throw new Error("Network response was not ok!");
+            };
+
+            const json = await response.json();
+
+            if (json.status === "success") {
+                setAllProducingOrganisms(json.payload.producingOrganisms);
+            } else if (json.status === "warning") {
+                toast.warn(json.message);
+            } else if (json.status === "failure") {
+                toast.error(json.message);
+            };
+        } catch (error) {
+            toast.error(error.message);
+        };
+    };
+
     useEffect(() => {
         fetchBioactivityLabels();
+        fetchProducingOrganisms();
     }, []);
 
     return (
@@ -293,6 +322,39 @@ const MatchSubmission = ({
             <div className="panel-block">
                 <div 
                     style={{ 
+                        width: "100%", 
+                        marginTop: "10px", 
+                        marginBottom: "10px" 
+                    }}
+                >
+                    <span style={{ margin: "10px" }}>
+                        Filter on producing organism:
+                    </span>
+                    <div 
+                        className="field has-addons" 
+                        style={{ width: "100%" }}
+                    >
+                        <div 
+                            className="control" 
+                            style={{ 
+                                margin: "10px", 
+                                width: "100%" 
+                            }}
+                        >
+                            <MultiSelect
+                                defaultValue={selectedProducingOrganisms}
+                                value={selectedProducingOrganisms}
+                                data={allProducingOrganisms}
+                                placeholder="Select NCBI identifiers (optional)"
+                                onChange={(value) => setSelectedProducingOrganisms(value)}
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div className="panel-block">
+                <div 
+                    style={{ 
                         marginTop: "10px", 
                         marginBottom: "10px" 
                     }}
@@ -388,7 +450,7 @@ const MatchSubmission = ({
                 <div className="column is-full">
                     <div className="field is-grouped is-grouped-left">
                         <button 
-                            className="button is-link is-light" 
+                            className="button is-link" 
                             onClick={() => {
                                 if (queryItems.length > 0) {
                                     matchDatabase();

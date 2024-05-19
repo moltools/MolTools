@@ -5,7 +5,8 @@ const SmilesInput = ({
     smiles, 
     setSmiles, 
     parseMolecule, 
-    handleRefresh 
+    handleRefresh,
+    toggleReviewModal,
 }) => {
     const [inputSvg, setInputSvg] = useState("");
 
@@ -101,6 +102,16 @@ const SmilesInput = ({
                     >
                         <div className="control">
                             <button 
+                                className="button is-link"
+                                style={{
+                                    marginRight: "5px", 
+                                    marginBottom: "5px"
+                                }} 
+                                onClick={parseMolecule} 
+                            >
+                                Parse molecule
+                            </button>
+                            <button 
                                 className="button is-link is-light" 
                                 style={{ 
                                     marginRight: "5px", 
@@ -116,19 +127,28 @@ const SmilesInput = ({
                                     marginRight: "5px", 
                                     marginBottom: "5px"
                                 }} 
-                                onClick={parseMolecule} 
+                                onClick={() => {
+                                    setInputSvg("");
+                                    handleRefresh();
+                                }} 
                             >
-                                Parse molecule
+                                Refresh
                             </button>
                             <button 
-                                className="button is-link is-light" 
+                                className="button is-link is-light"
                                 style={{
                                     marginRight: "5px", 
                                     marginBottom: "5px"
                                 }} 
-                                onClick={handleRefresh} 
+                                onClick={() => {
+                                    if (smiles === "") { 
+                                        toast.warn("No SMILES input to submit.");
+                                        return; 
+                                    }
+                                    toggleReviewModal();
+                                }} 
                             >
-                                Refresh
+                                Submit for review
                             </button>
                         </div>
                     </div>

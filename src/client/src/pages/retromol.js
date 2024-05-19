@@ -27,7 +27,7 @@ const RetroMol = () => {
                             key={index}
                             className={selectedTab === tab ? "is-active" : ""}
                             onClick={() => setSelectedTab(tab)}
-
+                            style={{ cursor: "pointer" }}
                         >
                             <a>{tab}</a>
                         </li>

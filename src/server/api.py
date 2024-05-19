@@ -7,7 +7,12 @@ from routes.common import Status, ResponseData
 from routes.chem import blueprint_smiles_to_svg
 from routes.cinemol import blueprint_draw_model, blueprint_fetch_cinemol_version
 from routes.retromol import (
+    NEO4J_URI,
+    NEO4J_USER,
+    NEO4J_PASSWORD,
+    blueprint_submit_for_review,
     blueprint_bioactivity_labels,
+    blueprint_producing_organisms,
     blueprint_parse_smiles,
     blueprint_parse_proto_cluster,
     blueprint_match_database
@@ -17,7 +22,9 @@ app = Flask(__name__)
 app.register_blueprint(blueprint_smiles_to_svg)
 app.register_blueprint(blueprint_draw_model)
 app.register_blueprint(blueprint_fetch_cinemol_version)
+app.register_blueprint(blueprint_submit_for_review)
 app.register_blueprint(blueprint_bioactivity_labels)
+app.register_blueprint(blueprint_producing_organisms)
 app.register_blueprint(blueprint_parse_smiles)
 app.register_blueprint(blueprint_parse_proto_cluster)
 app.register_blueprint(blueprint_match_database)
@@ -60,8 +67,13 @@ def ping_database() -> Response:
     :rtype: Response
     """
     try:
-        driver = neo4j.GraphDatabase.driver("bolt://database:7687")
-        # driver = neo4j.GraphDatabase.driver("bolt://localhost:7687", auth=("neo4j", "password"))
+        if NEO4J_USER and NEO4J_PASSWORD:
+            driver = neo4j.GraphDatabase.driver(
+                NEO4J_URI, 
+                auth=(NEO4J_USER, NEO4J_PASSWORD)
+            )
+        else:
+            driver = neo4j.GraphDatabase.driver(NEO4J_URI)
 
         with driver.session() as session:
             result = session.run("MATCH (n) RETURN count(n) AS count")
