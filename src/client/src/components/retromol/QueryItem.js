@@ -21,7 +21,7 @@ const IdentityPicker = ({
                     aria-controls="dropdown-menu"
                 >
                     <span style={{ textTransform: 'capitalize' }}>
-                        {item.identifier}
+                        {`${item.identifier !== "peptide" ? item.identifier : "Other"}`}
                     </span>
                     <span className="icon is-small">
                         <i 
@@ -100,7 +100,7 @@ const IdentityPicker = ({
                         setQueryItems(updatedItems);
                     }}
                 >
-                    Peptide
+                    Other
                 </a>
                 </div>
             </div>
@@ -366,79 +366,38 @@ const PeptideTypePicker = ({
     queryItems, 
     setQueryItems 
 }) => {
-    // General function to handle the accessory domain and decoration type.
-    const itemType = ({ name, classification }) => {
-        return (
-            <a 
-                className="dropdown-item" 
-                onClick={() => { 
-                    const updatedItems = queryItems.map((queryItem, i) => { 
-                        if (i === index) { 
-                            itemList.map((listItem, j) => {
-                                if (j === itemIndex) {
-                                    listItem.properties.classification = classification;
-                                };
-                            });
-                        };
-                        
-                        return queryItem; 
-                    }); 
-                    
-                    setQueryItems(updatedItems); 
-                }}
-            >
-                {name}
-            </a>
-        );
-    };
-
+    
     return (
         <div 
             className="dropdown is-hoverable" 
             style={{ marginRight: "5px" }}
         >
-            <div className="dropdown-trigger">
-                <button 
-                    className="button" 
-                    aria-haspopup="true" 
-                    aria-controls="dropdown-menu"
-                >
-                <span>
-                    {
-                        item.properties.classification === null ? "Any" :
-                        item.properties.classification === "polar and charged" ? "Polar and charged" :
-                        item.properties.classification === "small hydrophobic" ? "Small hydrophobic" :
-                        item.properties.classification === "small non-hydrophobic" ? "Small non-hydrophobic" :
-                        item.properties.classification === "tiny" ? "Tiny" :
-                        item.properties.classification === "bulky" ? "Bulky" :
-                        item.properties.classification === "cyclic aliphatic" ? "Cyclic aliphatic" :
-                        item.properties.classification === "cysteine-like" ? "Cysteine-like"
-                        : "Any"
-                    }
-                </span>
-                    <span className="icon is-small">
-                        <i 
-                            className="fas fa-angle-down" 
-                            aria-hidden="true"
-                        />
-                    </span>
-                </button>
-            </div>
-            <div 
-                className="dropdown-menu" 
-                id="dropdown-menu" 
-                role="menu"
-            >
-                <div className="dropdown-content">
-                    <a
-                        className="dropdown-item"
-                        onClick={() => {
+            <div className="field has-addons">
+                <div className="control">
+                    <input
+                        className="input"
+                        type="text"
+                        placeholder="PubChem CID"
+                        value={item.properties.pubchem_cid || ""}
+                        onChange={e => {
+                            // Trim any leading/trailing spaces.
+                            const value = e.target.value.trim();
+
                             const updatedItems = queryItems.map((queryItem, i) => {
-                                if (i === index) { 
+                                if (i === index) {
                                     itemList.map((listItem, j) => {
                                         if (j === itemIndex) {
-                                            listItem.properties.classification = null;
-                                            listItem.properties.pubchem_cid = null;
+                                            // Check if the value is not an empty string and is a valid integer
+                                            const parsedValue = parseInt(value);
+
+                                            if (!isNaN(parsedValue)) { 
+                                                // Check if the parsed value is a valid number.
+                                                listItem.properties.pubchem_cid = parsedValue;
+                                            } else {
+                                                // Set to null if the value is not a valid integer.
+                                                listItem.properties.pubchem_cid = null; 
+                                                toast.error("Please enter a valid integer as PubChem CID!");
+                                            };
                                         };
                                     });
                                 };
@@ -447,17 +406,8 @@ const PeptideTypePicker = ({
                             });
 
                             setQueryItems(updatedItems);
-                        }}  
-                    >
-                        Any
-                    </a>
-                    {/* {itemType({ name: "Polar and charged", classification: "polar and charged" })}
-                    {itemType({ name: "Small hydrophobic", classification: "small hydrophobic" })}
-                    {itemType({ name: "Small non-hydrophobic", classification: "small non-hydrophobic" })}
-                    {itemType({ name: "Tiny", classification: "tiny" })}
-                    {itemType({ name: "Bulky", classification: "bulky" })}
-                    {itemType({ name: "Cyclic aliphatic", classification: "cyclic aliphatic" })}
-                    {itemType({ name: "Cysteine-like", classification: "cysteine-like" })} */}
+                        }}
+                    />
                 </div>
             </div>
         </div>

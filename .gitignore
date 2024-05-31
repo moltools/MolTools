@@ -7,3 +7,5 @@ embedding_identifiers.txt
 *.npy
 
 venv/
+
+temp

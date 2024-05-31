@@ -3,6 +3,9 @@ import os
 import json
 import re
 import typing as ty
+import requests
+import zipfile
+import os
 
 import neo4j
 from flask import Blueprint, Response, request
@@ -11,15 +14,7 @@ from rdkit import Chem
 from tqdm import tqdm
 
 from retromol.chem import Molecule, MolecularPattern, ReactionRule
-from retromol.api import Result, parse_reaction_rules, parse_molecular_patterns, parse_mol
-# from retromol.alignment import (
-#     ModuleSequence,
-#     MultipleSequenceAlignment,
-#     PolyketideMotif,
-#     PeptideMotif,
-#     Gap,
-#     parse_primary_sequence,
-# )
+from retromol.api import parse_reaction_rules, parse_molecular_patterns, parse_mol
 
 ModuleSequence = ty.List[str]
 
@@ -117,7 +112,7 @@ def bioactivity_labels() -> Response:
     labels = []
     with driver.session() as session:
         query = """
-        MATCH (b:Bioactivity)
+        MATCH (b:BioactivityLabel)
         RETURN b
         """
         result = session.run(query)
@@ -156,7 +151,10 @@ def producing_organisms() -> Response:
         """
         result = session.run(query)
         for record in result:
-            producing_organisms.append(str(record["o"]["ncbi_id"]))
+            genus = record["o"]["genus"]
+            species = record["o"]["species"]
+            name = f"{genus} {species}"
+            producing_organisms.append(name)
 
     producing_organisms = list(set(producing_organisms))
     producing_organisms.sort()
@@ -188,9 +186,6 @@ def parse_smiles() -> Response:
     else:
         mol = Molecule("input", smiles)
         result = parse_mol(mol, REACTIONS, MONOMERS)
-
-        print(result.success)
-        print(result.sequences)
 
         linearized = None
 
@@ -279,13 +274,46 @@ def parse_proto_cluster() -> Response:
     try:
         selected_input_type = data["selectedInputType"] # jobId or jsonSrc
         job_id = data["jobId"]
-        ncbiAccession = data["ncbiAccession"]
         jsonSrc = data["jsonSrc"]
     except KeyError as err:
         message = f"Key not present in submission: {err}"
         return ResponseData(Status.Failure, message=message).to_dict()
+    
+    if selected_input_type == "jobId" and job_id is None:
+        message = "No job ID provided!"
+        return ResponseData(Status.Failure, message=message).to_dict()
+    
+    if selected_input_type == "jsonSrc" and jsonSrc is None:
+        message = "No JSON source provided!"
+        return ResponseData(Status.Failure, message=message).to_dict()
+    
+    if selected_input_type == "jsonSrc":
+        message = "This endpoint is not implemented yet! Try using a job ID instead."
+        return ResponseData(Status.Warning, message=message).to_dict()
+    
+    # Download the job.
+    url = os.path.join("https://antismash.secondarymetabolites.org/upload/", job_id)
+    response = requests.get(url)
+    html = response.text
+    jsons = []
+    for line in html.split("\n"):
+        if ".json" in line:
+            jsons.append(line.split('"')[1])
+    
+    # Should have found a single JSON file.
+    if len(jsons) != 1:
+        message = "Could not find a single JSON file!"
+        return ResponseData(Status.Failure, message=message).to_dict()
 
-    message = "This endpoint is not implemented yet!"
+    # Read contents from that JSON file.
+    json_file = jsons[0]
+    url = os.path.join("https://antismash.secondarymetabolites.org/upload/", job_id, json_file)
+    response = requests.get(url)
+    json_data = response.json()
+
+    # ...
+
+    message = "Read JSON data successfully! This endpoint is not implemented yet!"
     return ResponseData(Status.Warning, message=message).to_dict()
 
 # ======================================================================================================================

@@ -1,7 +1,7 @@
 import React from "react";
 import { toast } from "react-toastify";
 
-const JobIdInput = ({ jobId, setJobId, ncbiAccession, setNcbiAccession }) => {
+const JobIdInput = ({ jobId, setJobId }) => {
     return (
         <div 
             className="panel-block" 
@@ -18,21 +18,6 @@ const JobIdInput = ({ jobId, setJobId, ncbiAccession, setNcbiAccession }) => {
                                    type="text"
                                    placeholder="Enter job ID"
                                    onChange={(e) => setJobId(e.target.value)}
-                               />
-                           </div>
-                       </div>
-                    </div>
-                </div>
-                <div className="field is-grouped is-grouped-left">
-                    <div className="control" style={{ width: "100%" }}>
-                        <div className="field">
-                            <div className="control">
-                               <input
-                                   className="input"
-                                   value={ncbiAccession}
-                                   type="text"
-                                   placeholder="Enter NCBI accession"
-                                   onChange={(e) => setNcbiAccession(e.target.value)}
                                />
                            </div>
                        </div>
@@ -87,8 +72,6 @@ const AntiSmashInput = ({
     setSelectedInputType,
     jobId,
     setJobId,
-    ncbiAccession,
-    setNcbiAccession,
     jsonSrc,
     setJsonSrc,
     parseInput,
@@ -165,8 +148,6 @@ const AntiSmashInput = ({
                         <JobIdInput 
                             jobId={jobId} 
                             setJobId={setJobId} 
-                            ncbiAccession={ncbiAccession}
-                            setNcbiAccession={setNcbiAccession}
                         />
                     ) : (
                         <JsonInput 

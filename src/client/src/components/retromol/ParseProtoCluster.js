@@ -24,7 +24,6 @@ const ParseProtoCluster = () => {
 
     // Query and result state.
     const [jobId, setJobId] = useState("");
-    const [ncbiAccession, setNcbiAccession] = useState("");
     const [jsonSrc, setJsonSrc] = useState("");
     const [results, setResults] = useState([]);
     const [selectedResult, setSelectedResult] = useState([]);
@@ -47,7 +46,6 @@ const ParseProtoCluster = () => {
     // Clear the input fields.
     const handleRefresh = () => {
         setJobId("");
-        setNcbiAccession("");
         setJsonSrc("");
     };
 
@@ -64,13 +62,7 @@ const ParseProtoCluster = () => {
                 setIsLoading(false);
                 return;
             };
-            if (ncbiAccession === "") {
-                toast.warn("NCBI accession is empty!");
-                setIsLoading(false);
-                return;
-            };
         };
-
 
         if (selectedInputType === "json") {
             if (jsonSrc === "") {
@@ -83,7 +75,6 @@ const ParseProtoCluster = () => {
         const data = {
             "selectedInputType": selectedInputType,
             "jobId": jobId,
-            "ncbiAccession": ncbiAccession,
             "jsonSrc": jsonSrc
         };
 
@@ -138,8 +129,6 @@ const ParseProtoCluster = () => {
                     setSelectedInputType={setSelectedInputType}
                     jobId={jobId}
                     setJobId={setJobId}
-                    ncbiAccession={ncbiAccession}
-                    setNcbiAccession={setNcbiAccession}
                     jsonSrc={jsonSrc}
                     setJsonSrc={setJsonSrc}
                     parseInput={parseInput}

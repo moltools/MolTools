@@ -345,7 +345,7 @@ const MatchSubmission = ({
                                 defaultValue={selectedProducingOrganisms}
                                 value={selectedProducingOrganisms}
                                 data={allProducingOrganisms}
-                                placeholder="Select NCBI identifiers (optional)"
+                                placeholder="Select organisms (optional)"
                                 onChange={(value) => setSelectedProducingOrganisms(value)}
                             />
                         </div>
