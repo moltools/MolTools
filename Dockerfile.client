@@ -12,7 +12,6 @@ COPY ./src/client/public ./public
 RUN npm install 
 RUN npm run build 
 COPY ./src/client/deployment/nginx.default.conf /etc/nginx/conf.d/default.conf
-RUN sh -c "sed -i 's/\$PORT/$SERVER_PORT/g' /etc/nginx/conf.d/default.conf"
 
 # Build nginx container 
 FROM nginx:stable-alpine 

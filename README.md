@@ -14,11 +14,9 @@ Visit the MolTools toolbelt [here](https://moltools.bioinformatics.nl/).
 
 ### Server
 
-Create a local environment with conda and install server side dependencies with pip from `src/server/requirements.txt`:
+Create a local environment and install server side dependencies with pip from `src/server/requirements.txt`:
 
 ```bash
-conda create -n moltools python=3.10
-conda activate moltools
 pip install -r src/server/requirements.txt
 ```
 
@@ -52,18 +50,10 @@ Visit `http://localhost:3000/` to view the app.
 
 ## Run with Docker
 
-Run the following script to build and run the app in Docker:
+Run the following script to build and runt he app in a Docker container:
 
 ```bash
-run_docker.sh <api_port> <client_port> -d
+docker-compose -p moltools up --build --force-recreate --remove-orphans -d
 ```
 
-The app will be available at `http://localhost:<client_port>/`.
-
-### Rebuild Docker image
-
-Run the following script to rebuild the Docker image:
-
-```bash
-SERVER_PORT=<server_port> CLIENT_PORT=<client_port> BROWSER_PORT=<browser_port> DATABASE_PORT=<database_port> docker-compose build
-```
+The app will be available at `https://localhost:4001/`.

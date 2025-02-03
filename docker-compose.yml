@@ -1,40 +1,22 @@
 version: "3.3"
+
 services:
-  api:
+  moltools-server:
     build:
       context: . 
       dockerfile: Dockerfile.server
     image: moltools-server
-    environment:
-      - "SERVER_PORT=${SERVER_PORT}"
-      - "NEO4J_URI=bolt://database:7687"
     restart: always
     networks:
       - moltools-network
-  client:
+
+  moltools-client:
     build: 
       context: . 
       dockerfile: Dockerfile.client 
-      args:
-        - SERVER_PORT=${SERVER_PORT}
     image: moltools-client
     ports:
-      - "${CLIENT_PORT}:80"
-    restart: always
-    networks:
-      - moltools-network
-  database:
-    build:
-      context: . 
-      dockerfile: Dockerfile.database
-    image: neo4j:5.16.0
-    environment:
-      - NEO4J_AUTH=none
-    ports:
-      - "${BROWSER_PORT}:7474"
-      - "${DATABASE_PORT}:7687"
-    volumes:
-      - "${VOLUME}:/data"
+      - "4001:80"
     restart: always
     networks:
       - moltools-network

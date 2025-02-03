@@ -25,7 +25,7 @@ const Toast = () =>  {
             pauseOnFocusLoss={false}
             
             // Disable dragging of toast notifications.
-            draggable={false}
+            draggable={true}
             
             // Pause the toast when hovering over it.
             pauseOnHover={true}

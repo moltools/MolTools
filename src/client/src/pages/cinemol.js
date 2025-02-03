@@ -1,5 +1,35 @@
 import React, { useState, useEffect } from "react";
 import { toast } from "react-toastify";
+import { Link } from "react-router-dom";
+import { 
+    AppBar, 
+    Box, 
+    Button,
+    Divider,
+    Drawer, 
+    IconButton, 
+    List, 
+    ListItem, 
+    ListItemIcon, 
+    ListItemText, 
+    Toolbar, 
+    Typography,
+    Slider,
+    CssBaseline
+} from "@mui/material";
+import { 
+    BugReport as BugReportIcon,
+    Home as HomeIcon, 
+    Info as InfoIcon, 
+    Menu as MenuIcon,
+    Close as CloseIcon,
+    DragHandle as DragHandleIcon,
+    SwitchRight
+} from "@mui/icons-material";
+import Draggable from 'react-draggable';
+
+import LoadingOverlay from "../components/common/LoadingOverlay";
+import Status from "../components/common/Status";
 
 // Example SDF string for penicillin G.
 const exampleSdfString = `5904
@@ -93,10 +123,47 @@ const exampleSdfString = `5904
 M  END
 $$$$`;
 
+const SidebarButtonHome = () => {
+    return (
+        <ListItem 
+            type="button" 
+            component={Link} 
+            to="/"
+            sx={{ textDecoration: "none", color: "#222" }}
+        >
+            <ListItemIcon>
+                <HomeIcon sx={{ color: "#222" }} />
+            </ListItemIcon>
+            <ListItemText primary="Home" />
+        </ListItem>
+    );
+};
+
+
+const SidebarButtonBugReport = () => {
+    return (
+        <ListItem 
+            type="button" 
+            component="a" 
+            href="https://github.com/moltools/CineMol/issues" 
+            target="_blank"
+            sx={{ textDecoration: "none", color: "#222" }}
+        >
+            <ListItemIcon>
+                <BugReportIcon sx={{ color: "#222" }} />
+            </ListItemIcon>
+            <ListItemText primary="Report Bug" />
+        </ListItem>
+    );
+};
+
 const CineMol = () => {
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [statusServer, setStatusServer] = useState(true);
+
     // General state variables.
     const [version, setVersion] = useState("0.0.0");                    // Version of the CineMol component.
-    const [mode, setMode] = useState("light");                           // Dark or light background of the molecular model.
+    const [mode, setMode] = useState("dark");                           // Dark or light background of the molecular model.
     const [svgString, setSvgString] = useState("");                     // SVG representation of the molecular model.
     const [isLoading, setIsLoading] = useState(false);                  // App grays out when loading.
     const [initialRender, setInitialRender] = useState(true);           // Initial render of the molecular model.
@@ -112,7 +179,11 @@ const CineMol = () => {
     const [rotationZ, setRotationZ] = useState(0.0);                    // Rotation over the z-axis of the molecular model in radians.
     const [viewBox, setViewBox] = useState(undefined);                  // View box of the molecular model.
     const [width, setWidth] = useState(500);                            // Width of the molecular model.
-    const [height, setHeight] = useState(500);                          // Height of the molecular model.
+    const [height, setHeight] = useState(500);  
+    
+    const toggleDrawer = () => {
+        setIsDrawerOpen(!isDrawerOpen);
+    };
 
     // Downloads the SVG representation of the molecular model.
     const handleDownloadSvgString = () => {
@@ -179,6 +250,21 @@ const CineMol = () => {
         } catch (error) {
             const msg = "Could not retrieve version!";
             toast.error(msg, { autoClose: true });
+            console.error(error);
+        };
+    };
+
+    const checkStatusServer = async () => {
+        try {
+            const response = await fetch("/api/fetch_server_status");
+            const data = await response.json();
+            if (data.status === "success") {
+                setStatusServer(true);
+            } else {
+                setStatusServer(false);
+            };
+        } catch (error) {
+            setStatusServer(false);
             console.error(error);
         };
     };
@@ -255,7 +341,7 @@ const CineMol = () => {
     };
 
     const handleReset = () => {
-        setMode("dark");
+        setMode("light");
         setSvgString("");
         setSdfString("");
         setStyle("space-filling");
@@ -278,163 +364,319 @@ const CineMol = () => {
         if (initialRender) {
             handleGetVersion();
             setInitialRender(false);
+            // toast.warn("CineMol is currently under development, and may not look as expected!", { autoClose: false });
         } else {
             handleDrawModel();
-        }
+        };
     }, [sdfString, style, look, includeHydrogens, resolution, rotationX, rotationY, rotationZ, width, height]);
 
-    return (
-        <div className="columns is-fullheight">
-            {isLoading && <div 
-                className="column is-loading" 
-                style={{ backgroundColor: "rgba(0, 0, 0, 0.5)", zIndex:999, position: "absolute", width: "100%", height: "100%", display: "flex", justifyContent: "center", alignItems: "center"}}
-            />}
-            <div 
-                className="column is-narrow is-3is-sidebar-menu is-fullheight"
-                style={{ backgroundColor: "#d3d3d3", minWidth: "275px"}}
-            >
-                <section className="hero is-fullheight" style={{marginTop: "-4rem", paddingTop: "4rem"}}>
-                <aside className="menu" style={{ marginTop: "1.5rem", marginLeft: "1.5rem" }}>
-                    <p className="menu-label">
-                        General
-                    </p>
-                    <ul className="menu-list">
-                        <li onClick={handleUploadSdfFile} disabled={isLoading}><a>Upload SDF</a></li>
-                        <li onClick={handleDownloadSvgString} disabled={isLoading}><a>Download SVG</a></li>
-                        <li onClick={ () => setSdfString(exampleSdfString) } disabled={isLoading}><a>Load Example</a></li>
-                        <li onClick={handleReset} disabled={isLoading}><a>Reset</a></li>
-                    </ul>
-                    <p className="menu-label">
-                        Settings
-                    </p>
-                    <ul className="menu-list">
-                        <li onClick={handleToggleStyle} disabled={isLoading}><a>Toggle Style: {style}</a></li>
-                        <li onClick={handleToggleLook} disabled={isLoading}><a>Toggle Look: {look}</a></li>
-                        <li onClick={ () => setIncludeHydrogens(!includeHydrogens) } disabled={isLoading}><a>Toggle Hydrogens: {includeHydrogens ? "true" : "false"}</a></li>
-                        <li onClick={handleToggleMode} disabled={isLoading}><a>Toggle Background: {mode}</a></li>
-                    </ul>
-                    <ul className="menu-list">
-                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p className="control">
-                                <button className="button">
-                                    <span className="has-text-left" style={{"width": "100px"}}>Resolution: {resolution}</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (resolution >= 20) { setResolution(resolution - 10) } } }>
-                                    <span>-</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (resolution < 100) { setResolution(resolution + 10) } } }>
-                                    <span>+</span>
-                                </button>
-                            </p>
-                        </div>
-                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p className="control">
-                                <button className="button">
-                                    <span className="has-text-left" style={{"width": "100px"}}>Width: {width}</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (width >= 100) { setWidth(width - 50) } } }>
-                                    <span>-</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (width < 1000) { setWidth(width + 50) } } }>
-                                    <span>+</span>
-                                </button>
-                            </p>
-                        </div>
-                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p className="control">
-                                <button className="button">
-                                    <span className="has-text-left" style={{"width": "100px"}}>Height: {height}</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (height >= 100) { setHeight(height - 50) } } }>
-                                    <span>-</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (height < 1000) { setHeight(height + 50) } } }>
-                                    <span>+</span>
-                                </button>
-                            </p>
-                        </div>
-                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p className="control">
-                                <button className="button">
-                                    <span className="has-text-left" style={{"width": "100px"}}>Rotation X: {rotationX}</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationX > 0) { setRotationX(Math.round((rotationX - Math.PI / 12) * 10) / 10) } } }>
-                                    <span>-</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationX < 2 * Math.PI) { setRotationX(Math.round((rotationX + Math.PI / 12) * 10) / 10) } } }>
-                                    <span>+</span>
-                                </button>
-                            </p>
-                        </div>
-                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p className="control">
-                                <button className="button">
-                                    <span className="has-text-left" style={{"width": "100px"}}>Rotation Y: {rotationY}</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationY > 0) { setRotationY(Math.round((rotationY - Math.PI / 12) * 10) / 10) } } }>
-                                    <span>-</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationY < 2 * Math.PI) { setRotationY(Math.round((rotationY + Math.PI / 12) * 10) / 10) } } }>
-                                    <span>+</span>
-                                </button>
-                            </p>
-                        </div>
-                        <div className="field has-addons" style={{"marginBottom": "0px"}}>
-                            <p className="control">
-                                <button className="button">
-                                    <span className="has-text-left" style={{"width": "100px"}}>Rotation Z: {rotationZ}</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationZ > 0) { setRotationZ(Math.round((rotationZ - Math.PI / 12) * 10) / 10) } } }>
-                                    <span>-</span>
-                                </button>
-                            </p>
-                            <p className="control">
-                                <button className="button" disabled={isLoading} onClick={ () => { if (rotationZ < 2 * Math.PI) { setRotationZ(Math.round((rotationZ + Math.PI / 12) * 10) / 10) } } }>
-                                    <span>+</span>
-                                </button>
-                            </p>
-                        </div>
-                    </ul>
-                    <hr />
-                    <p className="menu-label">
-                        Information
-                    </p>
-                    <ul 
-                        className="menu-list" 
-                        onClick={ () => window.open("https://github.com/moltools/CineMol", "_blank") }
-                    >
-                        <li><a>Version: {version}</a></li>
-                    </ul>
+    useEffect(() => {
+        if (isDrawerOpen) {
+            checkStatusServer();
+        };
+    }, [isDrawerOpen]);
 
-                </aside>
-                </section>
-            </div>
-            <div className="column is-main-content" style={{ backgroundColor: mode === "dark" ? "#000" : "#f5f5f5" }}>
-                <div dangerouslySetInnerHTML={{ __html: svgString }} />
-            </div>
-        </div> 
+
+    return (
+        <Box sx={{ display: "flex", width: "100%", flexDirection: "column" }}>
+            <CssBaseline />
+            <AppBar position="fixed">
+                <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
+                    <Box sx={{ display: "flex", justifyContent: "left", width: "100%", alignItems: "center" }}>
+                        <IconButton
+                            color="inherit"
+                            aria-label="open drawer"
+                            edge="start"
+                            onClick={toggleDrawer}
+                            sx={{ mr: 2 }}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <Box sx={{ display: "flex", alignItems: "center", mr: 2 }}>
+                                <img src="/cinemol.svg" alt="CineMol" style={{ width: 40, height: 40 }} />
+                            </Box>
+                            <Typography variant="h6" noWrap>
+                                {`CineMol (${version})`}
+                            </Typography>
+                        </Box>
+                    </Box>
+                </Toolbar>
+            <Drawer
+                variant="temporary"
+                open={isDrawerOpen}
+                onClose={toggleDrawer}
+                ModalProps={{ keepMounted: true }}
+                sx={{ '& .MuiDrawer-paper': { width: 240 } }}
+            >
+                <List>
+                    <SidebarButtonHome />
+                    <SidebarButtonBugReport />
+                    <Divider sx={{ mt: 2, mb: 2 }} />
+                    <Status statusName="Server" status={statusServer} />
+                </List>
+            </Drawer>
+            </AppBar>
+            <Box component="main">
+                <Toolbar />
+                <Box sx={{
+                    m: 0, 
+                    p:0, 
+                    position: "relative",
+                    height: "calc(100vh - 64px)", // 64px is the height of the AppBar.
+                    width: "100vw",
+                    overflow: "hidden",
+                }}> 
+                    {isLoading && <LoadingOverlay />}
+                    <Box sx={{ 
+                        height: "calc(100vh - 64px)", // 64px is the height of the AppBar.
+                        width: "100vw",
+                        backgroundColor: mode === "dark" ? "#000" : "#f5f5f5", 
+                    }}>
+                        <div dangerouslySetInnerHTML={{ __html: svgString }} />
+                    </Box>
+                    <Draggable
+                        defaultPosition={{ x: 0, y: 0 }}
+                        scale={1}
+                        handle=".drag-handle"
+                    >
+                        <Box sx={{ 
+                            position: "absolute",
+                            top: 10,
+                            left: 10,
+                            display: "flex", 
+                            flexDirection: "column", 
+                            maxWidth: "250px" 
+                        }}>
+                            <Box 
+                                sx={{ 
+                                    display: "flex", 
+                                    flexDirection: "row", 
+                                    justifyContent: "center", 
+                                    alignItems: "center", 
+                                    backgroundColor: "#555", 
+                                    padding: 1, 
+                                    borderRadius: 4, 
+                                    borderBottomLeftRadius: 0, 
+                                    borderBottomRightRadius: 0, 
+                                    width: "100%",
+                                    cursor: "move"
+                                }}
+                                className="drag-handle"
+                            >
+                                <DragHandleIcon />
+                            </Box>
+                            <Box sx={{
+                                maxHeight: "250px",
+                                overflow: "auto",
+                                backgroundColor: "#f0f0f0",
+                                boxShadow: 4,
+                                borderRadius: 0,
+                            }}>
+                                <List sx={{ padding: 0 }}>
+                                    <Button 
+                                        variant="contained" 
+                                        color="primary" 
+                                        onClick={handleUploadSdfFile} 
+                                        disabled={isLoading}
+                                        style={{width: "100%", borderRadius: 0, marginTop: "1px", boxShadow: "none", justifyContent: "flex-start"}}
+                                    >
+                                        Upload SDF
+                                    </Button>
+                                    <Button 
+                                        variant="contained" 
+                                        color="primary" 
+                                        onClick={handleDownloadSvgString} 
+                                        disabled={isLoading}
+                                        style={{width: "100%", borderRadius: 0, marginTop: "1px", boxShadow: "none", justifyContent: "flex-start"}}
+                                    >
+                                        Download SVG
+                                    </Button>
+                                    <Button 
+                                        variant="contained" 
+                                        color="primary" 
+                                        onClick={() => setSdfString(exampleSdfString)}
+                                        disabled={isLoading}
+                                        style={{width: "100%", borderRadius: 0, marginTop: "1px", boxShadow: "none", justifyContent: "flex-start"}}
+                                    >
+                                        Load example
+                                    </Button>
+                                    <Button 
+                                        variant="contained" 
+                                        color="primary" 
+                                        onClick={handleReset} 
+                                        disabled={isLoading}
+                                        style={{width: "100%", borderRadius: 0, marginTop: "1px", boxShadow: "none", justifyContent: "flex-start"}}
+                                    >
+                                        Reset
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={handleToggleStyle}
+                                        disabled={isLoading}
+                                        style={{width: "100%", borderRadius: 0, marginTop: "1px", boxShadow: "none", justifyContent: "flex-start", flexDirection: "row"}}
+                                    >
+                                        <SwitchRight sx={{ paddingRight: 1 }} />
+                                        Style: {style}
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={handleToggleLook}
+                                        disabled={isLoading}
+                                        style={{width: "100%", borderRadius: 0, marginTop: "1px", boxShadow: "none", justifyContent: "flex-start", flexDirection: "row"}}
+                                    >
+                                        <SwitchRight sx={{ paddingRight: 1 }} />
+                                        Look: {look}
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={handleToggleMode}
+                                        disabled={isLoading}
+                                        style={{width: "100%", borderRadius: 0, marginTop: "1px", boxShadow: "none", justifyContent: "flex-start", flexDirection: "row"}}
+                                    >
+                                        <SwitchRight sx={{ paddingRight: 1 }} />
+                                        Mode: {mode}
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => setIncludeHydrogens(!includeHydrogens)}
+                                        disabled={isLoading}
+                                        style={{width: "100%", borderRadius: 0, marginTop: "1px", boxShadow: "none", justifyContent: "flex-start"}}
+                                    >
+                                        <SwitchRight sx={{ paddingRight: 1 }} />
+                                        Hydrogens: {includeHydrogens ? "Yes" : "No"}
+                                    </Button>
+                                    <Box sx={{ padding: 0, paddingTop: 1, paddingRight: 2, paddingLeft: 2 }}>
+                                        <Typography id="discrete-slider" gutterBottom>
+                                            {`Resolution (${resolution})`}
+                                        </Typography>
+                                        <Slider
+                                            aria-labelledby="discrete-slider"
+                                            valueLabelDisplay="auto"
+                                            step={10}
+                                            marks
+                                            min={40}
+                                            max={100}
+                                            value={resolution}
+                                            disabled={isLoading}
+                                            onChange={(event, value) => setResolution(value)}
+                                        />
+                                    </Box>
+                                    <Divider />
+                                    <Box sx={{ padding: 0, paddingTop: 1, paddingRight: 2, paddingLeft: 2 }}>
+                                        <Typography id="discrete-slider" gutterBottom>
+                                            {`Width (${width} px.)`}
+                                        </Typography>
+                                        <Slider
+                                            aria-labelledby="discrete-slider"
+                                            valueLabelDisplay="auto"
+                                            step={100}
+                                            marks
+                                            min={100}
+                                            max={1000}
+                                            value={width}
+                                            disabled={isLoading}
+                                            onChange={(event, value) => setWidth(value)}
+                                        />
+                                    </Box>
+                                    <Divider />
+                                    <Box sx={{ padding: 0, paddingTop: 1, paddingRight: 2, paddingLeft: 2 }}>
+                                        <Typography id="discrete-slider" gutterBottom>
+                                            {`Height (${height} px.)`}
+                                        </Typography>
+                                        <Slider
+                                            aria-labelledby="discrete-slider"
+                                            valueLabelDisplay="auto"
+                                            step={100}
+                                            marks
+                                            min={100}
+                                            max={1000}
+                                            value={height}
+                                            disabled={isLoading}
+                                            onChange={(event, value) => setHeight(value)}
+                                        />
+                                    </Box>
+                                    <Divider />
+                                    <Box sx={{ padding: 0, paddingTop: 1, paddingRight: 2, paddingLeft: 2 }}>
+                                        <Typography id="discrete-slider" gutterBottom>
+                                            {`Rotation X (${rotationX} rad.)`}
+                                        </Typography>
+                                        <Slider
+                                            aria-labelledby="discrete-slider"
+                                            valueLabelDisplay="auto"
+                                            step={Math.PI / 12}
+                                            marks
+                                            min={0}
+                                            max={2 * Math.PI}
+                                            value={rotationX}
+                                            disabled={isLoading}
+                                            onChange={(event, value) => setRotationX(Math.round(value * 100) / 100)}
+                                        />
+                                    </Box>
+                                    <Divider />
+                                    <Box sx={{ padding: 0, paddingTop: 1, paddingRight: 2, paddingLeft: 2 }}>
+                                        <Typography id="discrete-slider" gutterBottom>
+                                            {`Rotation Y (${rotationY} rad.)`}
+                                        </Typography>
+                                        <Slider
+                                            aria-labelledby="discrete-slider"
+                                            valueLabelDisplay="auto"
+                                            step={Math.PI / 12}
+                                            marks
+                                            min={0}
+                                            max={2 * Math.PI}
+                                            value={rotationY}
+                                            disabled={isLoading}
+                                            onChange={(event, value) => setRotationY(Math.round(value * 100) / 100)}
+                                        />
+                                    </Box>
+                                    <Divider />
+                                    <Box sx={{ padding: 0, paddingTop: 1, paddingRight: 2, paddingLeft: 2 }}>
+                                        <Typography id="discrete-slider" gutterBottom>
+                                            {`Rotation Z (${rotationZ} rad.)`}
+                                        </Typography>
+                                        <Slider
+                                            aria-labelledby="discrete-slider"
+                                            valueLabelDisplay="auto"
+                                            step={Math.PI / 12}
+                                            marks
+                                            min={0}
+                                            max={2 * Math.PI}
+                                            value={rotationZ}
+                                            disabled={isLoading}
+                                            onChange={(event, value) => setRotationZ(Math.round(value * 100) / 100)}
+                                        />
+                                    </Box>
+                                </List>
+                            </Box>
+                            <Box 
+                                sx={{ 
+                                    display: "flex", 
+                                    flexDirection: "row", 
+                                    justifyContent: "center", 
+                                    alignItems: "center", 
+                                    backgroundColor: "#555", 
+                                    padding: 1, 
+                                    borderRadius: 4, 
+                                    borderTopLeftRadius: 0, 
+                                    borderTopRightRadius: 0, 
+                                    width: "100%",
+                                    cursor: "move",
+                                    paddingTop: "1px",
+                                }}
+                                className="drag-handle"
+                            >
+                                <DragHandleIcon />
+                            </Box>
+                        </Box>
+                    </Draggable>
+                </Box>
+            </Box>
+        </Box>
     );
 };
 

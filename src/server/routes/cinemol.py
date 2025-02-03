@@ -4,7 +4,7 @@ from cinemol.api import Style, Look, draw_molecule
 from cinemol.version import get_version
 from flask import Blueprint, Response, request
 
-from .common import Status, ResponseData
+from .common import ResponseStatus, ResponseData
 
 blueprint_draw_model = Blueprint("draw_model", __name__)
 @blueprint_draw_model.route("/api/draw_model", methods=["POST"])
@@ -61,7 +61,7 @@ def draw_model() -> Response:
     # Draw molecule.
     if sdf_str is None:
         msg = "No SDF string provided!"
-        return ResponseData(Status.Failure, message=msg).to_dict()
+        return ResponseData(ResponseStatus.Failure, message=msg).jsonify()
 
     else:
         try:
@@ -98,11 +98,11 @@ def draw_model() -> Response:
                 }
             }
 
-            return ResponseData(Status.Success, payload).to_dict()
+            return ResponseData(ResponseStatus.Success, payload).jsonify()
 
         except Exception as e:
             msg = f"Failed to parse SDF string: {e}"
-            return ResponseData(Status.Failure, message=msg).to_dict()
+            return ResponseData(ResponseStatus.Failure, message=msg).jsonify()
 
 blueprint_fetch_cinemol_version = Blueprint("fetch_cinemol_version", __name__)
 @blueprint_fetch_cinemol_version.route("/api/fetch_cinemol_version", methods=["GET"])
@@ -120,8 +120,8 @@ def fetch_cinemol_version() -> Response:
         payload = {"version": version}
 
         msg = "Successfully fetched Cinemol version!"
-        return ResponseData(Status.Success, payload, msg).to_dict()
+        return ResponseData(ResponseStatus.Success, payload, msg).jsonify()
 
     except Exception as e:
         msg = f"Failed to fetch Cinemol version: {e}"
-        return ResponseData(Status.Failure, message=msg).to_dict()
+        return ResponseData(ResponseStatus.Failure, message=msg).jsonify()

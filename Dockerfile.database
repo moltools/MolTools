@@ -1,3 +1,0 @@
-# This Dockerfile builds the neo4j database
-FROM neo4j:5.16.0
-EXPOSE 7474 7687
