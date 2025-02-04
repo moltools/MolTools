@@ -4,7 +4,6 @@ import Plot from "react-plotly.js";
 import SmilesDrawerContainer from "../components/common/SmilesDrawer";
 import { Link } from "react-router-dom";
 import { 
-    useMediaQuery,
     AppBar, 
     Box, 
     Button,
@@ -17,12 +16,14 @@ import {
     Toolbar, 
     Typography,
     CssBaseline,
-    TextField
+    TextField,
+    Tooltip
 } from "@mui/material";
 import { 
     BugReport as BugReportIcon,
     Home as HomeIcon, 
     Menu as MenuIcon,
+    Info as InfoIcon
 } from "@mui/icons-material";
 
 
@@ -57,6 +58,84 @@ const SidebarButtonBugReport = () => {
             </ListItemIcon>
             <ListItemText primary="Report Bug" />
         </ListItem>
+    );
+};
+
+const FingerprintBar = ({ data, selected, setSelected, topPos = [], topNeg = [] }) => {
+
+    // function for determining color of unit 
+    const color = (name) => {
+        if (name === selected) {
+            return "#7B9204";
+        } else {
+            return "#ffffff";
+        }
+    };
+
+    const featureImportanceColor = (name) => {
+        if (topPos.includes(name)) {
+            return "#0000FF";
+        } else if (topNeg.includes(name)) {
+            return "#FF0000";
+        } else {
+            return "";
+        }
+    }
+
+    return (
+        <Box display="flex" sx={{ overflowX: "auto", width: "100%", center: "center", flexWrap: "wrap", p: 1, justifyContent: "center", alignItems: "center" }}>
+            {data.map(([name, count], index) => (
+                <Tooltip 
+                    key={index} 
+                    title={
+                        <>
+                            Feature: {name} <br />
+                            Count: {count} <br />
+                            Click to highlight substructure(s) in the molecule, if any.
+                        </>
+                    }
+                    arrow
+                >
+                    <Box sx={{ 
+                        display: "flex", 
+                        flexDirection: "column", 
+                        alignItems: "center", 
+                        justifyContent: "center", 
+                        p: "1.5px", 
+                        borderWidth: "0px",
+                        backgroundColor: featureImportanceColor(name),
+                    }}>
+                        <Box
+                            sx={{
+                                width: `25px`,
+                                height: "25px",
+                                backgroundColor: color(name),
+                                borderRadius: "0px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: selected === name ? "#fff" : "#000",
+                                fontWeight: "bold",
+                                fontSize: "10px",
+                                fontFamily: "HelveticaNeue-Light",
+                                cursor: "pointer",
+                                border: "1px solid #000000",
+                            }}
+                            // if double click unselect
+                            onClick={() => {
+                                if (selected === name) {
+                                    setSelected("");
+                                } else {
+                                    setSelected(name);
+                                }
+                            }}
+                        >
+                            {count}
+                        </Box>
+                    </Box>
+                </Tooltip>
+            ))}
+        </Box>
     );
 };
 
@@ -131,12 +210,28 @@ const PredictionView = (props) => {
 const Biosynfoni = () => {
     const [version, setVersion] = useState("0.0.0");
     const [smiles, setSmiles] = useState("");
-    const [predictions, setPredictions] = useState({});
     const [isLoading, setIsLoading] = useState(false);
-
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const isNarrowScreen = useMediaQuery("(max-width: 600px)");
 
+    const [predictions, setPredictions] = useState({});
+    const [taggedSmiles, setTaggedSmiles] = useState("");
+    const [featureImportance, setFeatureImportance] = useState({});
+    const [fingerprint, setFingerprint] = useState([]);
+    const [highlights, setHighlights] = useState({});
+    const [topPredictedClass, setTopPredictedClass] = useState("");
+    const [selectedHighlight, setSelectedHighlight] = useState("");
+
+    // handle for clearing SMILES and predictions.
+    const clearData = () => {
+        setSmiles("");
+        setPredictions({});
+        setTaggedSmiles("");
+        setFeatureImportance({});
+        setFingerprint([]);
+        setHighlights({});
+        setTopPredictedClass("");
+        setSelectedHighlight([]);
+    };
 
     // Send smiles to backend and receive predictions.
     const getPredictions = async () => {
@@ -160,6 +255,15 @@ const Biosynfoni = () => {
             // Unpack response.
             if (json.status === "success") {
                 setPredictions(json.payload.predictions);
+                setTaggedSmiles(json.payload.tagged_smiles);
+                setFeatureImportance(json.payload.feature_importance);
+                setFingerprint(json.payload.fingerprint);
+                setHighlights(json.payload.highlights);
+
+                // get top predicted class from predictions
+                const topClass = Object.keys(json.payload.predictions).reduce((a, b) => json.payload.predictions[a] > json.payload.predictions[b] ? a : b);
+                setTopPredictedClass(topClass);
+
             } else if (json.status === "warning") {
                 toast.warn(json.message);
             } else if (json.status === "failure") {
@@ -242,8 +346,27 @@ const Biosynfoni = () => {
             <Box component="main" sx={{ flexGrow: 1, p: 3, pt: 5, height: "100vh", overflow: "auto" }}>
                 <Toolbar />
                 <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 2, pb: 10 }}>
-                    <TextField 
+                    <Button 
+                        sx={{ 
+                            height: 56, 
+                            width: 100, 
+                            fontFamily: "HelveticaNeue-Light", 
+                            backgroundColor: "#B9C311", 
+                            color: "#222", 
+                            "&:hover": {
+                                backgroundColor: "#7B9204", // Change to a slightly darker shade on hover
+                                color: "#fff" // Change text color on hover
+                            }
+                        }}
                         disabled={isLoading}
+                        onClick={clearData}
+                        variant="contained"
+                    >
+                        Clear
+                    </Button>
+                    <TextField 
+                        // disabled if loading or if there are predictions
+                        disabled={isLoading || Object.keys(predictions).length > 0}
                         label="Enter SMILES"
                         variant="outlined"
                         fullWidth
@@ -290,25 +413,56 @@ const Biosynfoni = () => {
                         Submit
                     </Button>
                 </Box>
-                <Box sx={{ 
-                    display: "flex", 
-                    flexDirection: isNarrowScreen ? "column" : "row", 
-                    alignItems: "center", 
-                    justifyContent: "center", 
-                    gap: 10 
-                }}>
-                    <Box>
-                        <SmilesDrawerContainer 
-                            identifier={"input-molecule"}
-                            smilesStr={smiles} 
-                            width={300}
-                            height={350}
+                {fingerprint.length > 0 && (
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pb: 3 }}>
+                        <Box sx={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 0.5 }}>
+                            <Typography variant="h6" sx={{ fontFamily: "HelveticaNeue-Light" }}>
+                                Fingerprint
+                            </Typography>
+                            <Tooltip title="Fingerprint that is used to make a prediction. Features higlighted in blue contributed positively to the top predicted class. Features highlighted in red contributed negatively to the top predicted class. Click a feature to show its corresponding substructure(s) in the molecule." arrow>
+                                <InfoIcon />
+                            </Tooltip>
+                        </Box>
+                        <FingerprintBar
+                            data={fingerprint} 
+                            selected={selectedHighlight}
+                            setSelected={setSelectedHighlight}
+                            topPos={featureImportance[topPredictedClass]?.top_pos ?? []}
+                            topNeg={featureImportance[topPredictedClass]?.top_neg ?? []}
                         />
                     </Box>
-                    <Box>
+                )}
+                <Box
+                    sx={{
+                        display: "flex",
+                        flexWrap: "wrap",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 4,
+                    }}
+                >
+                    <Box
+                        sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
+                    >
+                        <SmilesDrawerContainer
+                            identifier={"input-molecule"}
+                            // give taggedSmiles if length>0 otherwise smiles
+                            smilesStr={taggedSmiles.length > 0 ? taggedSmiles : smiles}
+                            width={350}
+                            height={350}
+                            highlightAtoms={highlights[selectedHighlight] ?? []}
+                        />
+                    </Box>
+                    <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
                         <PredictionView predictions={predictions} />
                     </Box>
                 </Box>
+
             </Box>
         </Box>
     );

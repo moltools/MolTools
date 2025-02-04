@@ -2,13 +2,16 @@ import os
 import subprocess
 
 import joblib
+import shap
+import numpy as np
 from flask import Blueprint, Response, request 
 from rdkit import Chem
 
 from .common import fail, success
 
-import biosynfoni
 from biosynfoni import overlapped_fp
+from biosynfoni.subkeys.versionfonis import fpVersions
+from biosynfoni.subkeys.biosmartfonis import substructureSmarts
 
 # Load the predictor. If it fails, set it to None.
 PREDICTOR_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models/bsf_model.joblib")
@@ -69,8 +72,73 @@ def predict_biosynthetic_class() -> Response:
             labeled_preds = list(zip(pathway_labels, preds))
             labeled_preds = {label: pred for label, pred in labeled_preds}
 
+            # get feature importances
+            subkeys_names = fpVersions.get("full_1103", None)
+            subkeys = [substructureSmarts.get(subkey, None) for subkey in subkeys_names]
+
+            if subkeys is None or any([subkey is None for subkey in subkeys]):
+                msg = "Unable to retrieve feature importances"
+                del PREDICTOR
+                return fail(msg)
+            
+            # add tags as istopes to input molecule
+            for atom in mol.GetAtoms():
+                index = atom.GetIdx()
+                atom.SetIsotope(index + 1)
+            
+            # match most important subkeys to compound
+            highlights = {}
+            for subkey in subkeys:
+                name = subkey["name"]
+                smarts = subkey["smarts"]
+                pattern = Chem.MolFromSmarts(smarts)
+                matching_atoms = set()
+                matches = mol.GetSubstructMatches(pattern)
+                for match in matches:
+                    for atom_idx in match:
+                        atom = mol.GetAtomWithIdx(atom_idx)
+                        matching_atoms.add(atom.GetIsotope())
+                highlights[name] = list(matching_atoms)
+
+            # get feature insights
+            explainer = shap.TreeExplainer(PREDICTOR)
+            shap_values = explainer.shap_values(np.array(fp))
+
+            # print num classes predictor
+            shap_instance = shap_values.T[1]
+
+            class_names = [(pathway_labels[i], 1 + (i * 2)) for i in range(len(pathway_labels))]
+            feature_names = [subkey["name"] for subkey in subkeys]
+
+            # rank which features in the fingerprint are most important for the prediction of every class
+            feature_importance = {}
+            for i, (class_name, idx) in enumerate(class_names):
+                shap_values_class = shap_values.T[idx]
+                
+                # get all features that contributed positively and all negatively to the prediction
+                all_pos = np.where(shap_values_class >= 0)[0]
+                all_neg = np.where(shap_values_class < 0)[0]
+
+                # top_pos = np.argsort(shap_values_class)[-3:][::-1]
+                # top_neg = np.argsort(shap_values_class)[:3]
+
+                feature_importance[class_name] = {
+                    "top_pos": [feature_names[j] for j in all_pos],
+                    "top_neg": [feature_names[j] for j in all_neg]
+                }
+            
+            fp_keys = []
+            for i, key in enumerate(fp):
+                fp_keys.append((subkeys[i]["name"], key))
+
             # Return the response.
-            payload = {"predictions": labeled_preds}
+            payload = {
+                "tagged_smiles": Chem.MolToSmiles(mol),
+                "predictions": labeled_preds,
+                "feature_importance": feature_importance,
+                "highlights": highlights,
+                "fingerprint": fp_keys
+            }
 
             msg = "Successfully predicted biosynthetic class!"
             del PREDICTOR

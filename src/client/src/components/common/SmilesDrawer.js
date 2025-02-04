@@ -113,6 +113,12 @@ const SmilesDrawerContainer = ({ identifier, smilesStr, width, height, highlight
     // create a new drawer instance
     let drawer = new CustomSvgDrawer({ width: width, height: height });
 
+    // wrap highlightedatoms as array of tuples with isotope and add color as second item (red)
+    let highlightAtomsWrapped = highlightAtoms.map((atom) => {
+        return [atom, "#B9C311"];
+    });
+    
+
     // draw the molecule when the component is mounted
     useEffect(() => {
         let target = `structure-svg-${identifier}`
@@ -122,7 +128,7 @@ const SmilesDrawerContainer = ({ identifier, smilesStr, width, height, highlight
         let weightsNormalized = false;
 
         SmilesDrawer.parse(smilesStr, function (tree) {
-            drawer.draw(tree, target, themeName, weights, infoOnly, highlightAtoms, weightsNormalized);
+            drawer.draw(tree, target, themeName, weights, infoOnly, highlightAtomsWrapped, weightsNormalized);
         });
     }, [smilesStr, highlightAtoms]); // re-draw the molecule when the SMILES string changes
 
