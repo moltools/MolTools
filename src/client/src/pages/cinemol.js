@@ -397,7 +397,7 @@ const CineMol = () => {
                                 <img src="/cinemol.svg" alt="CineMol" style={{ width: 40, height: 40 }} />
                             </Box>
                             <Typography variant="h6" noWrap>
-                                {`CineMol (${version})`}
+                                {`CineMol v${version} (web app: v${process.env.REACT_APP_VERSION ? process.env.REACT_APP_VERSION : 'UNKNOWN'})`}
                             </Typography>
                         </Box>
                     </Box>
