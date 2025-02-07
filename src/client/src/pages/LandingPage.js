@@ -1,7 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Tooltip, Box, Container, Typography, Card, CardContent, CardActions, Grid, IconButton } from '@mui/material';
-import { GitHub, Description, OpenInNew, Info } from '@mui/icons-material';
+import { 
+    GitHub, 
+    Description, 
+    OpenInNew, 
+    BuildCircle as BuildCircleIcon,
+} from '@mui/icons-material';
 
 const cardData = [
     {
@@ -9,6 +14,8 @@ const cardData = [
         title: 'CineMol',
         description: 'A web-based direct-to-SVG 3D small molecule drawer.',
         page: 'cinemol',
+        isExternalApp: false,
+        isUnderDevelopment: false,
         links: {
             github: 'https://github.com/moltools/cinemol',
             doi: 'https://jcheminf.biomedcentral.com/articles/10.1186/s13321-024-00851-y'
@@ -19,6 +26,8 @@ const cardData = [
         title: 'PARAS(ECT)',
         description: 'Predict adenylation domain substrate specificity.',
         page: "https://paras.bioinformatics.nl/",
+        isExternalApp: true,
+        isUnderDevelopment: false,
         links: {
             github: 'https://github.com/BTheDragonMaster/parasect',
             doi: 'https://www.biorxiv.org/content/10.1101/2025.01.08.631717v1'
@@ -29,6 +38,8 @@ const cardData = [
         title: 'RetroMol',
         description: 'Perform retrobiosynthetic analyses of modular natural products.',
         page: "https://retromol.bioinformatics.nl/",
+        isExternalApp: true,
+        isUnderDevelopment: true,
         links: {
             github: 'https://github.com/moltools/RetroMol',
             // doi: ''
@@ -39,6 +50,8 @@ const cardData = [
         title: 'Biosynfoni',
         description: 'Predict biosynthetic class for a given natural product.',
         page: "biosynfoni",
+        isExternalApp: false,
+        isUnderDevelopment: true,
         links: {
             github: 'https://github.com/lucinamay/biosynfoni',
             // doi: ''
@@ -80,6 +93,24 @@ const LandingPage = () => {
                             }}
                             
                         >
+                            {/* Conditionally render the in-development icon */}
+                            {card.isUnderDevelopment ? (
+                                <Box
+                                    sx={{
+                                        lignSelf: "stretch",
+                                        display: "flex",
+                                        justifyContent: "flex-end",
+                                        alignItems: "flex-start",
+                                        p: "5px",
+                                    }}
+                                >
+                                    <Tooltip title="This application is still under development." arrow>
+                                        <BuildCircleIcon />
+                                    </Tooltip>
+                                </Box>
+                            ) : (
+                                <Box sx={{ height: '35px' }} />
+                            )}
                             <CardContent>
                                 <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem' }}>
                                     <Box>
@@ -97,8 +128,17 @@ const LandingPage = () => {
                             </CardContent>
                             <CardActions disableSpacing>
                                 {card.page &&
-                                    <Tooltip title="Launch application." arrow>
-                                        <IconButton aria-label="open" component={Link} to={card.page}>
+                                    <Tooltip 
+                                        title={`Launch ${card.isExternalApp ? 'external' : ''} application${card.isExternalApp ? ' in new tab' : ''}. ${card.isUnderDevelopment ? 'Note that this application is still under development.' : ''}`} 
+                                        arrow
+                                    >
+                                        <IconButton 
+                                            aria-label="launch"
+                                            component={card.isExternalApp ? 'a' : Link}
+                                            href={card.page}
+                                            to={card.page}
+                                            target={card.isExternalApp ? '_blank' : ''}
+                                        >
                                             <OpenInNew />
                                         </IconButton>
                                     </Tooltip>
