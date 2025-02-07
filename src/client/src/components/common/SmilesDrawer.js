@@ -109,15 +109,14 @@ class CustomSvgDrawer extends SmilesDrawer.SvgDrawer {
  * @param {string} smilesStr - SMILES string of the molecule.
  * @returns {React.ReactElement} - The component showing the molecule.
  */ 
-const SmilesDrawerContainer = ({ identifier, smilesStr, width, height, highlightAtoms = [] }) => {
+const SmilesDrawerContainer = ({ identifier, smilesStr, width, height, highlightAtoms = [], highlightColor = "#B9C311" }) => {
     // create a new drawer instance
     let drawer = new CustomSvgDrawer({ width: width, height: height });
 
     // wrap highlightedatoms as array of tuples with isotope and add color as second item (red)
     let highlightAtomsWrapped = highlightAtoms.map((atom) => {
-        return [atom, "#B9C311"];
+        return [atom, highlightColor];
     });
-    
 
     // draw the molecule when the component is mounted
     useEffect(() => {
