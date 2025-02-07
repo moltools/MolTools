@@ -6,6 +6,6 @@ biopython
 requests
 gunicorn
 numpy<2.0
-git+https://github.com/lucinamay/biosynfoni.git
+biosynfoni==1.0.0
 scikit-learn==1.6.1
 shap
