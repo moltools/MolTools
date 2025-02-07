@@ -58,7 +58,7 @@ const LandingPage = () => {
             <Box sx={{ display: 'flex', flexDirection: 'row', center: 'center', alignItems: 'center' }}>
                 <img src="moltools.svg" alt="MolTools logo" style={{ width: '80px'}} />
                 <Typography variant="h2" gutterBottom sx={{ margin: 0, paddingLeft: 2 }}>
-                    MolTools
+                    MolTools (web app: v{process.env.REACT_APP_VERSION ? process.env.REACT_APP_VERSION : 'UNKNOWN'})
                 </Typography>
             </Box>
             <Typography variant="body1" paragraph sx={{ paddingLeft: 2, marginBottom: '2rem' }}>
