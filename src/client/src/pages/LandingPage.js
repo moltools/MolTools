@@ -51,10 +51,10 @@ const cardData = [
         description: 'Predict biosynthetic class for a given natural product.',
         page: "biosynfoni",
         isExternalApp: false,
-        isUnderDevelopment: true,
+        isUnderDevelopment: false,
         links: {
             github: 'https://github.com/lucinamay/biosynfoni',
-            // doi: ''
+            doi: 'https://doi.org/10.26434/chemrxiv-2025-cwq74'
         }
     },
 ];
