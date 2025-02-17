@@ -1,7 +1,7 @@
 rdkit==2023.9.5
 flask
 tqdm
-cinemol==1.0.1
+cinemol==1.0.2
 biopython
 requests
 gunicorn
