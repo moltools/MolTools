@@ -54,8 +54,26 @@ const cardData = [
         isUnderDevelopment: false,
         links: {
             github: 'https://github.com/lucinamay/biosynfoni',
-            doi: 'https://doi.org/10.26434/chemrxiv-2025-cwq74'
+            doi: 'https://jcheminf.biomedcentral.com/articles/10.1186/s13321-025-01081-6'
         }
+    },
+    {
+        logo: null,
+        title: 'Harvest',
+        description: 'Generate compound structures for BGCs.',
+        page: "",
+        isExternalApp: false,
+        isUnderDevelopment: true,
+        links: {}
+    },
+    {
+        logo: null,
+        title: 'CytoMol',
+        description: 'Link natural products to biological roles.',
+        page: "",
+        isExternalApp: false,
+        isUnderDevelopment: true,
+        links: {}
     },
 ];
 
@@ -114,7 +132,9 @@ const LandingPage = () => {
                             <CardContent>
                                 <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '1rem' }}>
                                     <Box>
-                                        <img src={card.logo} alt={card.title} style={{ width: '80px' }} />
+                                        {card.logo && (
+                                            <img src={card.logo} alt={card.title} style={{ width: '80px' }} />
+                                        )}
                                     </Box>
                                     <Box>
                                         <Typography variant="h5" component="div">
